@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Check, Download, Globe, Music2, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+const SAMPLE_VIDEO =
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4";
+
 export type SendChannel = "google" | "meta" | "tiktok";
 
 interface Props {
@@ -64,15 +67,19 @@ export function SendStep({ onSend, onSkip }: Props) {
             );
           })}
 
-          <button className="flex w-full items-center gap-4 rounded-xl border border-dashed bg-card p-4 text-left transition-colors hover:border-foreground/30">
+          <a
+            href={SAMPLE_VIDEO}
+            download="product-video.mp4"
+            className="flex w-full items-center gap-4 rounded-xl border border-dashed bg-card p-4 text-left transition-colors hover:border-foreground/30"
+          >
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-foreground">
               <Download className="h-5 w-5" />
             </div>
             <div className="flex-1">
               <p className="text-sm font-medium text-foreground">Download video</p>
-              <p className="text-xs text-muted-foreground">Save MP4 to your computer</p>
+              <p className="text-xs text-muted-foreground">Save MP4 sample to your computer</p>
             </div>
-          </button>
+          </a>
         </div>
 
         <div className="mt-6 flex flex-col items-center gap-3">

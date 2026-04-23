@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { LayoutGrid, List, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -21,6 +21,7 @@ const FILTERS: { id: ProductTag; label: string }[] = [
 export function SelectStep({ selectedIds, setSelectedIds, onContinue }: Props) {
   const [filter, setFilter] = useState<ProductTag>("no-video");
   const [query, setQuery] = useState("");
+  const [view, setView] = useState<"grid" | "list">("grid");
 
   const products = useMemo(() => {
     return PRODUCTS.filter((p) => p.tags.includes(filter)).filter((p) =>
@@ -28,12 +29,22 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue }: Props) {
     );
   }, [filter, query]);
 
+  const allSelected = products.length > 0 && products.every((p) => selectedIds.includes(p.id));
+
   const toggle = (id: string) => {
     setSelectedIds(
       selectedIds.includes(id)
         ? selectedIds.filter((x) => x !== id)
         : [...selectedIds, id],
     );
+  };
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(selectedIds.filter((id) => !products.some((p) => p.id === id)));
+    } else {
+      setSelectedIds(Array.from(new Set([...selectedIds, ...products.map((p) => p.id)])));
+    }
   };
 
   return (
@@ -48,42 +59,109 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue }: Props) {
           </p>
         </header>
 
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap gap-2">
-            {FILTERS.map((f) => (
-              <button
-                key={f.id}
-                onClick={() => setFilter(f.id)}
-                className={cn(
-                  "rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors",
-                  filter === f.id
-                    ? "border-primary bg-accent text-accent-foreground"
-                    : "border-border bg-card text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {f.label}
-              </button>
-            ))}
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3">
+          <div className="flex items-center gap-3">
+            <div className="rounded-full bg-accent px-3 py-1.5 text-sm font-semibold text-accent-foreground">
+              {selectedIds.length} selected
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Select products, then continue to generate videos.
+            </p>
           </div>
 
-          <div className="relative w-full max-w-xs">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search products"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="pl-9 bg-card"
-            />
+          {products.length > 0 && (
+            <button
+              type="button"
+              onClick={toggleSelectAll}
+              className="rounded-full border border-border bg-background px-3.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground"
+            >
+              {allSelected ? "Clear selection" : `Select all (${products.length})`}
+            </button>
+          )}
+        </div>
+
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap gap-2">
+              {FILTERS.map((f) => (
+                <button
+                  key={f.id}
+                  onClick={() => setFilter(f.id)}
+                  className={cn(
+                    "rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors",
+                    filter === f.id
+                      ? "border-primary bg-accent text-accent-foreground"
+                      : "border-border bg-card text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex w-full items-center justify-end gap-3 sm:w-auto">
+            <div className="inline-flex rounded-full border border-border bg-card p-1">
+              <button
+                type="button"
+                onClick={() => setView("grid")}
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition-colors",
+                  view === "grid"
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <LayoutGrid className="h-4 w-4" />
+                Grid
+              </button>
+              <button
+                type="button"
+                onClick={() => setView("list")}
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition-colors",
+                  view === "list"
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <List className="h-4 w-4" />
+                List
+              </button>
+            </div>
+
+            <div className="relative w-full max-w-xs">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search products"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="pl-9 bg-card"
+              />
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div
+          className={cn(
+            view === "grid"
+              ? "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+              : "overflow-hidden rounded-xl border border-border bg-card divide-y divide-border",
+          )}
+        >
+          {view === "list" && products.length > 0 && (
+            <div className="hidden grid-cols-[minmax(320px,1.7fr)_minmax(420px,1fr)] items-center gap-6 bg-muted/40 px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:grid">
+              <p>Product</p>
+              <p>Status</p>
+            </div>
+          )}
           {products.map((p) => (
             <ProductCard
               key={p.id}
               product={p}
               selected={selectedIds.includes(p.id)}
               onToggle={toggle}
+              view={view}
             />
           ))}
         </div>
@@ -96,18 +174,23 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue }: Props) {
       </div>
 
       {/* Sticky bottom bar */}
-      {selectedIds.length > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-card/95 backdrop-blur md:left-64 animate-fade-in">
-          <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-4 md:px-10">
-            <p className="text-sm font-medium text-foreground">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-card/95 backdrop-blur md:left-64 animate-fade-in">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-4 md:px-10">
+          <div>
+            <p className="text-sm font-semibold text-foreground">
               {selectedIds.length} product{selectedIds.length === 1 ? "" : "s"} selected
             </p>
-            <Button size="lg" onClick={onContinue}>
-              Generate video{selectedIds.length === 1 ? "" : "s"}
-            </Button>
+            <p className="text-xs text-muted-foreground">
+              {selectedIds.length === 0
+                ? "Choose at least one product to continue."
+                : "Ready to generate videos for the selected products."}
+            </p>
           </div>
+          <Button size="lg" onClick={onContinue} disabled={selectedIds.length === 0}>
+            Generate videos
+          </Button>
         </div>
-      )}
+      </div>
     </div>
   );
 }

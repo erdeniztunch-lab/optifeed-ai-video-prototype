@@ -3,19 +3,28 @@ import { Button } from "@/components/ui/button";
 import { Check, ChevronLeft, ChevronRight, Pause, Play, RefreshCw, Volume2, VolumeX } from "lucide-react";
 import { Product } from "@/data/products";
 import { cn } from "@/lib/utils";
-import type { Format } from "./GenerateDialog";
+import type { Template } from "./GenerateDialog";
 
 interface Props {
   products: Product[];
-  format: Format;
+  template: Template;
   onApproveAll: () => void;
   onBack: () => void;
+  onRegenerate: () => void;
+  onTryAnotherType?: () => void;
 }
+
+const TEMPLATES: Record<Template, string> = {
+  "product-spotlight": "Product Spotlight",
+  "sale-promotion": "Sale Promotion",
+  "new-arrival": "New Arrival",
+  "social-story": "Social Story",
+};
 
 const SAMPLE_VIDEO =
   "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4";
 
-export function PreviewStep({ products, format, onApproveAll, onBack }: Props) {
+export function PreviewStep({ products, template, onApproveAll, onBack, onRegenerate, onTryAnotherType }: Props) {
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [muted, setMuted] = useState(true);
@@ -27,7 +36,7 @@ export function PreviewStep({ products, format, onApproveAll, onBack }: Props) {
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.currentTime = 0;
-      videoRef.current.play().catch(() => {});
+      videoRef.current.play().catch(() => { });
       setPlaying(true);
     }
   }, [index]);
@@ -59,7 +68,7 @@ export function PreviewStep({ products, format, onApproveAll, onBack }: Props) {
           <div
             className={cn(
               "relative mx-auto overflow-hidden rounded-2xl border bg-foreground shadow-pop",
-              format === "vertical" ? "max-w-sm aspect-[9/16]" : "aspect-square max-w-2xl",
+              "aspect-square max-w-2xl",
             )}
           >
             <video
@@ -135,8 +144,24 @@ export function PreviewStep({ products, format, onApproveAll, onBack }: Props) {
           </div>
 
           <div className="mt-5 space-y-3 border-t pt-5">
-            <Detail text="Created from existing product images" />
-            <Detail text="Ready for catalog use" />
+            <Detail text="Created from product images" />
+            <Detail text="Ready for catalog ads" />
+            <div className="rounded-2xl border border-border bg-muted px-4 py-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-foreground">Video type</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{TEMPLATES[template]}</p>
+                </div>
+                {onTryAnotherType && (
+                  <button
+                    onClick={onTryAnotherType}
+                    className="text-sm text-primary hover:text-primary/80 underline"
+                  >
+                    Try another type
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="mt-5">
@@ -151,7 +176,7 @@ export function PreviewStep({ products, format, onApproveAll, onBack }: Props) {
               <Check className="h-4 w-4" />
               {isLast ? "Approve & finish" : "Approve"}
             </Button>
-            <Button size="lg" variant="outline" className="w-full">
+            <Button size="lg" variant="outline" className="w-full" onClick={onRegenerate}>
               <RefreshCw className="h-4 w-4" />
               Regenerate
             </Button>

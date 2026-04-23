@@ -1,3 +1,10 @@
-# Welcome to your Lovable project
+# Optifeed AI Video
 
-TODO: Document your project here
+AI-powered video generation for e-commerce products.
+
+## Features
+
+- Product video generation
+- Multiple template types
+- Preview and approval workflow
+- Social media optimization
