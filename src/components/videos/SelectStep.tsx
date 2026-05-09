@@ -1,51 +1,60 @@
 import { useMemo, useState } from "react";
-import { LayoutGrid, List, Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { LayoutGrid, List, Search, ArrowUpDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { PRODUCTS, ProductTag } from "@/data/products";
+import { PRODUCTS } from "@/data/products";
+import { PRODUCT_SELECTION_LIMIT } from "@/data/tokens";
 import { ProductCard } from "./ProductCard";
+import { CostEstimateBar } from "./CostEstimateBar";
 
 interface Props {
   selectedIds: string[];
   setSelectedIds: (ids: string[]) => void;
   onContinue: () => void;
+  tokenBalance: number;
 }
 
-const FILTERS: { id: ProductTag; label: string }[] = [
-  { id: "no-video", label: "No video" },
-  { id: "best-seller", label: "Best sellers" },
-  { id: "recent", label: "Recently added" },
-];
-
-export function SelectStep({ selectedIds, setSelectedIds, onContinue }: Props) {
-  const [filter, setFilter] = useState<ProductTag>("no-video");
+export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalance }: Props) {
   const [query, setQuery] = useState("");
   const [view, setView] = useState<"grid" | "list">("grid");
 
-  const products = useMemo(() => {
-    return PRODUCTS.filter((p) => p.tags.includes(filter)).filter((p) =>
-      `${p.name} ${p.brand}`.toLowerCase().includes(query.toLowerCase()),
-    );
-  }, [filter, query]);
+  const atLimit = selectedIds.length >= PRODUCT_SELECTION_LIMIT;
 
-  const allSelected = products.length > 0 && products.every((p) => selectedIds.includes(p.id));
+  const products = useMemo(() => {
+    const q = query.toLowerCase();
+    if (!q) return PRODUCTS;
+    return PRODUCTS.filter((p) =>
+      `${p.name} ${p.brand} ${p.productId} ${p.itemGroupId}`
+        .toLowerCase()
+        .includes(q),
+    );
+  }, [query]);
+
+  const allVisibleSelected =
+    products.length > 0 && products.every((p) => selectedIds.includes(p.id));
 
   const toggle = (id: string) => {
-    setSelectedIds(
-      selectedIds.includes(id)
-        ? selectedIds.filter((x) => x !== id)
-        : [...selectedIds, id],
-    );
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter((x) => x !== id));
+    } else if (!atLimit) {
+      setSelectedIds([...selectedIds, id]);
+    }
   };
 
   const toggleSelectAll = () => {
-    if (allSelected) {
+    if (allVisibleSelected) {
       setSelectedIds(selectedIds.filter((id) => !products.some((p) => p.id === id)));
     } else {
-      setSelectedIds(Array.from(new Set([...selectedIds, ...products.map((p) => p.id)])));
+      const alreadySelected = selectedIds.filter((id) => products.some((p) => p.id === id));
+      const remaining = PRODUCT_SELECTION_LIMIT - (selectedIds.length - alreadySelected.length);
+      const toAdd = products
+        .filter((p) => !selectedIds.includes(p.id))
+        .slice(0, remaining);
+      setSelectedIds(Array.from(new Set([...selectedIds, ...toAdd.map((p) => p.id)])));
     }
   };
+
+  const canSelectMore = products.some((p) => !selectedIds.includes(p.id)) && !atLimit;
 
   return (
     <div className="px-6 pb-32 pt-2 md:px-10">
@@ -55,52 +64,49 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue }: Props) {
             Select products to create videos
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Start with products that are missing video assets.
+            Choose up to {PRODUCT_SELECTION_LIMIT} products. Cost and time estimate updates as you select.
           </p>
         </header>
 
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3">
+        {/* Toolbar */}
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          {/* Left: selection summary + select-all */}
           <div className="flex items-center gap-3">
-            <div className="rounded-full bg-accent px-3 py-1.5 text-sm font-semibold text-accent-foreground">
+            <div
+              className={cn(
+                "rounded-full px-3 py-1.5 text-sm font-semibold",
+                atLimit
+                  ? "bg-primary/10 text-primary"
+                  : "bg-accent text-accent-foreground",
+              )}
+            >
               {selectedIds.length} selected
             </div>
-            <p className="text-sm text-muted-foreground">
-              Select products, then continue to generate videos.
-            </p>
+
+            {products.length > 0 && (
+              <button
+                type="button"
+                onClick={toggleSelectAll}
+                className="rounded-full border border-border bg-background px-3.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground"
+              >
+                {allVisibleSelected
+                  ? "Clear selection"
+                  : canSelectMore
+                    ? `Select all (up to ${PRODUCT_SELECTION_LIMIT})`
+                    : "Clear selection"}
+              </button>
+            )}
           </div>
 
-          {products.length > 0 && (
-            <button
-              type="button"
-              onClick={toggleSelectAll}
-              className="rounded-full border border-border bg-background px-3.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground"
-            >
-              {allSelected ? "Clear selection" : `Select all (${products.length})`}
-            </button>
-          )}
-        </div>
-
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex flex-wrap gap-2">
-              {FILTERS.map((f) => (
-                <button
-                  key={f.id}
-                  onClick={() => setFilter(f.id)}
-                  className={cn(
-                    "rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors",
-                    filter === f.id
-                      ? "border-primary bg-accent text-accent-foreground"
-                      : "border-border bg-card text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {f.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
+          {/* Right: sort label + view toggle + search */}
           <div className="flex w-full items-center justify-end gap-3 sm:w-auto">
+            {/* Sort indicator */}
+            <div className="hidden items-center gap-1.5 text-sm text-muted-foreground sm:flex">
+              <ArrowUpDown className="h-3.5 w-3.5" />
+              <span>Recently added</span>
+            </div>
+
+            {/* View toggle */}
             <div className="inline-flex rounded-full border border-border bg-card p-1">
               <button
                 type="button"
@@ -130,10 +136,11 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue }: Props) {
               </button>
             </div>
 
+            {/* Search */}
             <div className="relative w-full max-w-xs">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search products"
+                placeholder="Search by name, ID or group..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="pl-9 bg-card"
@@ -142,6 +149,14 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue }: Props) {
           </div>
         </div>
 
+        {/* Limit warning banner */}
+        {atLimit && (
+          <div className="mb-4 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">
+            You've reached the maximum selection of {PRODUCT_SELECTION_LIMIT} products. Deselect a product to choose a different one.
+          </div>
+        )}
+
+        {/* Product list/grid */}
         <div
           className={cn(
             view === "grid"
@@ -152,9 +167,10 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue }: Props) {
           {view === "list" && products.length > 0 && (
             <div className="hidden grid-cols-[minmax(320px,1.7fr)_minmax(420px,1fr)] items-center gap-6 bg-muted/40 px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:grid">
               <p>Product</p>
-              <p>Status</p>
+              <p>Details</p>
             </div>
           )}
+
           {products.map((p) => (
             <ProductCard
               key={p.id}
@@ -162,35 +178,25 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue }: Props) {
               selected={selectedIds.includes(p.id)}
               onToggle={toggle}
               view={view}
+              disabled={atLimit && !selectedIds.includes(p.id)}
             />
           ))}
         </div>
 
+        {/* Empty search state */}
         {products.length === 0 && (
           <div className="rounded-xl border border-dashed bg-card p-12 text-center text-sm text-muted-foreground">
-            No products match your filters.
+            No products match your search.
           </div>
         )}
       </div>
 
-      {/* Sticky bottom bar */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-card/95 backdrop-blur md:left-64 animate-fade-in">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-4 md:px-10">
-          <div>
-            <p className="text-sm font-semibold text-foreground">
-              {selectedIds.length} product{selectedIds.length === 1 ? "" : "s"} selected
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {selectedIds.length === 0
-                ? "Choose at least one product to continue."
-                : "Ready to generate videos for the selected products."}
-            </p>
-          </div>
-          <Button size="lg" onClick={onContinue} disabled={selectedIds.length === 0}>
-            Generate videos
-          </Button>
-        </div>
-      </div>
+      {/* Sticky cost estimate bar */}
+      <CostEstimateBar
+        selectedCount={selectedIds.length}
+        tokenBalance={tokenBalance}
+        onContinue={onContinue}
+      />
     </div>
   );
 }

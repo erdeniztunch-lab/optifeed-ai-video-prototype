@@ -1,79 +1,221 @@
 import { useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { StepIndicator } from "@/components/videos/StepIndicator";
-import { EntryStep } from "@/components/videos/EntryStep";
+import { LibraryStep } from "@/components/videos/LibraryStep";
 import { SelectStep } from "@/components/videos/SelectStep";
-import { GenerateStep, type Template } from "@/components/videos/GenerateDialog";
+import { TemplateSelectionStep } from "@/components/videos/TemplateSelectionStep";
+import { GenerationProgressStep } from "@/components/videos/GenerationProgressStep";
 import { PreviewStep } from "@/components/videos/PreviewStep";
 import { SendStep, type SendChannel } from "@/components/videos/SendStep";
 import { SuccessStep } from "@/components/videos/SuccessStep";
+import { TokenBadge } from "@/components/videos/TokenBadge";
 import { PRODUCTS } from "@/data/products";
+import { FOLDERS, type VideoFolder } from "@/data/folders";
+import { MOCK_TOKEN_BALANCE, TOKEN_COST_PER_VIDEO, SAMPLE_VIDEO } from "@/data/tokens";
+import { type GuidedPrompt, DEFAULT_GUIDED_PROMPT, type VideoJob, type TemplateId, type VideoStatus } from "@/types/video-flow";
 import { ArrowLeft } from "lucide-react";
 
-type Stage = "entry" | "select" | "generate" | "preview" | "send" | "success";
+// ─── Stage machine ────────────────────────────────────────────────────────────
+//
+// Validated flow:  library → select → template → progress → review → export → success
+// Legacy stages:   preview, send — kept until Phase 5/6 replace them
+
+type Stage =
+  // Validated stages (product.md)
+  | "library"
+  | "select"
+  | "template"
+  | "progress"
+  | "review"
+  | "edit-prompt"
+  | "export"
+  | "success"
+  // Legacy stages (removed progressively; preview/send wait for Phase 5/6)
+  | "preview"
+  | "send";
 
 const stageToStep: Record<Stage, number> = {
-  entry: 0,
+  // Step bar is hidden for library (step 0)
+  library: 0,
+  // Validated steps 1–6
   select: 1,
-  generate: 2,
+  template: 2,
+  progress: 3,
+  review: 4,
+  "edit-prompt": 4,
+  export: 5,
+  success: 6,
+  // Legacy — mapped to nearest equivalent position
   preview: 3,
-  send: 4,
-  success: 5,
+  send: 5,
 };
 
+const getPreviousStage = (current: Stage): Stage | null => {
+  switch (current) {
+    // Validated back-navigation
+    case "select":      return "library";
+    case "template":    return "select";
+    case "progress":    return null;
+    case "review":      return "template";
+    case "edit-prompt": return "review";
+    case "export":      return "review";
+    case "success":     return null;
+    // Legacy back-navigation
+    case "preview":     return "select";
+    case "send":        return "preview";
+    default:            return null;
+  }
+};
+
+// ─── Component ───────────────────────────────────────────────────────────────
+
 const Videos = () => {
-  const [stage, setStage] = useState<Stage>("entry");
+  // ── Routing ────────────────────────────────────────────────────────────────
+  const [stage, setStage] = useState<Stage>("library");
+
+  // ── Library / folder state ─────────────────────────────────────────────────
+  const [folders, setFolders] = useState<VideoFolder[]>(FOLDERS);
+  const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
+
+  // ── Product selection ──────────────────────────────────────────────────────
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [template, setTemplate] = useState<Template>("product-spotlight");
-  const [sentTo, setSentTo] = useState<SendChannel[]>([]);
 
   const selectedProducts = useMemo(
     () => PRODUCTS.filter((p) => selectedIds.includes(p.id)),
     [selectedIds],
   );
 
-  const handleStart = () => setStage("select");
+  // ── Template + guided prompt ───────────────────────────────────────────────
+  const [template, setTemplate] = useState<TemplateId>("product-spotlight");
+  const [guidedPrompt, setGuidedPrompt] = useState<GuidedPrompt>(DEFAULT_GUIDED_PROMPT);
 
-  const handleOpenGenerate = () => {
-    setStage("generate");
+  // ── Token balance ──────────────────────────────────────────────────────────
+  const [tokenBalance, setTokenBalance] = useState(MOCK_TOKEN_BALANCE);
+
+  // ── Generation jobs ────────────────────────────────────────────────────────
+  const [videoJobs, setVideoJobs] = useState<VideoJob[]>([]);
+
+  // ── Review state ───────────────────────────────────────────────────────────
+  const [approvedIds, setApprovedIds] = useState<string[]>([]);
+  const [rejectedIds, setRejectedIds] = useState<string[]>([]);
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+
+  // ── Export state ───────────────────────────────────────────────────────────
+  const [exportedFeeds, setExportedFeeds] = useState<string[]>([]);
+
+  // ── Legacy state (kept until Phase 6 replaces SendStep) ───────────────────
+  const [sentTo, setSentTo] = useState<SendChannel[]>([]);
+
+  // ─── Handlers ──────────────────────────────────────────────────────────────
+
+  // Library → Select
+  const handleOpenFolder = (folderId: string) => {
+    setActiveFolderId(folderId);
+    setStage("select");
   };
 
-  const handleGenerated = (opts: { template: Template }) => {
+  const handleCreateFolder = (name: string) => {
+    const newFolder: VideoFolder = {
+      id: `f${Date.now()}`,
+      name,
+      createdAt: new Date().toISOString().split("T")[0],
+      videoCount: 0,
+      status: "draft",
+    };
+    setFolders((prev) => [newFolder, ...prev]);
+    setActiveFolderId(newFolder.id);
+    setStage("select");
+  };
+
+  // Select → Template
+  const handleChooseTemplate = () => setStage("template");
+
+  // Template → Progress
+  const handleStartGeneration = (opts: { template: TemplateId; guidedPrompt: GuidedPrompt }) => {
     setTemplate(opts.template);
-    setStage("preview");
+    setGuidedPrompt(opts.guidedPrompt);
+    // Deduct tokens upfront
+    setTokenBalance((b) => b - selectedIds.length * TOKEN_COST_PER_VIDEO);
+    // Initialise one job per selected product (all pending)
+    setVideoJobs(
+      selectedIds.map((id) => ({ productId: id, status: "pending", videoUrl: null })),
+    );
+    setStage("progress");
   };
 
-  const handleApproveAll = () => setStage("send");
+  // Progress → Review
+  const handleProgressComplete = () => {
+    // Mark all jobs ready so Phase 5 Review can access the video URLs
+    setVideoJobs((prev) =>
+      prev.map((j) => ({ ...j, status: "ready" as VideoStatus, videoUrl: SAMPLE_VIDEO })),
+    );
+    setStage("review");
+  };
 
-  const handleSend = (channels: SendChannel[]) => {
+  // Review actions
+  const handleApprove = (productId: string) => {
+    setApprovedIds((prev) => [...prev, productId]);
+  };
+
+  const handleReject = (productId: string) => {
+    setRejectedIds((prev) => [...prev, productId]);
+  };
+
+  const handleOpenEditPrompt = (productId: string) => {
+    setEditingProductId(productId);
+    setStage("edit-prompt");
+  };
+
+  // Edit Prompt → regenerate → back to Review
+  const handleEditRegenerate = (productId: string) => {
+    setTokenBalance((b) => b - TOKEN_COST_PER_VIDEO);
+    setVideoJobs((prev) =>
+      prev.map((j) =>
+        j.productId === productId ? { ...j, status: "ready", videoUrl: j.videoUrl } : j,
+      ),
+    );
+    setEditingProductId(null);
+    setStage("review");
+  };
+
+  const handleCancelEdit = () => {
+    setEditingProductId(null);
+    setStage("review");
+  };
+
+  // Review → Export
+  const handleGoToExport = () => setStage("export");
+
+  // Export → Success
+  const handleExportComplete = (feedIds: string[]) => {
+    setExportedFeeds(feedIds);
+    setStage("success");
+  };
+
+  // Success → Library (start fresh)
+  const handleAnother = () => {
+    setSelectedIds([]);
+    setApprovedIds([]);
+    setRejectedIds([]);
+    setVideoJobs([]);
+    setGuidedPrompt(DEFAULT_GUIDED_PROMPT);
+    setEditingProductId(null);
+    setExportedFeeds([]);
+    setSentTo([]);
+    setActiveFolderId(null);
+    setStage("library");
+  };
+
+  // ── Legacy handlers (kept until Phase 5/6 replace preview/send) ─────────────
+  const handleApproveAll = () => setStage("send");                    // preview → send
+  const handleSend = (channels: SendChannel[]) => {                   // send → success
     setSentTo(channels);
     setStage("success");
   };
 
-  const handleAnother = () => {
-    setSelectedIds([]);
-    setSentTo([]);
-    setStage("select");
-  };
+  // ─── Layout helpers ─────────────────────────────────────────────────────────
 
-  const showStepBar = stage !== "entry";
-
-  const getPreviousStage = (current: Stage): Stage | null => {
-    switch (current) {
-      case "select":
-        return "entry";
-      case "generate":
-        return "select";
-      case "preview":
-        return "generate";
-      case "send":
-        return "preview";
-      case "success":
-        return "send";
-      default:
-        return null;
-    }
-  };
+  const showStepBar = stage !== "library";
 
   return (
     <AppShell>
@@ -98,55 +240,101 @@ const Videos = () => {
               <div className="hidden md:block">
                 <StepIndicator current={stageToStep[stage]} />
               </div>
-              <button
-                onClick={() => setStage("entry")}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground"
-              >
-                Exit
-              </button>
+              <div className="flex items-center gap-3">
+                <TokenBadge balance={tokenBalance} />
+                <button
+                  onClick={() => setStage("library")}
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground"
+                >
+                  Exit
+                </button>
+              </div>
             </div>
           </div>
         )}
 
-        {stage === "entry" && <EntryStep onStart={handleStart} />}
+        {/* ── Phase 1: Library ─────────────────────────────────────────────── */}
+        {stage === "library" && (
+          <LibraryStep
+            folders={folders}
+            tokenBalance={tokenBalance}
+            onOpenFolder={handleOpenFolder}
+            onCreateFolder={handleCreateFolder}
+          />
+        )}
 
+        {/* ── Phase 2: Product Selection ───────────────────────────────────── */}
         {stage === "select" && (
           <SelectStep
             selectedIds={selectedIds}
             setSelectedIds={setSelectedIds}
-            onContinue={handleOpenGenerate}
+            onContinue={handleChooseTemplate}
+            tokenBalance={tokenBalance}
           />
         )}
 
-        {stage === "generate" && (
-          <GenerateStep
+        {/* ── Phase 3: Template Selection ──────────────────────────────────── */}
+        {stage === "template" && (
+          <TemplateSelectionStep
             products={selectedProducts}
-            onGenerate={handleGenerated}
-            onBack={() => setStage("select")}
+            tokenBalance={tokenBalance}
+            onGenerate={handleStartGeneration}
           />
         )}
 
+        {/* ── Phase 4: Generation Progress ─────────────────────────────────── */}
+        {stage === "progress" && (
+          <GenerationProgressStep
+            products={selectedProducts}
+            onComplete={handleProgressComplete}
+          />
+        )}
+
+        {/* ── Legacy: Preview carousel (Phase 5 replaces with ReviewStep) ──── */}
         {stage === "preview" && (
           <PreviewStep
             products={selectedProducts}
             template={template}
             onApproveAll={handleApproveAll}
             onBack={() => setStage("select")}
-            onRegenerate={handleOpenGenerate}
-            onTryAnotherType={() => setStage("generate")}
+            onRegenerate={() => setStage("template")}
+            onTryAnotherType={() => setStage("template")}
           />
         )}
 
+        {/* ── Phase 5: Review (placeholder until built) ────────────────────── */}
+        {stage === "review" && (
+          <div className="flex min-h-[calc(100vh-5rem)] items-center justify-center">
+            <p className="text-sm text-muted-foreground">Review — Phase 5</p>
+          </div>
+        )}
+
+        {/* ── Phase 5: Edit Prompt (placeholder until built) ───────────────── */}
+        {stage === "edit-prompt" && (
+          <div className="flex min-h-[calc(100vh-5rem)] items-center justify-center">
+            <p className="text-sm text-muted-foreground">Edit Prompt — Phase 5</p>
+          </div>
+        )}
+
+        {/* ── Legacy: Send step (Phase 6 replaces with ExportStep) ─────────── */}
         {stage === "send" && (
           <SendStep onSend={handleSend} onSkip={() => handleSend([])} />
         )}
 
+        {/* ── Phase 6: Export (placeholder until built) ────────────────────── */}
+        {stage === "export" && (
+          <div className="flex min-h-[calc(100vh-5rem)] items-center justify-center">
+            <p className="text-sm text-muted-foreground">Export — Phase 6</p>
+          </div>
+        )}
+
+        {/* ── Success ──────────────────────────────────────────────────────── */}
         {stage === "success" && (
           <SuccessStep
             count={selectedProducts.length}
             channels={sentTo}
             onAnother={handleAnother}
-            onViewProducts={() => setStage("select")}
+            onViewProducts={() => setStage("library")}
           />
         )}
 

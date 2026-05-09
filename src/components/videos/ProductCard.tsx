@@ -1,5 +1,6 @@
 import { Check } from "lucide-react";
-import { Product, ProductTag } from "@/data/products";
+import { Product } from "@/data/products";
+import { StackedImageIndicator } from "./StackedImageIndicator";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -7,16 +8,21 @@ interface Props {
   selected: boolean;
   onToggle: (id: string) => void;
   view?: "grid" | "list";
+  disabled?: boolean;
 }
 
-export function ProductCard({ product, selected, onToggle, view = "grid" }: Props) {
+export function ProductCard({ product, selected, onToggle, view = "grid", disabled = false }: Props) {
   const isList = view === "list";
-  const secondaryTags = product.tags.filter((tag) => tag !== "no-video");
+
+  const handleClick = () => {
+    if (disabled && !selected) return;
+    onToggle(product.id);
+  };
 
   return (
     <button
       type="button"
-      onClick={() => onToggle(product.id)}
+      onClick={handleClick}
       className={cn(
         "group relative overflow-hidden border bg-card text-left transition-all",
         isList
@@ -25,15 +31,20 @@ export function ProductCard({ product, selected, onToggle, view = "grid" }: Prop
         isList &&
           (selected
             ? "border-l-4 border-l-primary border-y-primary/50 bg-accent/65"
-            : "border-l-4 border-l-transparent hover:bg-muted/35"),
+            : disabled
+              ? "border-l-4 border-l-transparent opacity-40 cursor-not-allowed"
+              : "border-l-4 border-l-transparent hover:bg-muted/35"),
         !isList &&
           (selected
             ? "border-primary ring-2 ring-primary/20"
-            : "border-border hover:border-foreground/20"),
+            : disabled
+              ? "border-border opacity-40 cursor-not-allowed"
+              : "border-border hover:border-foreground/20"),
       )}
     >
       {isList ? (
         <>
+          {/* Left column: checkbox + image + name */}
           <div className="flex min-w-0 items-center gap-3">
             <span
               className={cn(
@@ -47,43 +58,40 @@ export function ProductCard({ product, selected, onToggle, view = "grid" }: Prop
               <Check className="h-3 w-3" strokeWidth={3} />
             </span>
 
-            <div className="h-14 w-14 shrink-0 overflow-hidden rounded-md bg-muted">
+            <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md bg-muted">
               <img
                 src={product.image}
                 alt={product.name}
                 loading="lazy"
                 className="h-full w-full object-cover"
               />
+              <StackedImageIndicator count={product.additionalImageCount} />
             </div>
 
             <div className="min-w-0">
               <p className="line-clamp-1 text-sm font-semibold text-foreground">{product.name}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{product.brand}</p>
-
-              <div className="mt-2 flex flex-wrap items-center gap-2 md:hidden">
+              <p className="mt-0.5 text-xs text-muted-foreground">{product.brand}</p>
+              <div className="mt-1.5 flex flex-wrap items-center gap-2 md:hidden">
                 <StatusBadge status={product.status} />
-                {secondaryTags.map((tag) => (
-                  <TagBadge key={tag} tag={tag} />
-                ))}
               </div>
             </div>
           </div>
 
-          <div className="min-w-0 md:w-full">
-            <div className="hidden w-full items-center gap-2 md:flex">
+          {/* Right column: status + metadata */}
+          <div className="min-w-0">
+            <div className="hidden items-center gap-2 md:flex">
               <StatusBadge status={product.status} />
             </div>
-            <div className="hidden min-h-6 w-full items-center gap-2 pt-2 md:flex">
-              {secondaryTags.length > 0 ? (
-                secondaryTags.map((tag) => <TagBadge key={tag} tag={tag} />)
-              ) : (
-                <span className="text-[11px] font-medium text-transparent">placeholder</span>
-              )}
+            <div className="mt-1.5 hidden flex-col gap-0.5 md:flex">
+              <MetaLine label="ID" value={product.productId} />
+              <MetaLine label="Group" value={product.itemGroupId} />
+              <MetaLine label="Category" value={product.category} />
             </div>
           </div>
         </>
       ) : (
         <>
+          {/* Image with stacked indicator */}
           <div className="relative aspect-square overflow-hidden bg-muted">
             <img
               src={product.image}
@@ -101,16 +109,25 @@ export function ProductCard({ product, selected, onToggle, view = "grid" }: Prop
             >
               <Check className="h-3.5 w-3.5" strokeWidth={3} />
             </div>
+            <StackedImageIndicator count={product.additionalImageCount} />
           </div>
 
-          <div className="flex min-w-0 flex-col gap-2 p-4">
+          {/* Card body */}
+          <div className="flex min-w-0 flex-col gap-2 p-3">
             <div className="min-w-0">
-              <p className="text-xs text-muted-foreground">{product.brand}</p>
+              <p className="text-[11px] text-muted-foreground">{product.brand}</p>
               <p className="mt-0.5 line-clamp-1 text-sm font-medium leading-tight text-foreground">
                 {product.name}
               </p>
             </div>
-            <StatusBadge status={product.status} />
+            <div className="flex flex-wrap items-center gap-1.5">
+              <StatusBadge status={product.status} />
+              <span className="text-[10px] text-muted-foreground/70">{product.category}</span>
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <MetaLine label="ID" value={product.productId} />
+              <MetaLine label="Group" value={product.itemGroupId} />
+            </div>
           </div>
         </>
       )}
@@ -139,10 +156,10 @@ function StatusBadge({ status }: { status: Product["status"] }) {
   );
 }
 
-function TagBadge({ tag }: { tag: ProductTag }) {
+function MetaLine({ label, value }: { label: string; value: string }) {
   return (
-    <span className="inline-flex rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-      {tag === "best-seller" ? "Best seller" : "Recent"}
-    </span>
+    <p className="text-[10px] text-muted-foreground/70">
+      <span className="font-medium">{label}:</span> {value}
+    </p>
   );
 }
