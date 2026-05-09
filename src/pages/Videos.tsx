@@ -5,7 +5,8 @@ import { LibraryStep } from "@/components/videos/LibraryStep";
 import { SelectStep } from "@/components/videos/SelectStep";
 import { TemplateSelectionStep } from "@/components/videos/TemplateSelectionStep";
 import { GenerationProgressStep } from "@/components/videos/GenerationProgressStep";
-import { PreviewStep } from "@/components/videos/PreviewStep";
+import { ReviewStep } from "@/components/videos/ReviewStep";
+import { EditPromptStep } from "@/components/videos/EditPromptStep";
 import { SendStep, type SendChannel } from "@/components/videos/SendStep";
 import { SuccessStep } from "@/components/videos/SuccessStep";
 import { TokenBadge } from "@/components/videos/TokenBadge";
@@ -30,8 +31,7 @@ type Stage =
   | "edit-prompt"
   | "export"
   | "success"
-  // Legacy stages (removed progressively; preview/send wait for Phase 5/6)
-  | "preview"
+  // Legacy stage (send waits for Phase 6)
   | "send";
 
 const stageToStep: Record<Stage, number> = {
@@ -46,7 +46,6 @@ const stageToStep: Record<Stage, number> = {
   export: 5,
   success: 6,
   // Legacy — mapped to nearest equivalent position
-  preview: 3,
   send: 5,
 };
 
@@ -61,8 +60,7 @@ const getPreviousStage = (current: Stage): Stage | null => {
     case "export":      return "review";
     case "success":     return null;
     // Legacy back-navigation
-    case "preview":     return "select";
-    case "send":        return "preview";
+    case "send":        return "review";
     default:            return null;
   }
 };
@@ -152,13 +150,19 @@ const Videos = () => {
     setStage("review");
   };
 
-  // Review actions
+  // Review actions — mutually exclusive toggle
   const handleApprove = (productId: string) => {
-    setApprovedIds((prev) => [...prev, productId]);
+    setApprovedIds((prev) =>
+      prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId],
+    );
+    setRejectedIds((prev) => prev.filter((id) => id !== productId));
   };
 
   const handleReject = (productId: string) => {
-    setRejectedIds((prev) => [...prev, productId]);
+    setRejectedIds((prev) =>
+      prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId],
+    );
+    setApprovedIds((prev) => prev.filter((id) => id !== productId));
   };
 
   const handleOpenEditPrompt = (productId: string) => {
@@ -174,6 +178,9 @@ const Videos = () => {
         j.productId === productId ? { ...j, status: "ready", videoUrl: j.videoUrl } : j,
       ),
     );
+    // Reset review state for the regenerated video so user re-reviews it
+    setApprovedIds((prev) => prev.filter((id) => id !== productId));
+    setRejectedIds((prev) => prev.filter((id) => id !== productId));
     setEditingProductId(null);
     setStage("review");
   };
@@ -206,8 +213,7 @@ const Videos = () => {
     setStage("library");
   };
 
-  // ── Legacy handlers (kept until Phase 5/6 replace preview/send) ─────────────
-  const handleApproveAll = () => setStage("send");                    // preview → send
+  // ── Legacy handler (kept until Phase 6 replaces send) ──────────────────────
   const handleSend = (channels: SendChannel[]) => {                   // send → success
     setSentTo(channels);
     setStage("success");
@@ -290,30 +296,28 @@ const Videos = () => {
           />
         )}
 
-        {/* ── Legacy: Preview carousel (Phase 5 replaces with ReviewStep) ──── */}
-        {stage === "preview" && (
-          <PreviewStep
+        {/* ── Phase 5: Review ──────────────────────────────────────────────── */}
+        {stage === "review" && (
+          <ReviewStep
             products={selectedProducts}
-            template={template}
-            onApproveAll={handleApproveAll}
-            onBack={() => setStage("select")}
-            onRegenerate={() => setStage("template")}
-            onTryAnotherType={() => setStage("template")}
+            videoJobs={videoJobs}
+            approvedIds={approvedIds}
+            rejectedIds={rejectedIds}
+            onApprove={handleApprove}
+            onReject={handleReject}
+            onEditPrompt={handleOpenEditPrompt}
+            onContinue={handleGoToExport}
           />
         )}
 
-        {/* ── Phase 5: Review (placeholder until built) ────────────────────── */}
-        {stage === "review" && (
-          <div className="flex min-h-[calc(100vh-5rem)] items-center justify-center">
-            <p className="text-sm text-muted-foreground">Review — Phase 5</p>
-          </div>
-        )}
-
-        {/* ── Phase 5: Edit Prompt (placeholder until built) ───────────────── */}
-        {stage === "edit-prompt" && (
-          <div className="flex min-h-[calc(100vh-5rem)] items-center justify-center">
-            <p className="text-sm text-muted-foreground">Edit Prompt — Phase 5</p>
-          </div>
+        {/* ── Phase 5: Edit Prompt ─────────────────────────────────────────── */}
+        {stage === "edit-prompt" && editingProductId && (
+          <EditPromptStep
+            product={selectedProducts.find((p) => p.id === editingProductId)!}
+            tokenBalance={tokenBalance}
+            onRegenerate={handleEditRegenerate}
+            onCancel={handleCancelEdit}
+          />
         )}
 
         {/* ── Legacy: Send step (Phase 6 replaces with ExportStep) ─────────── */}
