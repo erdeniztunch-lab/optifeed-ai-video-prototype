@@ -1,35 +1,30 @@
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
-import type { SendChannel } from "./SendStep";
-
-const LABELS: Record<SendChannel, string> = {
-  google: "Google feed",
-  meta: "Meta feed",
-  tiktok: "TikTok feed",
-};
 
 interface Props {
   count: number;
-  channels: SendChannel[];
+  exportedFeeds: string[];
   onAnother: () => void;
   onViewProducts: () => void;
 }
 
-export function SuccessStep({ count, channels, onAnother, onViewProducts }: Props) {
+export function SuccessStep({ count, exportedFeeds, onAnother, onViewProducts }: Props) {
   const channelText =
-    channels.length === 0
+    exportedFeeds.length === 0
       ? "Saved as draft"
-      : `Sent to ${channels.map((c) => LABELS[c]).join(", ")}`;
+      : exportedFeeds.length <= 2
+        ? `Applied to ${exportedFeeds.join(" and ")}`
+        : `Applied to ${exportedFeeds.length} feed exports`;
 
   return (
     <div className="flex min-h-[calc(100vh-7rem)] items-center justify-center px-6 py-8">
-      <div className="w-full max-w-md text-center animate-fade-in">
-        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-success-soft">
+      <div className="w-full max-w-md animate-fade-in text-center">
+        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-success/15">
           <Check className="h-7 w-7 text-success" strokeWidth={3} />
         </div>
 
         <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-          Video sent successfully
+          Videos exported successfully
         </h2>
 
         <div className="mt-3 space-y-1 text-sm text-muted-foreground">
@@ -46,7 +41,11 @@ export function SuccessStep({ count, channels, onAnother, onViewProducts }: Prop
           <Button size="lg" variant="outline" onClick={onViewProducts}>
             View products
           </Button>
-          <button className="mt-1 text-sm font-medium text-muted-foreground hover:text-foreground">
+          <button
+            type="button"
+            onClick={onViewProducts}
+            className="mt-1 text-sm font-medium text-muted-foreground hover:text-foreground"
+          >
             Go to feed
           </button>
         </div>

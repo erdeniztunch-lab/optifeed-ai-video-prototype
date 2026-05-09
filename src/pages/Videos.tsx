@@ -7,7 +7,7 @@ import { TemplateSelectionStep } from "@/components/videos/TemplateSelectionStep
 import { GenerationProgressStep } from "@/components/videos/GenerationProgressStep";
 import { ReviewStep } from "@/components/videos/ReviewStep";
 import { EditPromptStep } from "@/components/videos/EditPromptStep";
-import { SendStep, type SendChannel } from "@/components/videos/SendStep";
+import { ExportStep } from "@/components/videos/ExportStep";
 import { SuccessStep } from "@/components/videos/SuccessStep";
 import { TokenBadge } from "@/components/videos/TokenBadge";
 import { PRODUCTS } from "@/data/products";
@@ -19,10 +19,8 @@ import { ArrowLeft } from "lucide-react";
 // ─── Stage machine ────────────────────────────────────────────────────────────
 //
 // Validated flow:  library → select → template → progress → review → export → success
-// Legacy stages:   preview, send — kept until Phase 5/6 replace them
 
 type Stage =
-  // Validated stages (product.md)
   | "library"
   | "select"
   | "template"
@@ -30,9 +28,7 @@ type Stage =
   | "review"
   | "edit-prompt"
   | "export"
-  | "success"
-  // Legacy stage (send waits for Phase 6)
-  | "send";
+  | "success";
 
 const stageToStep: Record<Stage, number> = {
   // Step bar is hidden for library (step 0)
@@ -45,8 +41,6 @@ const stageToStep: Record<Stage, number> = {
   "edit-prompt": 4,
   export: 5,
   success: 6,
-  // Legacy — mapped to nearest equivalent position
-  send: 5,
 };
 
 const getPreviousStage = (current: Stage): Stage | null => {
@@ -59,8 +53,6 @@ const getPreviousStage = (current: Stage): Stage | null => {
     case "edit-prompt": return "review";
     case "export":      return "review";
     case "success":     return null;
-    // Legacy back-navigation
-    case "send":        return "review";
     default:            return null;
   }
 };
@@ -101,8 +93,6 @@ const Videos = () => {
   // ── Export state ───────────────────────────────────────────────────────────
   const [exportedFeeds, setExportedFeeds] = useState<string[]>([]);
 
-  // ── Legacy state (kept until Phase 6 replaces SendStep) ───────────────────
-  const [sentTo, setSentTo] = useState<SendChannel[]>([]);
 
   // ─── Handlers ──────────────────────────────────────────────────────────────
 
@@ -208,16 +198,10 @@ const Videos = () => {
     setGuidedPrompt(DEFAULT_GUIDED_PROMPT);
     setEditingProductId(null);
     setExportedFeeds([]);
-    setSentTo([]);
     setActiveFolderId(null);
     setStage("library");
   };
 
-  // ── Legacy handler (kept until Phase 6 replaces send) ──────────────────────
-  const handleSend = (channels: SendChannel[]) => {                   // send → success
-    setSentTo(channels);
-    setStage("success");
-  };
 
   // ─── Layout helpers ─────────────────────────────────────────────────────────
 
@@ -320,23 +304,20 @@ const Videos = () => {
           />
         )}
 
-        {/* ── Legacy: Send step (Phase 6 replaces with ExportStep) ─────────── */}
-        {stage === "send" && (
-          <SendStep onSend={handleSend} onSkip={() => handleSend([])} />
-        )}
-
-        {/* ── Phase 6: Export (placeholder until built) ────────────────────── */}
+        {/* ── Phase 6: Export ──────────────────────────────────────────────── */}
         {stage === "export" && (
-          <div className="flex min-h-[calc(100vh-5rem)] items-center justify-center">
-            <p className="text-sm text-muted-foreground">Export — Phase 6</p>
-          </div>
+          <ExportStep
+            approvedCount={approvedIds.length}
+            onComplete={handleExportComplete}
+            onSkip={() => handleExportComplete([])}
+          />
         )}
 
         {/* ── Success ──────────────────────────────────────────────────────── */}
         {stage === "success" && (
           <SuccessStep
             count={selectedProducts.length}
-            channels={sentTo}
+            exportedFeeds={exportedFeeds}
             onAnother={handleAnother}
             onViewProducts={() => setStage("library")}
           />
