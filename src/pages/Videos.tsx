@@ -65,7 +65,6 @@ const Videos = () => {
 
   // ── Library / folder state ─────────────────────────────────────────────────
   const [folders, setFolders] = useState<VideoFolder[]>(FOLDERS);
-  const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
 
   // ── Product selection ──────────────────────────────────────────────────────
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -93,12 +92,10 @@ const Videos = () => {
   // ── Export state ───────────────────────────────────────────────────────────
   const [exportedFeeds, setExportedFeeds] = useState<string[]>([]);
 
-
   // ─── Handlers ──────────────────────────────────────────────────────────────
 
   // Library → Select
-  const handleOpenFolder = (folderId: string) => {
-    setActiveFolderId(folderId);
+  const handleOpenFolder = (_folderId: string) => {
     setStage("select");
   };
 
@@ -111,7 +108,6 @@ const Videos = () => {
       status: "draft",
     };
     setFolders((prev) => [newFolder, ...prev]);
-    setActiveFolderId(newFolder.id);
     setStage("select");
   };
 
@@ -184,8 +180,8 @@ const Videos = () => {
   const handleGoToExport = () => setStage("export");
 
   // Export → Success
-  const handleExportComplete = (feedIds: string[]) => {
-    setExportedFeeds(feedIds);
+  const handleExportComplete = (feedNames: string[]) => {
+    setExportedFeeds(feedNames);
     setStage("success");
   };
 
@@ -198,10 +194,8 @@ const Videos = () => {
     setGuidedPrompt(DEFAULT_GUIDED_PROMPT);
     setEditingProductId(null);
     setExportedFeeds([]);
-    setActiveFolderId(null);
     setStage("library");
   };
-
 
   // ─── Layout helpers ─────────────────────────────────────────────────────────
 
