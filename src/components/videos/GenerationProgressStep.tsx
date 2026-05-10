@@ -88,16 +88,28 @@ export function GenerationProgressStep({ products, onComplete }: GenerationProgr
               <Sparkles className="h-5 w-5 text-primary" />
               <h2 className="text-2xl font-semibold text-foreground">Videolar üretiliyor...</h2>
             </div>
-            <div className="mt-2">
+            <div className="mt-3 flex items-center justify-between gap-4">
               <p className="text-sm text-muted-foreground">
                 {readyCount} / {jobs.length} video hazır
               </p>
+              {displayedTokens > 0 && (
+                <span className="flex items-center gap-1 text-sm text-amber-600">
+                  <Coins className="h-3.5 w-3.5" />
+                  <span
+                    key={displayedTokens}
+                    className="inline-block font-semibold tabular-nums animate-token-tick"
+                  >
+                    {displayedTokens}
+                  </span>
+                  <span className="text-amber-500">token</span>
+                </span>
+              )}
             </div>
           </div>
         )}
 
         {/* Progress bar */}
-        <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+        <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-muted">
           <div
             className="h-full rounded-full bg-primary transition-all duration-700 ease-out"
             style={{
@@ -113,24 +125,6 @@ export function GenerationProgressStep({ products, onComplete }: GenerationProgr
           <VideoProgressCard key={job.productId} job={job} />
         ))}
       </div>
-
-      {/* Fixed bottom-left token counter */}
-      {displayedTokens > 0 && (
-        <div className="fixed bottom-6 left-6 z-30 md:left-64">
-          <div className="flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50/95 px-3 py-1.5 shadow-sm backdrop-blur">
-            <Coins className="h-3.5 w-3.5 text-amber-500" />
-            <span className="text-xs text-amber-700">
-              <span
-                key={displayedTokens}
-                className="inline-block font-semibold tabular-nums animate-token-tick"
-              >
-                {displayedTokens}
-              </span>
-              {" "}token harcandı
-            </span>
-          </div>
-        </div>
-      )}
 
       {/* Early review note + CTA */}
       {anyReady && (
