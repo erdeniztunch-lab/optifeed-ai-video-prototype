@@ -60,9 +60,8 @@ export function VideoProgressCard({ job }: VideoProgressCardProps) {
             </>
           )}
           {isReady && (
-            <span className="flex items-center gap-1.5 text-xs font-semibold text-success">
-              <Check className="h-3 w-3" strokeWidth={3} />
-              Hazır ✓
+            <span className="text-xs font-semibold text-success">
+              Hazır
             </span>
           )}
         </div>
