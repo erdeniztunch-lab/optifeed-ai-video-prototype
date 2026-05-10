@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { NavLink } from "@/components/NavLink";
+import { TokenBadge } from "@/components/videos/TokenBadge";
 import {
   LayoutDashboard,
   Database,
@@ -21,7 +22,7 @@ const navItems = [
   { label: "Meta Ads", icon: Megaphone, to: "/meta-ads" },
 ];
 
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({ children, tokenBalance }: { children: ReactNode; tokenBalance?: number }) {
   return (
     <div className="min-h-screen w-full bg-background">
       {/* Sidebar */}
@@ -54,7 +55,12 @@ export function AppShell({ children }: { children: ReactNode }) {
           ))}
         </nav>
 
-        <div className="border-t border-sidebar-border p-3">
+        <div className="border-t border-sidebar-border p-3 space-y-1">
+          {tokenBalance !== undefined && (
+            <div className="px-3 py-1.5">
+              <TokenBadge balance={tokenBalance} />
+            </div>
+          )}
           <div className="flex items-center gap-3 rounded-lg px-3 py-2">
             <div className="h-8 w-8 rounded-full bg-gradient-primary flex items-center justify-center text-xs font-semibold text-white">
               O

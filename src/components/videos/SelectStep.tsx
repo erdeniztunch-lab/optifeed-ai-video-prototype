@@ -61,10 +61,10 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
       <div className="mx-auto max-w-7xl">
         <header className="mb-6">
           <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-            Select products to create videos
+            Video oluşturmak için ürün seçin
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Choose up to {PRODUCT_SELECTION_LIMIT} products. Cost and time estimate updates as you select.
+            En fazla {PRODUCT_SELECTION_LIMIT} ürün seçin. Maliyet ve süre tahmini seçiminize göre güncellenir.
           </p>
         </header>
 
@@ -80,7 +80,7 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
                   : "bg-accent text-accent-foreground",
               )}
             >
-              {selectedIds.length} selected
+              {selectedIds.length} seçildi
             </div>
 
             {products.length > 0 && (
@@ -90,10 +90,10 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
                 className="rounded-full border border-border bg-background px-3.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground"
               >
                 {allVisibleSelected
-                  ? "Clear selection"
+                  ? "Seçimi temizle"
                   : canSelectMore
-                    ? `Select all (up to ${PRODUCT_SELECTION_LIMIT})`
-                    : "Clear selection"}
+                    ? `Tümünü seç (maks. ${PRODUCT_SELECTION_LIMIT})`
+                    : "Seçimi temizle"}
               </button>
             )}
           </div>
@@ -103,7 +103,7 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
             {/* Sort indicator */}
             <div className="hidden items-center gap-1.5 text-sm text-muted-foreground sm:flex">
               <ArrowUpDown className="h-3.5 w-3.5" />
-              <span>Recently added</span>
+              <span>Son eklenen</span>
             </div>
 
             {/* View toggle */}
@@ -119,7 +119,7 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
                 )}
               >
                 <LayoutGrid className="h-4 w-4" />
-                Grid
+                Kart
               </button>
               <button
                 type="button"
@@ -132,7 +132,7 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
                 )}
               >
                 <List className="h-4 w-4" />
-                List
+                Liste
               </button>
             </div>
 
@@ -140,7 +140,7 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
             <div className="relative w-full max-w-xs">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search by name, ID or group..."
+                placeholder="İsim, ID veya grup ile ara..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="pl-9 bg-card"
@@ -152,7 +152,7 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
         {/* Limit warning banner */}
         {atLimit && (
           <div className="mb-4 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">
-            You've reached the maximum selection of {PRODUCT_SELECTION_LIMIT} products. Deselect a product to choose a different one.
+            En fazla {PRODUCT_SELECTION_LIMIT} ürün seçebilirsiniz. Farklı bir ürün seçmek için mevcut seçimi kaldırın.
           </div>
         )}
 
@@ -166,8 +166,8 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
         >
           {view === "list" && products.length > 0 && (
             <div className="hidden grid-cols-[minmax(320px,1.7fr)_minmax(420px,1fr)] items-center gap-6 bg-muted/40 px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:grid">
-              <p>Product</p>
-              <p>Details</p>
+              <p>Ürün</p>
+              <p>Detaylar</p>
             </div>
           )}
 
@@ -186,7 +186,7 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
         {/* Empty search state */}
         {products.length === 0 && (
           <div className="rounded-xl border border-dashed bg-card p-12 text-center text-sm text-muted-foreground">
-            No products match your search.
+            Aramanızla eşleşen ürün bulunamadı.
           </div>
         )}
       </div>

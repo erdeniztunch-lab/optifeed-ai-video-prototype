@@ -9,7 +9,6 @@ import { ReviewStep } from "@/components/videos/ReviewStep";
 import { EditPromptStep } from "@/components/videos/EditPromptStep";
 import { ExportStep } from "@/components/videos/ExportStep";
 import { SuccessStep } from "@/components/videos/SuccessStep";
-import { TokenBadge } from "@/components/videos/TokenBadge";
 import { PRODUCTS } from "@/data/products";
 import { FOLDERS, type VideoFolder } from "@/data/folders";
 import { MOCK_TOKEN_BALANCE, TOKEN_COST_PER_VIDEO, SAMPLE_VIDEO } from "@/data/tokens";
@@ -92,10 +91,15 @@ const Videos = () => {
   // ── Export state ───────────────────────────────────────────────────────────
   const [exportedFeeds, setExportedFeeds] = useState<string[]>([]);
 
+  // ── Active campaign context ────────────────────────────────────────────────
+  const [activeFolderName, setActiveFolderName] = useState<string>("");
+
   // ─── Handlers ──────────────────────────────────────────────────────────────
 
   // Library → Select
-  const handleOpenFolder = (_folderId: string) => {
+  const handleOpenFolder = (folderId: string) => {
+    const folder = folders.find((f) => f.id === folderId);
+    setActiveFolderName(folder?.name ?? "");
     setStage("select");
   };
 
@@ -108,6 +112,7 @@ const Videos = () => {
       status: "draft",
     };
     setFolders((prev) => [newFolder, ...prev]);
+    setActiveFolderName(name);
     setStage("select");
   };
 
@@ -194,6 +199,7 @@ const Videos = () => {
     setGuidedPrompt(DEFAULT_GUIDED_PROMPT);
     setEditingProductId(null);
     setExportedFeeds([]);
+    setActiveFolderName("");
     setStage("library");
   };
 
@@ -203,7 +209,7 @@ const Videos = () => {
   const previousStage = getPreviousStage(stage);
 
   return (
-    <AppShell>
+    <AppShell tokenBalance={tokenBalance}>
       <div className="min-h-screen">
         {showStepBar && (
           <div className="sticky top-0 z-30 border-b bg-background/85 backdrop-blur">
@@ -219,13 +225,17 @@ const Videos = () => {
                     Geri
                   </button>
                 )}
-                <h1 className="text-base font-semibold text-foreground">Ürün videoları oluştur</h1>
+                <div>
+                  <h1 className="text-base font-semibold text-foreground">Ürün videoları oluştur</h1>
+                  {activeFolderName && (
+                    <p className="text-xs text-muted-foreground">{activeFolderName}</p>
+                  )}
+                </div>
               </div>
               <div className="hidden md:block">
                 <StepIndicator current={stageToStep[stage]} />
               </div>
               <div className="flex items-center gap-3">
-                <TokenBadge balance={tokenBalance} />
                 <button
                   onClick={() => {
                     if (window.confirm("İlerlemeniz kaybolacak. Çıkmak istediğinize emin misiniz?")) {
