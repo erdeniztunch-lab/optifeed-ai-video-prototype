@@ -44,7 +44,7 @@ export function TemplateCard({ template, selected, onSelect }: TemplateCardProps
       </div>
 
       {/* Card body */}
-      <div className={cn("flex flex-col gap-1 p-4", selected && "bg-accent/30")}>
+      <div className={cn("flex flex-col gap-1 p-3", selected && "bg-accent/30")}>
         <p className="font-semibold text-foreground">{template.label}</p>
         <p className="text-sm text-muted-foreground">{template.description}</p>
         {template.helperText && (

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { LayoutGrid, List, Search, ArrowUpDown } from "lucide-react";
+import { LayoutGrid, List, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { PRODUCTS } from "@/data/products";
@@ -17,18 +17,26 @@ interface Props {
 export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalance }: Props) {
   const [query, setQuery] = useState("");
   const [view, setView] = useState<"grid" | "list">("grid");
+  const [sortBy, setSortBy] = useState<"recent" | "name" | "brand" | "status">("recent");
 
   const atLimit = selectedIds.length >= PRODUCT_SELECTION_LIMIT;
 
   const products = useMemo(() => {
     const q = query.toLowerCase();
-    if (!q) return PRODUCTS;
-    return PRODUCTS.filter((p) =>
-      `${p.name} ${p.brand} ${p.productId} ${p.itemGroupId}`
-        .toLowerCase()
-        .includes(q),
-    );
-  }, [query]);
+    const filtered = !q
+      ? [...PRODUCTS]
+      : PRODUCTS.filter((p) =>
+          `${p.name} ${p.brand} ${p.productId} ${p.itemGroupId}`
+            .toLowerCase()
+            .includes(q),
+        );
+    switch (sortBy) {
+      case "name": return filtered.sort((a, b) => a.name.localeCompare(b.name, "tr"));
+      case "brand": return filtered.sort((a, b) => a.brand.localeCompare(b.brand, "tr"));
+      case "status": return filtered.sort((a, b) => a.status.localeCompare(b.status));
+      default: return filtered;
+    }
+  }, [query, sortBy]);
 
   const allVisibleSelected =
     products.length > 0 && products.every((p) => selectedIds.includes(p.id));
@@ -100,11 +108,17 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
 
           {/* Right: sort label + view toggle + search */}
           <div className="flex w-full items-center justify-end gap-3 sm:w-auto">
-            {/* Sort indicator */}
-            <div className="hidden items-center gap-1.5 text-sm text-muted-foreground sm:flex">
-              <ArrowUpDown className="h-3.5 w-3.5" />
-              <span>Son eklenen</span>
-            </div>
+            {/* Sort control */}
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+              className="hidden cursor-pointer appearance-none rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-muted-foreground focus:outline-none sm:block"
+            >
+              <option value="recent">Son eklenen</option>
+              <option value="name">Ürün adı (A–Z)</option>
+              <option value="brand">Marka (A–Z)</option>
+              <option value="status">Durum</option>
+            </select>
 
             {/* View toggle */}
             <div className="inline-flex rounded-full border border-border bg-card p-1">

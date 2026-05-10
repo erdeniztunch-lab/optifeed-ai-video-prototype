@@ -43,7 +43,7 @@ export function GuidedPromptFields({ value, onChange }: GuidedPromptFieldsProps)
         </Field>
 
         {/* Background */}
-        <Field label="Background / konsept" hint="İsteğe bağlı">
+        <Field label="Görsel konsept" hint="İsteğe bağlı">
           <SelectField
             value={value.background}
             placeholder="Background seçin..."
@@ -53,7 +53,7 @@ export function GuidedPromptFields({ value, onChange }: GuidedPromptFieldsProps)
         </Field>
 
         {/* Theme preset */}
-        <Field label="Tema / kampanya bağlamı" hint="İsteğe bağlı">
+        <Field label="Kampanya teması" hint="İsteğe bağlı">
           <SelectField
             value={value.theme}
             placeholder="Tema seçin..."

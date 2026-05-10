@@ -4,7 +4,7 @@ import { TEMPLATES } from "@/data/templates";
 import { type GuidedPrompt, DEFAULT_GUIDED_PROMPT, type TemplateId } from "@/types/video-flow";
 import { TemplateCard } from "./TemplateCard";
 import { GuidedPromptFields } from "./GuidedPromptFields";
-import { GenerateCostConfirm } from "./GenerateCostConfirm";
+import { TemplateActionBar } from "./TemplateActionBar";
 
 interface TemplateSelectionStepProps {
   products: Product[];
@@ -25,20 +25,20 @@ export function TemplateSelectionStep({
   };
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-10 md:px-10">
+    <div className="mx-auto max-w-4xl px-6 py-8 pb-28 md:px-10">
       {/* Header */}
-      <header className="mb-8">
+      <header className="mb-6">
         <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-          Video şablonu seçin
+          Şablon seçin
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Ürününüz için bir video formatı seçin. İsterseniz kampanya bağlamıyla sonucu yönlendirin.
+          Ürünlerinize uygun video şablonunu seçin.
         </p>
       </header>
 
       {/* Selected products strip */}
       {products.length > 0 && (
-        <div className="mb-5 flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3">
+        <div className="mb-6 flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3">
           <div className="flex -space-x-2">
             {products.slice(0, 5).map((p, i) => (
               <div
@@ -67,8 +67,8 @@ export function TemplateSelectionStep({
         </div>
       )}
 
-      {/* Two-column layout: template grid (left) + context & CTA (right) */}
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_340px]">
+      {/* Two-column layout: template grid (left) + context (right) */}
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_300px]">
 
         {/* Left: Template grid */}
         <section>
@@ -87,28 +87,26 @@ export function TemplateSelectionStep({
           </div>
         </section>
 
-        {/* Right: Campaign context + cost confirm */}
-        <div className="space-y-6">
-          <section>
-            <div className="mb-4">
-              <h3 className="text-xs font-medium uppercase tracking-widest text-muted-foreground/60">
-                Kampanya bağlamı
-              </h3>
-              <p className="mt-1 text-xs text-muted-foreground/50">
-                Bu alanlar sonucu iyileştirir, boş bırakabilirsiniz.
-              </p>
-            </div>
-            <GuidedPromptFields value={guidedPrompt} onChange={setGuidedPrompt} />
-          </section>
-
-          <GenerateCostConfirm
-            videoCount={products.length}
-            tokenBalance={tokenBalance}
-            onGenerate={handleGenerate}
-          />
-        </div>
+        {/* Right: Campaign context */}
+        <section>
+          <div className="mb-4">
+            <h3 className="text-xs font-medium uppercase tracking-widest text-muted-foreground/60">
+              Kampanya ayarları
+            </h3>
+            <p className="mt-1 text-xs text-muted-foreground/50">
+              İsteğe bağlı
+            </p>
+          </div>
+          <GuidedPromptFields value={guidedPrompt} onChange={setGuidedPrompt} />
+        </section>
 
       </div>
+
+      <TemplateActionBar
+        videoCount={products.length}
+        tokenBalance={tokenBalance}
+        onGenerate={handleGenerate}
+      />
     </div>
   );
 }

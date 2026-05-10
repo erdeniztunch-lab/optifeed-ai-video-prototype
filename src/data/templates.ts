@@ -12,7 +12,7 @@ export const TEMPLATES: TemplateDefinition[] = [
   {
     id: "product-spotlight",
     label: "Ürün Odağı",
-    description: "Temiz, ürün odaklı format. Katalog ve performans kampanyaları için idealdir.",
+    description: "Ürün odaklı, performans kampanyaları için temiz format.",
     helperText: "İndirim olmadığında en iyi tercih",
     previewImage:
       "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&h=600&q=80",
@@ -20,8 +20,8 @@ export const TEMPLATES: TemplateDefinition[] = [
   {
     id: "sale-promotion",
     label: "İndirim Kampanyası",
-    description: "Fiyat düşüşü mesajı kreatife öncülük eder. Promosyon teklifleri için tasarlandı.",
-    helperText: "İndirim veya aciliyet mesajı reklamı yönlendirdiğinde kullanın",
+    description: "İndirim ve promosyon kampanyaları için tasarlandı.",
+    helperText: "İndirim veya acil kampanyalarda",
     previewImage:
       "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=800&h=600&q=80",
   },
@@ -36,8 +36,8 @@ export const TEMPLATES: TemplateDefinition[] = [
   {
     id: "social-story",
     label: "Sosyal Hikaye",
-    description: "Hızlı kaydırmalı yerleşimler için optimize edilmiş, mobil öncelikli format.",
-    helperText: "MVP'de 1:1 üretilir — dikey format V2'de",
+    description: "Instagram ve TikTok gibi mobil yerleşimler için.",
+    helperText: "Hızlı kaydırmalı yerleşimler için",
     previewImage:
       "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&h=600&q=80",
   },
