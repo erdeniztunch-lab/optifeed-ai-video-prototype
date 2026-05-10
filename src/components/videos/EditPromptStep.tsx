@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { type Product } from "@/data/products";
 import { TOKEN_COST_PER_VIDEO } from "@/data/tokens";
+import { SECTOR_OPTIONS, THEME_OPTIONS, BACKGROUND_OPTIONS } from "@/data/guidedPromptOptions";
+import { type GuidedPrompt, type TemplateId } from "@/types/video-flow";
 
 const EXAMPLE_PROMPTS = [
   "Süet, tokalı, babet — zarif ve minimal sunum",
@@ -17,16 +19,23 @@ const EXAMPLE_PROMPTS = [
 interface EditPromptStepProps {
   product: Product;
   tokenBalance: number;
-  onRegenerate: (productId: string) => void;
+  template: TemplateId;
+  guidedPrompt: GuidedPrompt;
+  onRegenerate: (productId: string, promptText: string) => void;
   onCancel: () => void;
 }
 
 export function EditPromptStep({
   product,
   tokenBalance,
+  template: _template,
+  guidedPrompt,
   onRegenerate,
   onCancel,
 }: EditPromptStepProps) {
+  const [sector, setSector] = useState(guidedPrompt.sector ?? "");
+  const [theme, setTheme] = useState(guidedPrompt.theme ?? "");
+  const [background, setBackground] = useState(guidedPrompt.background ?? "");
   const [promptText, setPromptText] = useState("");
   const [isRegenerating, setIsRegenerating] = useState(false);
 
@@ -44,7 +53,7 @@ export function EditPromptStep({
     setIsRegenerating(true);
     setTimeout(() => {
       setIsRegenerating(false);
-      onRegenerate(product.id);
+      onRegenerate(product.id, promptText);
     }, 2000);
   };
 
@@ -61,23 +70,66 @@ export function EditPromptStep({
         </div>
       </div>
 
-      <h2 className="mb-1 text-xl font-semibold text-foreground">Edit prompt</h2>
+      <h2 className="mb-1 text-xl font-semibold text-foreground">Prompt Düzenle</h2>
       <p className="mb-6 text-sm text-muted-foreground">
-        Describe how you'd like the video to look. Be specific — style, mood, setting, presentation.
+        Videoyu nasıl görmek istediğinizi açıklayın: stil, atmosfer, sahne, sunum.
       </p>
+
+      {/* Guided dropdowns */}
+      <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-medium text-muted-foreground">Sektör</label>
+          <select
+            value={sector}
+            onChange={(e) => setSector(e.target.value)}
+            className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+          >
+            <option value="">Seçin...</option>
+            {SECTOR_OPTIONS.map((o) => (
+              <option key={o} value={o}>{o}</option>
+            ))}
+          </select>
+        </div>
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-medium text-muted-foreground">Tema</label>
+          <select
+            value={theme}
+            onChange={(e) => setTheme(e.target.value)}
+            className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+          >
+            <option value="">Seçin...</option>
+            {THEME_OPTIONS.map((o) => (
+              <option key={o} value={o}>{o}</option>
+            ))}
+          </select>
+        </div>
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-medium text-muted-foreground">Arka Plan</label>
+          <select
+            value={background}
+            onChange={(e) => setBackground(e.target.value)}
+            className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+          >
+            <option value="">Seçin...</option>
+            {BACKGROUND_OPTIONS.map((o) => (
+              <option key={o} value={o}>{o}</option>
+            ))}
+          </select>
+        </div>
+      </div>
 
       {/* Free text area */}
       <div className="mb-4">
         <textarea
           value={promptText}
           onChange={(e) => setPromptText(e.target.value)}
-          placeholder="e.g. Clean white background, product rotating slowly, soft shadows, premium feel..."
+          placeholder="Örn. Beyaz fon, ürün yavaşça dönsün, yumuşak gölgeler, premium his..."
           rows={4}
-          maxLength={500}
+          maxLength={200}
           className="w-full resize-none rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30"
         />
         <p className="mt-1 text-right text-xs text-muted-foreground/60">
-          {promptText.length} / 500
+          {promptText.length} / 200
         </p>
       </div>
 
@@ -85,7 +137,7 @@ export function EditPromptStep({
       <div className="mb-8">
         <p className="mb-2.5 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
           <Sparkles className="h-3.5 w-3.5" />
-          Example prompts — click to add
+          Örnek promptlar — eklemek için tıklayın
         </p>
         <div className="flex flex-wrap gap-2">
           {EXAMPLE_PROMPTS.map((chip) => (
@@ -109,23 +161,23 @@ export function EditPromptStep({
         )}
       >
         <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">Regeneration cost</span>
-          <span className="font-semibold text-foreground">{TOKEN_COST_PER_VIDEO} tokens</span>
+          <span className="text-muted-foreground">Yeniden üretim maliyeti</span>
+          <span className="font-semibold text-foreground">{TOKEN_COST_PER_VIDEO} token</span>
         </div>
         <div className="mt-2 flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">Your balance</span>
+          <span className="text-muted-foreground">Bakiyeniz</span>
           <span
             className={cn(
               "font-semibold",
               insufficient ? "text-amber-500" : "text-foreground",
             )}
           >
-            {tokenBalance} tokens
+            {tokenBalance} token
           </span>
         </div>
         {insufficient && (
           <p className="mt-2 text-xs text-amber-500">
-            Insufficient balance. Top up to regenerate this video.
+            Bakiye yetersiz. Yeniden üretim yapılamaz.
           </p>
         )}
       </div>
@@ -138,7 +190,7 @@ export function EditPromptStep({
           disabled={isRegenerating}
           className="flex-1"
         >
-          Cancel
+          İptal
         </Button>
         <Button
           onClick={handleRegenerate}
@@ -148,12 +200,12 @@ export function EditPromptStep({
           {isRegenerating ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Regenerating...
+              Üretiliyor...
             </>
           ) : (
             <>
               <RefreshCw className="mr-2 h-4 w-4" />
-              Regenerate video
+              Yeniden üret
             </>
           )}
         </Button>

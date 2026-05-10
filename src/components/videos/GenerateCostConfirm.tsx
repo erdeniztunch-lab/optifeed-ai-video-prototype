@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Clock, Coins, AlertTriangle, Sparkles } from "lucide-react";
+import { Coins, AlertTriangle, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ESTIMATED_MINUTES_PER_VIDEO, TOKEN_COST_PER_VIDEO } from "@/data/tokens";
+import { TOKEN_COST_PER_VIDEO } from "@/data/tokens";
 
 interface GenerateCostConfirmProps {
   videoCount: number;
@@ -17,7 +17,6 @@ export function GenerateCostConfirm({
 }: GenerateCostConfirmProps) {
   const [starting, setStarting] = useState(false);
 
-  const estimatedMinutes = videoCount * ESTIMATED_MINUTES_PER_VIDEO;
   const estimatedTokens = videoCount * TOKEN_COST_PER_VIDEO;
   const remainingBalance = tokenBalance - estimatedTokens;
   const hasEnoughBalance = tokenBalance >= estimatedTokens;
@@ -40,24 +39,19 @@ export function GenerateCostConfirm({
       )}
     >
       <p className="mb-4 text-sm font-semibold text-foreground">
-        Ready to generate {videoCount} video{videoCount !== 1 ? "s" : ""}
+        {videoCount} video üretilecek
       </p>
 
-      <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+      <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
         <StatRow
           icon={<span className="text-xs font-bold text-muted-foreground">#</span>}
-          label="Videos"
+          label="Video"
           value={`${videoCount}`}
         />
         <StatRow
-          icon={<Clock className="h-3.5 w-3.5 text-muted-foreground" />}
-          label="Estimated time"
-          value={`~${estimatedMinutes} min`}
-        />
-        <StatRow
           icon={<Coins className="h-3.5 w-3.5 text-muted-foreground" />}
-          label="Token cost"
-          value={`${estimatedTokens} tokens`}
+          label="Tahmini maliyet"
+          value={`${estimatedTokens} token`}
           valueClassName={!hasEnoughBalance ? "text-amber-600 font-semibold" : undefined}
         />
       </div>
@@ -74,22 +68,22 @@ export function GenerateCostConfirm({
           <>
             <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
             <span>
-              Insufficient balance — need {estimatedTokens} tokens, have {tokenBalance}.
+              Yetersiz bakiye — {estimatedTokens} token gerekli, mevcut: {tokenBalance}.
             </span>
           </>
         ) : (
           <>
             <Coins className="h-3.5 w-3.5 shrink-0" />
             <span>
-              Remaining after generation:{" "}
-              <span className="font-medium text-foreground">{remainingBalance} tokens</span>
+              Üretim sonrası kalan:{" "}
+              <span className="font-medium text-foreground">{remainingBalance} token</span>
             </span>
           </>
         )}
       </div>
 
       <p className="mb-4 text-xs text-muted-foreground/60">
-        Tokens are deducted when generation starts. Output format: 1:1, 1080×1080.
+        Token yalnızca üretim başladığında düşülür. Çıktı formatı: 1:1, 1080×1080.
       </p>
 
       <Button
@@ -99,7 +93,7 @@ export function GenerateCostConfirm({
         onClick={handleClick}
       >
         <Sparkles className="mr-2 h-4 w-4" />
-        {starting ? "Starting generation..." : "Generate videos"}
+        {starting ? "Başlatılıyor..." : "Videoları üret"}
       </Button>
     </div>
   );

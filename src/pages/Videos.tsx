@@ -13,7 +13,7 @@ import { TokenBadge } from "@/components/videos/TokenBadge";
 import { PRODUCTS } from "@/data/products";
 import { FOLDERS, type VideoFolder } from "@/data/folders";
 import { MOCK_TOKEN_BALANCE, TOKEN_COST_PER_VIDEO, SAMPLE_VIDEO } from "@/data/tokens";
-import { type GuidedPrompt, DEFAULT_GUIDED_PROMPT, type VideoJob, type TemplateId, type VideoStatus } from "@/types/video-flow";
+import { type GuidedPrompt, DEFAULT_GUIDED_PROMPT, type VideoJob, type TemplateId } from "@/types/video-flow";
 import { ArrowLeft } from "lucide-react";
 
 // ─── Stage machine ────────────────────────────────────────────────────────────
@@ -49,7 +49,7 @@ const getPreviousStage = (current: Stage): Stage | null => {
     case "select":      return "library";
     case "template":    return "select";
     case "progress":    return null;
-    case "review":      return "template";
+    case "review":      return null;   // no back from review — generation already ran
     case "edit-prompt": return "review";
     case "export":      return "review";
     case "success":     return null;
@@ -129,9 +129,9 @@ const Videos = () => {
 
   // Progress → Review
   const handleProgressComplete = () => {
-    // Mark all jobs ready so Phase 5 Review can access the video URLs
+    // Mark all jobs ready so Review can access the video URLs
     setVideoJobs((prev) =>
-      prev.map((j) => ({ ...j, status: "ready" as VideoStatus, videoUrl: SAMPLE_VIDEO })),
+      prev.map((j) => ({ ...j, status: "ready", videoUrl: SAMPLE_VIDEO })),
     );
     setStage("review");
   };
@@ -157,7 +157,7 @@ const Videos = () => {
   };
 
   // Edit Prompt → regenerate → back to Review
-  const handleEditRegenerate = (productId: string) => {
+  const handleEditRegenerate = (productId: string, _promptText: string) => {
     setTokenBalance((b) => b - TOKEN_COST_PER_VIDEO);
     setVideoJobs((prev) =>
       prev.map((j) =>
@@ -200,6 +200,7 @@ const Videos = () => {
   // ─── Layout helpers ─────────────────────────────────────────────────────────
 
   const showStepBar = stage !== "library";
+  const previousStage = getPreviousStage(stage);
 
   return (
     <AppShell>
@@ -208,18 +209,17 @@ const Videos = () => {
           <div className="sticky top-0 z-30 border-b bg-background/85 backdrop-blur">
             <div className="flex items-center justify-between gap-4 px-6 py-4 md:px-10">
               <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const previous = getPreviousStage(stage);
-                    if (previous) setStage(previous);
-                  }}
-                  className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-sm font-medium text-muted-foreground hover:border-foreground/50 hover:text-foreground"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  Back
-                </button>
-                <h1 className="text-base font-semibold text-foreground">Create product videos</h1>
+                {previousStage !== null && (
+                  <button
+                    type="button"
+                    onClick={() => setStage(previousStage)}
+                    className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-sm font-medium text-muted-foreground hover:border-foreground/50 hover:text-foreground"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    Geri
+                  </button>
+                )}
+                <h1 className="text-base font-semibold text-foreground">Ürün videoları oluştur</h1>
               </div>
               <div className="hidden md:block">
                 <StepIndicator current={stageToStep[stage]} />
@@ -227,10 +227,14 @@ const Videos = () => {
               <div className="flex items-center gap-3">
                 <TokenBadge balance={tokenBalance} />
                 <button
-                  onClick={() => setStage("library")}
+                  onClick={() => {
+                    if (window.confirm("İlerlemeniz kaybolacak. Çıkmak istediğinize emin misiniz?")) {
+                      setStage("library");
+                    }
+                  }}
                   className="text-sm font-medium text-muted-foreground hover:text-foreground"
                 >
-                  Exit
+                  Çıkış
                 </button>
               </div>
             </div>
@@ -241,7 +245,6 @@ const Videos = () => {
         {stage === "library" && (
           <LibraryStep
             folders={folders}
-            tokenBalance={tokenBalance}
             onOpenFolder={handleOpenFolder}
             onCreateFolder={handleCreateFolder}
           />
@@ -293,6 +296,8 @@ const Videos = () => {
           <EditPromptStep
             product={selectedProducts.find((p) => p.id === editingProductId)!}
             tokenBalance={tokenBalance}
+            template={template}
+            guidedPrompt={guidedPrompt}
             onRegenerate={handleEditRegenerate}
             onCancel={handleCancelEdit}
           />
@@ -302,6 +307,8 @@ const Videos = () => {
         {stage === "export" && (
           <ExportStep
             approvedCount={approvedIds.length}
+            approvedIds={approvedIds}
+            selectedProducts={selectedProducts}
             onComplete={handleExportComplete}
             onSkip={() => handleExportComplete([])}
           />
@@ -310,7 +317,7 @@ const Videos = () => {
         {/* ── Success ──────────────────────────────────────────────────────── */}
         {stage === "success" && (
           <SuccessStep
-            count={selectedProducts.length}
+            count={approvedIds.length}
             exportedFeeds={exportedFeeds}
             onAnother={handleAnother}
             onViewProducts={() => setStage("library")}

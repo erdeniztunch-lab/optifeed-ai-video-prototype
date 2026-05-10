@@ -29,10 +29,10 @@ export function TemplateSelectionStep({
       {/* Header */}
       <header className="mb-8">
         <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-          Choose a template
+          Şablon seç
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Select the video format, then optionally configure the production context.
+          Video formatını seçin, ardından isteğe bağlı olarak kampanya bağlamını yapılandırın.
         </p>
       </header>
 
@@ -52,7 +52,7 @@ export function TemplateSelectionStep({
           </div>
           <div className="min-w-0">
             <p className="text-sm font-medium text-foreground">
-              {products.length} product{products.length !== 1 ? "s" : ""} selected
+              {products.length} ürün seçildi
             </p>
             {products.length > 0 && (
               <p className="text-xs text-muted-foreground line-clamp-1">
@@ -60,7 +60,7 @@ export function TemplateSelectionStep({
                   .slice(0, 3)
                   .map((p) => p.name)
                   .join(", ")}
-                {products.length > 3 && ` +${products.length - 3} more`}
+                {products.length > 3 && ` +${products.length - 3} daha`}
               </p>
             )}
           </div>
@@ -70,7 +70,7 @@ export function TemplateSelectionStep({
       {/* Template grid */}
       <section className="mb-10">
         <h3 className="mb-4 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
-          Video format
+          Video formatı
         </h3>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {TEMPLATES.map((t) => (
@@ -88,10 +88,10 @@ export function TemplateSelectionStep({
       <section className="mb-10">
         <div className="mb-4 flex items-baseline gap-3">
           <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
-            Production settings
+            Kampanya bağlamı
           </h3>
           <span className="text-xs text-muted-foreground/60">
-            All fields optional — fill what's relevant
+            Tüm alanlar isteğe bağlı — ilgili olanları doldurun
           </span>
         </div>
         <div className="rounded-2xl border border-border bg-card p-5">

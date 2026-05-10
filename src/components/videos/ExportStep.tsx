@@ -1,12 +1,16 @@
 import { useState } from "react";
 import { Archive, Download } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { type Product } from "@/data/products";
 import { FEED_EXPORTS } from "@/data/feedExports";
 import { SAMPLE_VIDEO } from "@/data/tokens";
 import { ExportFeedCard } from "./ExportFeedCard";
 
 interface ExportStepProps {
   approvedCount: number;
+  approvedIds: string[];
+  selectedProducts: Product[];
   onComplete: (feedNames: string[]) => void;
   onSkip: () => void;
 }
@@ -16,7 +20,7 @@ type FeedState = {
   applied: boolean;
 };
 
-export function ExportStep({ approvedCount, onComplete, onSkip }: ExportStepProps) {
+export function ExportStep({ approvedCount, approvedIds, selectedProducts, onComplete, onSkip }: ExportStepProps) {
   const [feedStates, setFeedStates] = useState<Record<string, FeedState>>(() =>
     Object.fromEntries(
       FEED_EXPORTS.map((f) => [f.id, { attribute: f.videoAttribute, applied: false }]),
@@ -27,6 +31,8 @@ export function ExportStep({ approvedCount, onComplete, onSkip }: ExportStepProp
   const appliedCount = Object.values(feedStates).filter((s) => s.applied).length;
   const allApplied = appliedCount === FEED_EXPORTS.length;
   const canComplete = appliedCount > 0;
+
+  const approvedProducts = selectedProducts.filter((p) => approvedIds.includes(p.id));
 
   const handleAttributeChange = (feedId: string, attr: string) => {
     setFeedStates((prev) => ({
@@ -43,6 +49,7 @@ export function ExportStep({ approvedCount, onComplete, onSkip }: ExportStepProp
   };
 
   const handleApplyAll = () => {
+    if (!window.confirm("Tüm akışlara uygulanacak. Devam edilsin mi?")) return;
     setFeedStates((prev) =>
       Object.fromEntries(Object.entries(prev).map(([id, s]) => [id, { ...s, applied: true }])),
     );
@@ -58,6 +65,7 @@ export function ExportStep({ approvedCount, onComplete, onSkip }: ExportStepProp
     setIsDownloadingZip(true);
     setTimeout(() => {
       setIsDownloadingZip(false);
+      toast("ZIP hazırlanıyor... İndirme başladı.");
       const a = document.createElement("a");
       a.href = SAMPLE_VIDEO;
       a.download = "approved-videos.zip";
@@ -72,18 +80,38 @@ export function ExportStep({ approvedCount, onComplete, onSkip }: ExportStepProp
       {/* Header */}
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-semibold text-foreground">Apply to exports</h2>
+          <h2 className="text-2xl font-semibold text-foreground">Dışa aktar</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            <span className="font-semibold text-foreground">{approvedCount}</span> approved video
-            {approvedCount !== 1 ? "s" : ""} ready to export
+            <span className="font-semibold text-foreground">{approvedCount}</span> onaylı video dışa aktarmaya hazır
           </p>
         </div>
         {!allApplied && (
           <Button variant="outline" size="sm" onClick={handleApplyAll}>
-            Apply all
+            Tümünü uygula
           </Button>
         )}
       </div>
+
+      {/* Approved product strip */}
+      {approvedProducts.length > 0 && (
+        <div className="mb-6 flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3">
+          <div className="flex -space-x-2">
+            {approvedProducts.slice(0, 5).map((p, i) => (
+              <div
+                key={p.id}
+                className="h-9 w-9 overflow-hidden rounded-lg border-2 border-background bg-muted"
+                style={{ zIndex: 10 - i }}
+              >
+                <img src={p.image} alt={p.name} className="h-full w-full object-cover" />
+              </div>
+            ))}
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {approvedProducts.slice(0, 2).map((p) => p.name).join(", ")}
+            {approvedProducts.length > 2 && ` +${approvedProducts.length - 2} daha`}
+          </p>
+        </div>
+      )}
 
       {/* Feed cards grid */}
       <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -91,7 +119,6 @@ export function ExportStep({ approvedCount, onComplete, onSkip }: ExportStepProp
           <ExportFeedCard
             key={feed.id}
             feed={feed}
-            approvedCount={approvedCount}
             applied={feedStates[feed.id]?.applied ?? false}
             selectedAttribute={feedStates[feed.id]?.attribute ?? feed.videoAttribute}
             onAttributeChange={(attr) => handleAttributeChange(feed.id, attr)}
@@ -102,7 +129,7 @@ export function ExportStep({ approvedCount, onComplete, onSkip }: ExportStepProp
 
       {/* Download section */}
       <div className="mb-8 rounded-2xl border border-border bg-card p-5">
-        <h3 className="mb-3 text-sm font-semibold text-foreground">Download videos</h3>
+        <h3 className="mb-3 text-sm font-semibold text-foreground">Videoları indir</h3>
         <div className="flex flex-col gap-2 sm:flex-row">
           <a
             href={SAMPLE_VIDEO}
@@ -110,7 +137,7 @@ export function ExportStep({ approvedCount, onComplete, onSkip }: ExportStepProp
             className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground transition-all hover:border-foreground/30"
           >
             <Download className="h-4 w-4" />
-            Download MP4 ({approvedCount} file{approvedCount !== 1 ? "s" : ""})
+            Örnek video indir (MP4)
           </a>
           <button
             type="button"
@@ -119,7 +146,7 @@ export function ExportStep({ approvedCount, onComplete, onSkip }: ExportStepProp
             className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground transition-all hover:border-foreground/30 disabled:opacity-60"
           >
             <Archive className="h-4 w-4" />
-            {isDownloadingZip ? "Preparing ZIP..." : "Download as ZIP"}
+            {isDownloadingZip ? "Hazırlanıyor..." : "ZIP olarak indir"}
           </button>
         </div>
       </div>
@@ -132,11 +159,11 @@ export function ExportStep({ approvedCount, onComplete, onSkip }: ExportStepProp
           disabled={!canComplete}
           onClick={handleComplete}
         >
-          Complete →
+          Tamamla →
         </Button>
         {canComplete && (
           <p className="text-xs text-muted-foreground">
-            Applied to {appliedCount} feed export{appliedCount !== 1 ? "s" : ""}
+            {appliedCount} dışa aktarıma uygulandı
           </p>
         )}
         <button
@@ -144,7 +171,7 @@ export function ExportStep({ approvedCount, onComplete, onSkip }: ExportStepProp
           onClick={onSkip}
           className="text-sm font-medium text-muted-foreground hover:text-foreground"
         >
-          Skip and complete
+          Atla ve tamamla
         </button>
       </div>
     </div>

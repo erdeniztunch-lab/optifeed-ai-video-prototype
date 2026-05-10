@@ -6,10 +6,10 @@ export interface FeedExport {
   channel: FeedChannel;
   source: string;
   productCount: number;
+  selectedCount: number;
   videoAttribute: string;
 }
 
-// Based on the "Apply to Exports" screen reference
 export const FEED_EXPORTS: FeedExport[] = [
   {
     id: "fe1",
@@ -17,14 +17,16 @@ export const FEED_EXPORTS: FeedExport[] = [
     channel: "google",
     source: "Shopify Feed (all collections)",
     productCount: 147,
+    selectedCount: 26,
     videoAttribute: "Custom Label",
   },
   {
     id: "fe2",
     name: "Google Merchant Export",
     channel: "google",
-    source: "Shopify Feed (all collections)",
-    productCount: 147,
+    source: "Shopify Feed (summer collection)",
+    productCount: 89,
+    selectedCount: 31,
     videoAttribute: "g:custom_label_4",
   },
   {
@@ -33,22 +35,25 @@ export const FEED_EXPORTS: FeedExport[] = [
     channel: "meta",
     source: "Shopify Feed (all collections)",
     productCount: 147,
+    selectedCount: 18,
     videoAttribute: "internal_label",
   },
   {
     id: "fe4",
-    name: "Meta Export (Copy)",
+    name: "Meta Retargeting Export",
     channel: "meta",
-    source: "Shopify Feed (all collections)",
-    productCount: 147,
+    source: "Shopify Feed (retargeting)",
+    productCount: 63,
+    selectedCount: 24,
     videoAttribute: "internal_label",
   },
   {
     id: "fe5",
     name: "Meta export with dynamic creative",
     channel: "meta",
-    source: "Shopify Feed (all collections)",
-    productCount: 147,
+    source: "Shopify Feed (new arrivals)",
+    productCount: 42,
+    selectedCount: 12,
     videoAttribute: "internal_label",
   },
 ];

@@ -11,10 +11,10 @@ interface Props {
 export function SuccessStep({ count, exportedFeeds, onAnother, onViewProducts }: Props) {
   const channelText =
     exportedFeeds.length === 0
-      ? "Saved as draft"
+      ? "Taslak olarak kaydedildi"
       : exportedFeeds.length <= 2
-        ? `Applied to ${exportedFeeds.join(" and ")}`
-        : `Applied to ${exportedFeeds.length} feed exports`;
+        ? `${exportedFeeds.join(" ve ")}'ye uygulandı`
+        : `${exportedFeeds.length} dışa aktarıma uygulandı`;
 
   return (
     <div className="flex min-h-[calc(100vh-7rem)] items-center justify-center px-6 py-8">
@@ -24,29 +24,29 @@ export function SuccessStep({ count, exportedFeeds, onAnother, onViewProducts }:
         </div>
 
         <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-          Videos exported successfully
+          Videolar başarıyla dışa aktarıldı
         </h2>
 
         <div className="mt-3 space-y-1 text-sm text-muted-foreground">
           <p>
-            {count} product{count === 1 ? "" : "s"} now ha{count === 1 ? "s" : "ve"} a video asset
+            {count} ürün artık video içeriğine sahip
           </p>
           <p>{channelText}</p>
         </div>
 
         <div className="mt-8 flex flex-col gap-2">
           <Button size="lg" onClick={onAnother}>
-            Create another video
+            Yeni video oluştur
           </Button>
           <Button size="lg" variant="outline" onClick={onViewProducts}>
-            View products
+            Ürünlere git
           </Button>
           <button
             type="button"
             onClick={onViewProducts}
             className="mt-1 text-sm font-medium text-muted-foreground hover:text-foreground"
           >
-            Go to feed
+            Kütüphaneye dön
           </button>
         </div>
       </div>

@@ -1,19 +1,16 @@
 import { useRef, useState } from "react";
-import { FolderPlus, FolderOpen, Sparkles } from "lucide-react";
-import { TokenBadge } from "@/components/videos/TokenBadge";
+import { FolderPlus, FolderOpen } from "lucide-react";
 import { FolderCard } from "@/components/videos/FolderCard";
 import { type VideoFolder } from "@/data/folders";
 
 interface LibraryStepProps {
   folders: VideoFolder[];
-  tokenBalance: number;
   onOpenFolder: (id: string) => void;
   onCreateFolder: (name: string) => void;
 }
 
 export function LibraryStep({
   folders,
-  tokenBalance,
   onOpenFolder,
   onCreateFolder,
 }: LibraryStepProps) {
@@ -50,23 +47,20 @@ export function LibraryStep({
   return (
     <div className="mx-auto max-w-4xl px-6 py-10 md:px-10">
       {/* Header */}
-      <div className="mb-8 flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Video Kütüphanesi</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Ürün videolarınızı kampanya klasörlerine göre düzenleyin.
-          </p>
-        </div>
-        <TokenBadge balance={tokenBalance} className="shrink-0" />
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-foreground">Video Kütüphanesi</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Kampanyalarınız için ürün videoları oluşturun ve yönetin.
+        </p>
       </div>
 
       {/* Empty state */}
       {isEmpty && (
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-20 text-center">
           <FolderOpen className="mb-4 h-12 w-12 text-muted-foreground/40" />
-          <h2 className="text-base font-semibold text-foreground">Henüz klasör yok</h2>
+          <h2 className="text-base font-semibold text-foreground">Henüz video klasörünüz yok</h2>
           <p className="mt-1 max-w-xs text-sm text-muted-foreground">
-            Ürün videolarını düzenlemek için bir kampanya klasörü oluşturun.
+            Kampanyalarınız için ürün videoları oluşturun ve yönetin.
           </p>
           <button
             type="button"
@@ -74,7 +68,7 @@ export function LibraryStep({
             className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
           >
             <FolderPlus className="h-4 w-4" />
-            İlk klasörü oluştur
+            İlk videonuzu oluşturun
           </button>
         </div>
       )}
@@ -127,8 +121,8 @@ export function LibraryStep({
             </div>
           )}
 
-          {/* Folder grid */}
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+          {/* Folder grid — 2 columns max */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {folders.map((folder) => (
               <FolderCard
                 key={folder.id}
@@ -139,12 +133,6 @@ export function LibraryStep({
           </div>
         </>
       )}
-
-      {/* Bottom hint */}
-      <div className="mt-10 flex items-center justify-center gap-2 text-xs text-muted-foreground/60">
-        <Sparkles className="h-3.5 w-3.5" />
-        <span>Her video oluşturma {10} token harcar.</span>
-      </div>
     </div>
   );
 }

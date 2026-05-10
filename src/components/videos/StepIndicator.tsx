@@ -1,7 +1,7 @@
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const STEPS = ["Select", "Template", "Progress", "Review", "Export", "Done"];
+const STEPS = ["Seç", "Şablon", "Üretim", "İncele", "Dışa Aktar", "Tamamlandı"];
 
 export function StepIndicator({ current }: { current: number }) {
   return (

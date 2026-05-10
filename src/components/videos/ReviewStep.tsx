@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Download, LayoutGrid, List, Send } from "lucide-react";
+import { LayoutGrid, List, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { type Product } from "@/data/products";
@@ -56,21 +56,21 @@ export function ReviewStep({
       {/* Header */}
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-semibold text-foreground">Review videos</h2>
+          <h2 className="text-2xl font-semibold text-foreground">Videoları İncele</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             {approvedCount > 0 && (
-              <span className="font-medium text-success">{approvedCount} approved</span>
+              <span className="font-medium text-success">{approvedCount} onaylandı</span>
             )}
             {approvedCount > 0 && pendingCount > 0 && (
               <span className="mx-1.5 text-muted-foreground/50">·</span>
             )}
             {pendingCount > 0 && (
-              <span>{pendingCount} pending review</span>
+              <span>{pendingCount} beklemede</span>
             )}
             {rejectedCount > 0 && (
               <>
                 <span className="mx-1.5 text-muted-foreground/50">·</span>
-                <span>{rejectedCount} rejected</span>
+                <span>{rejectedCount} reddedildi</span>
               </>
             )}
           </p>
@@ -89,7 +89,7 @@ export function ReviewStep({
             )}
           >
             <List className="h-3.5 w-3.5" />
-            List
+            Liste
           </button>
           <button
             type="button"
@@ -102,7 +102,7 @@ export function ReviewStep({
             )}
           >
             <LayoutGrid className="h-3.5 w-3.5" />
-            Grid
+            Izgara
           </button>
         </div>
       </div>
@@ -146,28 +146,16 @@ export function ReviewStep({
           <div className="text-sm text-muted-foreground">
             {canContinue ? (
               <span>
-                <span className="font-semibold text-foreground">{approvedCount}</span> video
-                {approvedCount !== 1 ? "s" : ""} ready for export
+                <span className="font-semibold text-foreground">{approvedCount}</span> video dışa aktarmaya hazır
               </span>
             ) : (
-              <span>Approve at least one video to continue</span>
+              <span>Devam etmek için en az bir videoyu onaylayın</span>
             )}
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={!canContinue}
-              onClick={onContinue}
-            >
-              <Download className="mr-1.5 h-3.5 w-3.5" />
-              Export approved
-            </Button>
-            <Button size="sm" disabled={!canContinue} onClick={onContinue}>
-              <Send className="mr-1.5 h-3.5 w-3.5" />
-              Continue to export
-            </Button>
-          </div>
+          <Button size="sm" disabled={!canContinue} onClick={onContinue}>
+            <Send className="mr-1.5 h-3.5 w-3.5" />
+            Dışa aktarmaya geç
+          </Button>
         </div>
       </div>
     </div>

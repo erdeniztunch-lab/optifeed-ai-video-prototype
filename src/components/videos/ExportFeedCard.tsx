@@ -5,7 +5,6 @@ import { type FeedExport, VIDEO_ATTRIBUTE_OPTIONS } from "@/data/feedExports";
 
 interface ExportFeedCardProps {
   feed: FeedExport;
-  approvedCount: number;
   applied: boolean;
   selectedAttribute: string;
   onAttributeChange: (attr: string) => void;
@@ -20,7 +19,6 @@ const CHANNEL_BADGE: Record<string, { label: string; className: string }> = {
 
 export function ExportFeedCard({
   feed,
-  approvedCount,
   applied,
   selectedAttribute,
   onAttributeChange,
@@ -66,20 +64,20 @@ export function ExportFeedCard({
         {applied && (
           <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 text-[11px] font-semibold text-success">
             <Check className="h-3 w-3" strokeWidth={3} />
-            Applied
+            Uygulandı
           </span>
         )}
       </div>
 
       {/* Affected product count */}
       <p className="text-xs">
-        <span className="font-semibold text-primary">{approvedCount}</span>
-        <span className="text-muted-foreground"> of {feed.productCount} products</span>
+        <span className="font-semibold text-primary">{feed.selectedCount}</span>
+        <span className="text-muted-foreground"> / {feed.productCount} ürün</span>
       </p>
 
       {/* Video attribute dropdown */}
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-muted-foreground">Video attribute</label>
+        <label className="text-xs font-medium text-muted-foreground">Video alanı</label>
         <select
           value={selectedAttribute}
           onChange={(e) => onAttributeChange(e.target.value)}
@@ -109,15 +107,15 @@ export function ExportFeedCard({
         {applying ? (
           <>
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            Applying...
+            Uygulanıyor...
           </>
         ) : applied ? (
           <>
             <Check className="h-3.5 w-3.5" strokeWidth={3} />
-            Re-apply
+            Yeniden uygula
           </>
         ) : (
-          "Apply"
+          "Uygula"
         )}
       </button>
     </div>

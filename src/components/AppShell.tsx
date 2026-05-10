@@ -57,11 +57,11 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="border-t border-sidebar-border p-3">
           <div className="flex items-center gap-3 rounded-lg px-3 py-2">
             <div className="h-8 w-8 rounded-full bg-gradient-primary flex items-center justify-center text-xs font-semibold text-white">
-              ET
+              O
             </div>
             <div className="flex-1 min-w-0">
-              <p className="truncate text-sm font-medium text-white">Erdeniz Tunç</p>
-              <p className="truncate text-xs text-sidebar-foreground/70">erdeniz.tunc@optifeed.com</p>
+              <p className="truncate text-sm font-medium text-white">Optifeed Kullanıcısı</p>
+              <p className="truncate text-xs text-sidebar-foreground/70">demo@optifeed.com</p>
             </div>
             <Settings className="h-4 w-4 text-sidebar-foreground/70" />
           </div>
