@@ -141,7 +141,7 @@ export function ReviewStep({
       )}
 
       {/* Sticky bottom bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 border-t bg-background/90 backdrop-blur">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-card/95 backdrop-blur md:left-64">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-6 py-4 md:px-10">
           <div className="text-sm text-muted-foreground">
             {canContinue ? (
@@ -152,7 +152,7 @@ export function ReviewStep({
               <span>Devam etmek için en az bir videoyu onaylayın</span>
             )}
           </div>
-          <Button size="sm" disabled={!canContinue} onClick={onContinue}>
+          <Button size="lg" disabled={!canContinue} onClick={onContinue}>
             <Send className="mr-1.5 h-3.5 w-3.5" />
             Dışa aktarmaya geç
           </Button>

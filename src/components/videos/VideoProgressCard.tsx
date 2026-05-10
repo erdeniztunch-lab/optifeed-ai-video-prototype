@@ -29,9 +29,7 @@ export function VideoProgressCard({ job }: VideoProgressCardProps) {
           className="h-full w-full object-cover"
         />
         {isGenerating && (
-          <div className="absolute inset-0 flex items-center justify-center bg-primary/30">
-            <Loader2 className="h-5 w-5 animate-spin text-white" />
-          </div>
+          <div className="absolute inset-0 bg-primary/30" />
         )}
         {isReady && (
           <div className="absolute inset-0 flex items-center justify-center bg-success/25">

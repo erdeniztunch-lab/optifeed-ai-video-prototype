@@ -29,7 +29,7 @@ export function TemplateActionBar({ videoCount, tokenBalance, onGenerate }: Temp
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-card/95 backdrop-blur md:left-64 animate-fade-in">
-      <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-6 py-4 md:px-10">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-4 md:px-10">
         {/* Left: stats */}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
           <span

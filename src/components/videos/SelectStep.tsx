@@ -53,8 +53,7 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
     if (allVisibleSelected) {
       setSelectedIds(selectedIds.filter((id) => !products.some((p) => p.id === id)));
     } else {
-      const alreadySelected = selectedIds.filter((id) => products.some((p) => p.id === id));
-      const remaining = PRODUCT_SELECTION_LIMIT - (selectedIds.length - alreadySelected.length);
+      const remaining = PRODUCT_SELECTION_LIMIT - selectedIds.length;
       const toAdd = products
         .filter((p) => !selectedIds.includes(p.id))
         .slice(0, remaining);
@@ -112,7 +111,7 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-              className="hidden cursor-pointer appearance-none rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-muted-foreground focus:outline-none sm:block"
+              className="hidden cursor-pointer rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-muted-foreground focus:outline-none sm:block"
             >
               <option value="recent">Son eklenen</option>
               <option value="name">Ürün adı (A–Z)</option>

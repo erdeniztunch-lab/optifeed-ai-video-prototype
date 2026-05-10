@@ -68,12 +68,12 @@ export function TemplateSelectionStep({
       )}
 
       {/* Two-column layout: template grid (left) + context (right) */}
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_300px]">
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_300px]">
 
         {/* Left: Template grid */}
         <section>
           <h3 className="mb-4 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
-            Video formatı
+            Video şablonu
           </h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {TEMPLATES.map((t) => (
@@ -88,7 +88,7 @@ export function TemplateSelectionStep({
         </section>
 
         {/* Right: Campaign context */}
-        <section>
+        <section className="lg:border-l lg:border-border lg:pl-10">
           <div className="mb-4">
             <h3 className="text-xs font-medium uppercase tracking-widest text-muted-foreground/60">
               Kampanya ayarları
