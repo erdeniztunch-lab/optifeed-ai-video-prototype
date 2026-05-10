@@ -67,44 +67,48 @@ export function TemplateSelectionStep({
         </div>
       )}
 
-      {/* Template grid */}
-      <section className="mb-8">
-        <h3 className="mb-4 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
-          Video formatı
-        </h3>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {TEMPLATES.map((t) => (
-            <TemplateCard
-              key={t.id}
-              template={t}
-              selected={selectedTemplate === t.id}
-              onSelect={() => setSelectedTemplate(t.id)}
-            />
-          ))}
-        </div>
-      </section>
+      {/* Two-column layout: template grid (left) + context & CTA (right) */}
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_340px]">
 
-      {/* Guided prompt section */}
-      <section className="mb-8">
-        <div className="mb-4">
-          <h3 className="text-xs font-medium uppercase tracking-widest text-muted-foreground/60">
-            Kampanya bağlamı
+        {/* Left: Template grid */}
+        <section>
+          <h3 className="mb-4 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+            Video formatı
           </h3>
-          <p className="mt-1 text-xs text-muted-foreground/50">
-            Bu alanlar sonucu iyileştirir, boş bırakabilirsiniz.
-          </p>
-        </div>
-        <GuidedPromptFields value={guidedPrompt} onChange={setGuidedPrompt} />
-      </section>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {TEMPLATES.map((t) => (
+              <TemplateCard
+                key={t.id}
+                template={t}
+                selected={selectedTemplate === t.id}
+                onSelect={() => setSelectedTemplate(t.id)}
+              />
+            ))}
+          </div>
+        </section>
 
-      {/* Cost confirmation */}
-      <section>
-        <GenerateCostConfirm
-          videoCount={products.length}
-          tokenBalance={tokenBalance}
-          onGenerate={handleGenerate}
-        />
-      </section>
+        {/* Right: Campaign context + cost confirm */}
+        <div className="space-y-6">
+          <section>
+            <div className="mb-4">
+              <h3 className="text-xs font-medium uppercase tracking-widest text-muted-foreground/60">
+                Kampanya bağlamı
+              </h3>
+              <p className="mt-1 text-xs text-muted-foreground/50">
+                Bu alanlar sonucu iyileştirir, boş bırakabilirsiniz.
+              </p>
+            </div>
+            <GuidedPromptFields value={guidedPrompt} onChange={setGuidedPrompt} />
+          </section>
+
+          <GenerateCostConfirm
+            videoCount={products.length}
+            tokenBalance={tokenBalance}
+            onGenerate={handleGenerate}
+          />
+        </div>
+
+      </div>
     </div>
   );
 }

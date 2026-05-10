@@ -48,7 +48,9 @@ export function TemplateCard({ template, selected, onSelect }: TemplateCardProps
         <p className="font-semibold text-foreground">{template.label}</p>
         <p className="text-sm text-muted-foreground">{template.description}</p>
         {template.helperText && (
-          <p className="mt-0.5 text-xs text-muted-foreground/60">{template.helperText}</p>
+          <span className="mt-1 inline-flex self-start rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+            {template.helperText}
+          </span>
         )}
       </div>
     </button>
