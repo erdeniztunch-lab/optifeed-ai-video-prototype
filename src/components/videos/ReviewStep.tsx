@@ -142,7 +142,7 @@ export function ReviewStep({
 
       {/* Sticky bottom bar */}
       <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-card/95 backdrop-blur md:left-64">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-6 py-4 md:px-10">
+        <div className="flex w-full items-center justify-between gap-4 px-6 py-4 md:px-10">
           <div className="text-sm text-muted-foreground">
             {canContinue ? (
               <span>
