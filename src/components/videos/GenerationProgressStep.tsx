@@ -115,11 +115,11 @@ export function GenerationProgressStep({ products, onComplete }: GenerationProgr
       </div>
 
       {/* Fixed bottom-left token counter */}
-      {!allComplete && displayedTokens > 0 && (
-        <div className="fixed bottom-6 left-6 z-30 md:left-72">
-          <div className="flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50/95 px-4 py-2 shadow-sm backdrop-blur">
-            <Coins className="h-4 w-4 text-amber-500" />
-            <span className="text-sm text-amber-700">
+      {displayedTokens > 0 && (
+        <div className="fixed bottom-6 left-6 z-30 md:left-64">
+          <div className="flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50/95 px-3 py-1.5 shadow-sm backdrop-blur">
+            <Coins className="h-3.5 w-3.5 text-amber-500" />
+            <span className="text-xs text-amber-700">
               <span
                 key={displayedTokens}
                 className="inline-block font-semibold tabular-nums animate-token-tick"
