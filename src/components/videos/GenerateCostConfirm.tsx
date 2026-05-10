@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Coins, AlertTriangle, Sparkles } from "lucide-react";
+import { Clock, Coins, AlertTriangle, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { TOKEN_COST_PER_VIDEO } from "@/data/tokens";
+import { ESTIMATED_MINUTES_PER_VIDEO, TOKEN_COST_PER_VIDEO } from "@/data/tokens";
 
 interface GenerateCostConfirmProps {
   videoCount: number;
@@ -17,6 +17,7 @@ export function GenerateCostConfirm({
 }: GenerateCostConfirmProps) {
   const [starting, setStarting] = useState(false);
 
+  const estimatedMinutes = videoCount * ESTIMATED_MINUTES_PER_VIDEO;
   const estimatedTokens = videoCount * TOKEN_COST_PER_VIDEO;
   const remainingBalance = tokenBalance - estimatedTokens;
   const hasEnoughBalance = tokenBalance >= estimatedTokens;
@@ -42,11 +43,16 @@ export function GenerateCostConfirm({
         {videoCount} video üretilecek
       </p>
 
-      <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+      <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
         <StatRow
           icon={<span className="text-xs font-bold text-muted-foreground">#</span>}
           label="Video"
           value={`${videoCount}`}
+        />
+        <StatRow
+          icon={<Clock className="h-3.5 w-3.5 text-muted-foreground" />}
+          label="Tahmini süre"
+          value={`~${estimatedMinutes} dk`}
         />
         <StatRow
           icon={<Coins className="h-3.5 w-3.5 text-muted-foreground" />}

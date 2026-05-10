@@ -1,7 +1,8 @@
-import { AlertTriangle, Coins } from "lucide-react";
+import { AlertTriangle, Clock, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
+  ESTIMATED_MINUTES_PER_VIDEO,
   PRODUCT_SELECTION_LIMIT,
   TOKEN_COST_PER_VIDEO,
 } from "@/data/tokens";
@@ -13,6 +14,7 @@ interface CostEstimateBarProps {
 }
 
 export function CostEstimateBar({ selectedCount, tokenBalance, onContinue }: CostEstimateBarProps) {
+  const estimatedMinutes = selectedCount * ESTIMATED_MINUTES_PER_VIDEO;
   const estimatedTokens = selectedCount * TOKEN_COST_PER_VIDEO;
   const hasEnoughBalance = selectedCount === 0 || tokenBalance >= estimatedTokens;
   const atLimit = selectedCount >= PRODUCT_SELECTION_LIMIT;
@@ -44,9 +46,14 @@ export function CostEstimateBar({ selectedCount, tokenBalance, onContinue }: Cos
             )}
           </div>
 
-          {/* Token estimate */}
+          {/* Time + token estimates */}
           {selectedCount > 0 && (
             <div className="flex items-center gap-4">
+              <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <Clock className="h-3.5 w-3.5 shrink-0" />
+                ~{estimatedMinutes} dk
+              </span>
+
               <span
                 className={cn(
                   "flex items-center gap-1.5 text-sm",
@@ -66,6 +73,13 @@ export function CostEstimateBar({ selectedCount, tokenBalance, onContinue }: Cos
           {selectedCount === 0 && (
             <p className="text-sm text-muted-foreground">
               Devam etmek için en az bir ürün seçin.
+            </p>
+          )}
+
+          {/* Trust microcopy — only when a cost is being shown */}
+          {selectedCount > 0 && (
+            <p className="w-full text-xs text-muted-foreground/70">
+              Token, yalnızca video üretimi başladığında düşülür.
             </p>
           )}
         </div>
