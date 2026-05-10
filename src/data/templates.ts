@@ -11,33 +11,33 @@ export interface TemplateDefinition {
 export const TEMPLATES: TemplateDefinition[] = [
   {
     id: "product-spotlight",
-    label: "Product Spotlight",
-    description: "Clean, product-focused format. Best for catalog and performance campaigns.",
-    helperText: "Best match when no discount is present",
+    label: "Ürün Odağı",
+    description: "Temiz, ürün odaklı format. Katalog ve performans kampanyaları için idealdir.",
+    helperText: "İndirim olmadığında en iyi tercih",
     previewImage:
       "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&h=600&q=80",
   },
   {
     id: "sale-promotion",
-    label: "Sale Promotion",
-    description: "Price-drop messaging leads the creative. Built for promotional offers.",
-    helperText: "Use when discount or urgency should drive the ad",
+    label: "İndirim Kampanyası",
+    description: "Fiyat düşüşü mesajı kreatife öncülük eder. Promosyon teklifleri için tasarlandı.",
+    helperText: "İndirim veya aciliyet mesajı reklamı yönlendirdiğinde kullanın",
     previewImage:
       "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=800&h=600&q=80",
   },
   {
     id: "new-arrival",
-    label: "New Arrival",
-    description: "Launch-ready format for new products hitting the catalog.",
-    helperText: "Strong fit for fresh arrivals and new season drops",
+    label: "Yeni Ürün",
+    description: "Kataloğa yeni eklenen ürünler için başlatmaya hazır format.",
+    helperText: "Yeni gelişler ve sezon koleksiyonları için güçlü tercih",
     previewImage:
       "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=800&h=600&q=80",
   },
   {
     id: "social-story",
-    label: "Social Story",
-    description: "Mobile-first format optimised for fast-scrolling placements.",
-    helperText: "Produced at 1:1 in MVP — vertical V2",
+    label: "Sosyal Hikaye",
+    description: "Hızlı kaydırmalı yerleşimler için optimize edilmiş, mobil öncelikli format.",
+    helperText: "MVP'de 1:1 üretilir — dikey format V2'de",
     previewImage:
       "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&h=600&q=80",
   },

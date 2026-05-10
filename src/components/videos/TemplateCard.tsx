@@ -21,7 +21,7 @@ export function TemplateCard({ template, selected, onSelect }: TemplateCardProps
       )}
     >
       {/* Preview image */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+      <div className="relative aspect-video overflow-hidden bg-muted">
         <img
           src={template.previewImage}
           alt={template.label}

@@ -38,7 +38,7 @@ export function TemplateSelectionStep({
 
       {/* Selected products strip */}
       {products.length > 0 && (
-        <div className="mb-8 flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3">
+        <div className="mb-5 flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3">
           <div className="flex -space-x-2">
             {products.slice(0, 5).map((p, i) => (
               <div
