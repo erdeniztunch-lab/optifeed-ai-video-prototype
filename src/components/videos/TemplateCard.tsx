@@ -63,10 +63,10 @@ export function TemplateCard({ template, selected, onSelect }: TemplateCardProps
               <button
                 type="button"
                 onClick={(e) => e.stopPropagation()}
-                className="shrink-0 rounded p-0.5 text-muted-foreground/40 transition-colors hover:text-muted-foreground focus:outline-none"
+                className="shrink-0 rounded-md p-1 text-primary/60 transition-colors hover:bg-primary/10 hover:text-primary focus:outline-none"
                 aria-label={`${template.label} hakkında daha fazla bilgi`}
               >
-                <Info className="h-3.5 w-3.5" />
+                <Info className="h-4 w-4" />
               </button>
             </PopoverTrigger>
 

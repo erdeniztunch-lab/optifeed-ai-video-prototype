@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { CheckCircle, Sparkles } from "lucide-react";
+import { CheckCircle, Coins, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { type Product } from "@/data/products";
 import {
   DEMO_VIDEO_GENERATION_DELAY_MS,
   SAMPLE_VIDEO,
+  TOKEN_COST_PER_VIDEO,
 } from "@/data/tokens";
 import { type VideoProgressJob } from "@/types/video-flow";
 import { VideoProgressCard } from "./VideoProgressCard";
@@ -59,6 +60,11 @@ export function GenerationProgressStep({ products, onComplete }: GenerationProgr
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const readyCount = jobs.filter((j) => j.status === "ready").length;
+
+  const [displayedTokens, setDisplayedTokens] = useState(0);
+  useEffect(() => {
+    setDisplayedTokens(readyCount * TOKEN_COST_PER_VIDEO);
+  }, [readyCount]);
   const allComplete = readyCount === jobs.length && jobs.length > 0;
   const anyReady = readyCount > 0;
 
@@ -82,9 +88,11 @@ export function GenerationProgressStep({ products, onComplete }: GenerationProgr
               <Sparkles className="h-5 w-5 text-primary" />
               <h2 className="text-2xl font-semibold text-foreground">Videolar üretiliyor...</h2>
             </div>
-            <p className="text-sm text-muted-foreground">
-              {readyCount} / {jobs.length} video hazır
-            </p>
+            <div className="mt-2">
+              <p className="text-sm text-muted-foreground">
+                {readyCount} / {jobs.length} video hazır
+              </p>
+            </div>
           </div>
         )}
 
@@ -105,6 +113,24 @@ export function GenerationProgressStep({ products, onComplete }: GenerationProgr
           <VideoProgressCard key={job.productId} job={job} />
         ))}
       </div>
+
+      {/* Fixed bottom-left token counter */}
+      {!allComplete && displayedTokens > 0 && (
+        <div className="fixed bottom-6 left-6 z-30 md:left-72">
+          <div className="flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50/95 px-4 py-2 shadow-sm backdrop-blur">
+            <Coins className="h-4 w-4 text-amber-500" />
+            <span className="text-sm text-amber-700">
+              <span
+                key={displayedTokens}
+                className="inline-block font-semibold tabular-nums animate-token-tick"
+              >
+                {displayedTokens}
+              </span>
+              {" "}token harcandı
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Early review note + CTA */}
       {anyReady && (

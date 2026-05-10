@@ -85,6 +85,11 @@ export default {
           from: { opacity: "0", transform: "translateY(4px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
+        "token-tick": {
+          "0%": { opacity: "0", transform: "translateY(10px) scale(1.15)" },
+          "60%": { opacity: "1", transform: "translateY(-2px) scale(1.05)" },
+          "100%": { opacity: "1", transform: "translateY(0) scale(1)" },
+        },
         shimmer: {
           "0%": { backgroundPosition: "-400px 0" },
           "100%": { backgroundPosition: "400px 0" },
@@ -95,6 +100,7 @@ export default {
         "accordion-up": "accordion-up 0.2s ease-out",
         "fade-in": "fade-in 0.3s ease-out",
         shimmer: "shimmer 1.6s linear infinite",
+        "token-tick": "token-tick 0.25s ease-out",
       },
     },
   },
