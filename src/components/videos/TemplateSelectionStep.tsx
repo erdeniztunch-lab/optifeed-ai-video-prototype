@@ -29,10 +29,10 @@ export function TemplateSelectionStep({
       {/* Header */}
       <header className="mb-8">
         <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-          Şablon seç
+          Video şablonu seçin
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Video formatını seçin, ardından isteğe bağlı olarak kampanya bağlamını yapılandırın.
+          Ürününüz için bir video formatı seçin. İsterseniz kampanya bağlamıyla sonucu yönlendirin.
         </p>
       </header>
 
@@ -68,7 +68,7 @@ export function TemplateSelectionStep({
       )}
 
       {/* Template grid */}
-      <section className="mb-10">
+      <section className="mb-8">
         <h3 className="mb-4 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
           Video formatı
         </h3>
@@ -85,18 +85,16 @@ export function TemplateSelectionStep({
       </section>
 
       {/* Guided prompt section */}
-      <section className="mb-10">
-        <div className="mb-4 flex items-baseline gap-3">
-          <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+      <section className="mb-8">
+        <div className="mb-4">
+          <h3 className="text-xs font-medium uppercase tracking-widest text-muted-foreground/60">
             Kampanya bağlamı
           </h3>
-          <span className="text-xs text-muted-foreground/60">
-            Tüm alanlar isteğe bağlı — ilgili olanları doldurun
-          </span>
+          <p className="mt-1 text-xs text-muted-foreground/50">
+            Bu alanlar sonucu iyileştirir, boş bırakabilirsiniz.
+          </p>
         </div>
-        <div className="rounded-2xl border border-border bg-card p-5">
-          <GuidedPromptFields value={guidedPrompt} onChange={setGuidedPrompt} />
-        </div>
+        <GuidedPromptFields value={guidedPrompt} onChange={setGuidedPrompt} />
       </section>
 
       {/* Cost confirmation */}

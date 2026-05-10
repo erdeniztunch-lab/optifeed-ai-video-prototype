@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { type GuidedPrompt } from "@/types/video-flow";
 import {
@@ -15,6 +16,8 @@ interface GuidedPromptFieldsProps {
 export function GuidedPromptFields({ value, onChange }: GuidedPromptFieldsProps) {
   const set = (key: keyof GuidedPrompt, val: string) =>
     onChange({ ...value, [key]: val });
+
+  const [showNote, setShowNote] = useState(false);
 
   return (
     <div className="space-y-4">
@@ -63,23 +66,36 @@ export function GuidedPromptFields({ value, onChange }: GuidedPromptFieldsProps)
         </Field>
       </div>
 
-      {/* Custom theme free-text */}
-      <Field label="Serbest tema notu" hint="İsteğe bağlı — özel ifadeler, malzeme detayı, kampanya arka planı">
-        <textarea
-          value={value.themeCustom}
-          onChange={(e) => set("themeCustom", e.target.value)}
-          maxLength={200}
-          rows={2}
-          placeholder="Örn. süet, tokalı, babet — Dubai koleksiyonu için dinamik arka plan"
-          className={cn(
-            "w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground",
-            "placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20",
+      {/* Custom theme free-text — collapsed by default */}
+      {showNote || value.themeCustom ? (
+        <Field label="Serbest tema notu" hint="İsteğe bağlı — özel ifadeler, malzeme detayı, kampanya arka planı">
+          <textarea
+            autoFocus={showNote && !value.themeCustom}
+            value={value.themeCustom}
+            onChange={(e) => set("themeCustom", e.target.value)}
+            maxLength={100}
+            rows={2}
+            placeholder="Örn. süet, tokalı, babet — Dubai koleksiyonu için dinamik arka plan"
+            className={cn(
+              "w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground",
+              "placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20",
+            )}
+          />
+          {value.themeCustom.length > 0 && (
+            <p className="mt-1 text-right text-[10px] text-muted-foreground/60">
+              {value.themeCustom.length} / 100
+            </p>
           )}
-        />
-        <p className="mt-1 text-right text-[10px] text-muted-foreground/60">
-          {value.themeCustom.length} / 200
-        </p>
-      </Field>
+        </Field>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setShowNote(true)}
+          className="text-xs text-muted-foreground/60 underline-offset-2 hover:text-muted-foreground hover:underline"
+        >
+          + Özel not ekle
+        </button>
+      )}
     </div>
   );
 }
