@@ -226,8 +226,10 @@ const Videos = () => {
   const showStepBar = stage !== "library";
   const previousStage = getPreviousStage(stage);
 
+  const spentTokens = MOCK_TOKEN_BALANCE - tokenBalance;
+
   return (
-    <AppShell tokenBalance={tokenBalance}>
+    <AppShell tokenBalance={tokenBalance} spentTokens={spentTokens}>
       <div className="min-h-screen">
         {showStepBar && (
           <div className="sticky top-0 z-30 border-b bg-background/85 backdrop-blur">

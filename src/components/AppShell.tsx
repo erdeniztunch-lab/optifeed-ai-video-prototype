@@ -30,7 +30,15 @@ const navItems: NavItem[] = [
   { label: "Meta Ads",      icon: Megaphone,  to: "/meta-ads" },
 ];
 
-export function AppShell({ children, tokenBalance }: { children: ReactNode; tokenBalance?: number }) {
+export function AppShell({
+  children,
+  tokenBalance,
+  spentTokens,
+}: {
+  children: ReactNode;
+  tokenBalance?: number;
+  spentTokens?: number;
+}) {
   return (
     <div className="min-h-screen w-full bg-background">
       {/* Sidebar */}
@@ -75,7 +83,7 @@ export function AppShell({ children, tokenBalance }: { children: ReactNode; toke
         <div className="border-t border-sidebar-border p-3 space-y-1">
           {tokenBalance !== undefined && (
             <div className="px-3 py-1.5">
-              <TokenBadge balance={tokenBalance} />
+              <TokenBadge balance={tokenBalance} spent={spentTokens} />
             </div>
           )}
           <div className="flex items-center gap-3 rounded-lg px-3 py-2">
