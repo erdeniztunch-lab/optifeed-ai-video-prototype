@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { FolderCard } from "@/components/videos/FolderCard";
 import { type VideoFolder, type FolderStatus } from "@/data/folders";
+import { PRODUCTS } from "@/data/products";
 
 type TabValue = "all" | FolderStatus;
 type SortValue = "updatedAt" | "createdAt" | "name";
@@ -25,13 +26,27 @@ interface LibraryStepProps {
   folders: VideoFolder[];
   onOpenFolder: (id: string) => void;
   onNewCampaign: () => void;
+  onToggleStatus: (id: string) => void;
   tokenBalance: number;
+  pendingCounts: Record<string, number>;
 }
 
-export function LibraryStep({ folders, onOpenFolder, onNewCampaign, tokenBalance }: LibraryStepProps) {
+export function LibraryStep({ folders, onOpenFolder, onNewCampaign, onToggleStatus, tokenBalance, pendingCounts }: LibraryStepProps) {
   const [activeTab, setActiveTab] = useState<TabValue>("all");
   const [sortBy, setSortBy] = useState<SortValue>("updatedAt");
   const [query, setQuery] = useState("");
+
+  const productImagesMap = useMemo(() => {
+    const map: Record<string, string[]> = {};
+    for (const folder of folders) {
+      if (folder.productIds?.length) {
+        map[folder.id] = folder.productIds
+          .map((pid) => PRODUCTS.find((p) => p.id === pid)?.image)
+          .filter(Boolean) as string[];
+      }
+    }
+    return map;
+  }, [folders]);
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase();
@@ -178,6 +193,9 @@ export function LibraryStep({ folders, onOpenFolder, onNewCampaign, tokenBalance
                   key={folder.id}
                   folder={folder}
                   onOpen={() => onOpenFolder(folder.id)}
+                  onToggleStatus={(e) => { e.stopPropagation(); onToggleStatus(folder.id); }}
+                  pendingCount={pendingCounts[folder.id] ?? 0}
+                  productImages={productImagesMap[folder.id]}
                 />
               ))}
 

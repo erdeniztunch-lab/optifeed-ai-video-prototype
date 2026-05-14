@@ -7,6 +7,7 @@ export interface VideoFolder {
   updatedAt: string;
   videoCount: number;
   status: FolderStatus;
+  productIds?: string[];
 }
 
 export const FOLDERS: VideoFolder[] = [
@@ -17,6 +18,7 @@ export const FOLDERS: VideoFolder[] = [
     updatedAt: "2025-05-10",
     videoCount: 8,
     status: "active",
+    productIds: ["p1", "p2", "p3", "p4"],
   },
   {
     id: "f2",
@@ -25,6 +27,7 @@ export const FOLDERS: VideoFolder[] = [
     updatedAt: "2025-04-30",
     videoCount: 3,
     status: "draft",
+    productIds: ["p5", "p6"],
   },
   {
     id: "f3",
@@ -33,5 +36,6 @@ export const FOLDERS: VideoFolder[] = [
     updatedAt: "2025-04-01",
     videoCount: 12,
     status: "active",
+    productIds: ["p7", "p8", "p9", "p10"],
   },
 ];

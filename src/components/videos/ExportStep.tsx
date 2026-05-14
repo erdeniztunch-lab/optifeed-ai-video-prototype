@@ -11,6 +11,7 @@ interface ExportStepProps {
   approvedCount: number;
   approvedIds: string[];
   selectedProducts: Product[];
+  totalVideoCount: number;
   onComplete: (feedNames: string[]) => void;
   onSkip: () => void;
 }
@@ -20,13 +21,14 @@ type FeedState = {
   applied: boolean;
 };
 
-export function ExportStep({ approvedCount, approvedIds, selectedProducts, onComplete, onSkip }: ExportStepProps) {
+export function ExportStep({ approvedCount, approvedIds, selectedProducts, totalVideoCount, onComplete, onSkip }: ExportStepProps) {
   const [feedStates, setFeedStates] = useState<Record<string, FeedState>>(() =>
     Object.fromEntries(
       FEED_EXPORTS.map((f) => [f.id, { attribute: f.videoAttribute, applied: false }]),
     ),
   );
   const [isDownloadingZip, setIsDownloadingZip] = useState(false);
+  const [isDownloadingAllZip, setIsDownloadingAllZip] = useState(false);
 
   const appliedCount = Object.values(feedStates).filter((s) => s.applied).length;
   const allApplied = appliedCount === FEED_EXPORTS.length;
@@ -48,8 +50,23 @@ export function ExportStep({ approvedCount, approvedIds, selectedProducts, onCom
     }));
   };
 
+  const handleZipDownloadAll = () => {
+    if (isDownloadingAllZip) return;
+    setIsDownloadingAllZip(true);
+    setTimeout(() => {
+      setIsDownloadingAllZip(false);
+      toast("Tüm videolar hazırlanıyor... İndirme başladı.");
+      const a = document.createElement("a");
+      a.href = SAMPLE_VIDEO;
+      a.download = "all-videos.zip";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }, 1000);
+  };
+
   const handleApplyAll = () => {
-    if (!window.confirm("Tüm akışlara uygulanacak. Devam edilsin mi?")) return;
+    if (!window.confirm(`Kampanyadaki ${approvedCount} onaylı video seçilen tüm feed'lere uygulanacak. Devam edilsin mi?`)) return;
     setFeedStates((prev) =>
       Object.fromEntries(Object.entries(prev).map(([id, s]) => [id, { ...s, applied: true }])),
     );
@@ -82,7 +99,8 @@ export function ExportStep({ approvedCount, approvedIds, selectedProducts, onCom
         <div>
           <h2 className="text-2xl font-semibold text-foreground">Dışa aktar</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            <span className="font-semibold text-foreground">{approvedCount}</span> onaylı video dışa aktarmaya hazır
+            <span className="font-semibold text-foreground">{approvedCount}</span> onaylı video,{" "}
+            kampanyadaki <span className="font-semibold text-foreground">{totalVideoCount}</span> videodan feed'lere aktarılmaya hazır
           </p>
         </div>
         {!allApplied && (
@@ -146,7 +164,16 @@ export function ExportStep({ approvedCount, approvedIds, selectedProducts, onCom
             className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground transition-all hover:border-foreground/30 disabled:opacity-60"
           >
             <Archive className="h-4 w-4" />
-            {isDownloadingZip ? "Hazırlanıyor..." : "ZIP olarak indir"}
+            {isDownloadingZip ? "Hazırlanıyor..." : `Onaylananları indir (${approvedCount} video)`}
+          </button>
+          <button
+            type="button"
+            onClick={handleZipDownloadAll}
+            disabled={isDownloadingAllZip}
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground transition-all hover:border-foreground/30 disabled:opacity-60"
+          >
+            <Archive className="h-4 w-4" />
+            {isDownloadingAllZip ? "Hazırlanıyor..." : `Tüm videoları indir (${totalVideoCount} video)`}
           </button>
         </div>
       </div>

@@ -18,8 +18,6 @@ import { ArrowLeft } from "lucide-react";
 import { CampaignNameModal } from "@/components/videos/CampaignNameModal";
 
 // ─── Stage machine ────────────────────────────────────────────────────────────
-//
-// Validated flow:  library → select → template → progress → review → export → success
 
 type Stage =
   | "library"
@@ -32,9 +30,7 @@ type Stage =
   | "success";
 
 const stageToStep: Record<Stage, number> = {
-  // Step bar is hidden for library (step 0)
   library: 0,
-  // Validated steps 1–6
   select: 1,
   template: 2,
   progress: 3,
@@ -46,17 +42,19 @@ const stageToStep: Record<Stage, number> = {
 
 const getPreviousStage = (current: Stage): Stage | null => {
   switch (current) {
-    // Validated back-navigation
     case "select":      return "library";
     case "template":    return "select";
     case "progress":    return null;
-    case "review":      return null;   // no back from review — generation already ran
+    case "review":      return null;
     case "edit-prompt": return "review";
     case "export":      return "review";
     case "success":     return null;
     default:            return null;
   }
 };
+
+// Per-folder snapshot for draft video access (3.2)
+type FolderSnapshot = { jobs: VideoJob[]; productIds: string[] };
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -103,17 +101,51 @@ const Videos = () => {
 
   // ── Active campaign context ────────────────────────────────────────────────
   const [activeFolderName, setActiveFolderName] = useState<string>("");
+  const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
+
+  // ── Per-folder draft video snapshots (3.2) ─────────────────────────────────
+  const [folderSnapshots, setFolderSnapshots] = useState<Record<string, FolderSnapshot>>({});
+
+  const pendingCounts = useMemo(
+    () => Object.fromEntries(
+      Object.entries(folderSnapshots).map(([id, s]) => [id, s.jobs.length])
+    ),
+    [folderSnapshots],
+  );
 
   // ─── Handlers ──────────────────────────────────────────────────────────────
 
-  // Library → Select
+  // Library → Select (or Review if pending snapshot exists)
   const handleOpenFolder = (folderId: string) => {
     const folder = folders.find((f) => f.id === folderId);
     setActiveFolderName(folder?.name ?? "");
-    setStage("select");
+    setActiveFolderId(folderId);
+    const snap = folderSnapshots[folderId];
+    if (snap && snap.jobs.length > 0) {
+      setVideoJobs(snap.jobs);
+      setSelectedIds(snap.productIds);
+      setStage("review");
+    } else {
+      setStage("select");
+    }
   };
 
   const handleNewCampaign = () => setStage("select");
+
+  // Toggle folder active/draft status (3.1)
+  const handleToggleFolderStatus = (id: string) => {
+    setFolders((prev) =>
+      prev.map((f) =>
+        f.id === id
+          ? {
+              ...f,
+              status: f.status === "active" ? "draft" : "active",
+              updatedAt: new Date().toISOString().split("T")[0],
+            }
+          : f,
+      ),
+    );
+  };
 
   // Select → Campaign modal → Template
   const handleChooseTemplate = () => setShowCampaignModal(true);
@@ -126,9 +158,11 @@ const Videos = () => {
       updatedAt: new Date().toISOString().split("T")[0],
       videoCount: 0,
       status: "draft",
+      productIds: selectedIds,
     };
     setFolders((prev) => [newFolder, ...prev]);
     setActiveFolderName(name);
+    setActiveFolderId(newFolder.id);
     setShowCampaignModal(false);
     setStage("template");
   };
@@ -141,21 +175,23 @@ const Videos = () => {
   const handleStartGeneration = (opts: { template: TemplateId; guidedPrompt: GuidedPrompt }) => {
     setTemplate(opts.template);
     setGuidedPrompt(opts.guidedPrompt);
-    // Deduct tokens upfront
     setTokenBalance((b) => b - selectedIds.length * TOKEN_COST_PER_VIDEO);
-    // Initialise one job per selected product (all pending)
     setVideoJobs(
       selectedIds.map((id) => ({ productId: id, status: "pending", videoUrl: null })),
     );
     setStage("progress");
   };
 
-  // Progress → Review
+  // Progress → Review (save snapshot for 3.2)
   const handleProgressComplete = () => {
-    // Mark all jobs ready so Review can access the video URLs
-    setVideoJobs((prev) =>
-      prev.map((j) => ({ ...j, status: "ready", videoUrl: SAMPLE_VIDEO })),
-    );
+    const readyJobs = videoJobs.map((j) => ({ ...j, status: "ready" as const, videoUrl: SAMPLE_VIDEO }));
+    setVideoJobs(readyJobs);
+    if (activeFolderId) {
+      setFolderSnapshots((prev) => ({
+        ...prev,
+        [activeFolderId]: { jobs: readyJobs, productIds: selectedIds },
+      }));
+    }
     setStage("review");
   };
 
@@ -187,7 +223,6 @@ const Videos = () => {
         j.productId === productId ? { ...j, status: "ready", videoUrl: j.videoUrl } : j,
       ),
     );
-    // Reset review state for the regenerated video so user re-reviews it
     setApprovedIds((prev) => prev.filter((id) => id !== productId));
     setRejectedIds((prev) => prev.filter((id) => id !== productId));
     setEditingProductId(null);
@@ -202,8 +237,15 @@ const Videos = () => {
   // Review → Export
   const handleGoToExport = () => setStage("export");
 
-  // Export → Success
+  // Export → Success (clear snapshot for this folder)
   const handleExportComplete = (feedNames: string[]) => {
+    if (activeFolderId) {
+      setFolderSnapshots((prev) => {
+        const next = { ...prev };
+        delete next[activeFolderId];
+        return next;
+      });
+    }
     setExportedFeeds(feedNames);
     setStage("success");
   };
@@ -218,6 +260,7 @@ const Videos = () => {
     setEditingProductId(null);
     setExportedFeeds([]);
     setActiveFolderName("");
+    setActiveFolderId(null);
     setStage("library");
   };
 
@@ -225,7 +268,6 @@ const Videos = () => {
 
   const showStepBar = stage !== "library";
   const previousStage = getPreviousStage(stage);
-
   const spentTokens = MOCK_TOKEN_BALANCE - tokenBalance;
 
   return (
@@ -277,7 +319,9 @@ const Videos = () => {
             folders={folders}
             onOpenFolder={handleOpenFolder}
             onNewCampaign={handleNewCampaign}
+            onToggleStatus={handleToggleFolderStatus}
             tokenBalance={tokenBalance}
+            pendingCounts={pendingCounts}
           />
         )}
 
@@ -349,6 +393,7 @@ const Videos = () => {
             approvedCount={approvedIds.length}
             approvedIds={approvedIds}
             selectedProducts={selectedProducts}
+            totalVideoCount={videoJobs.length}
             onComplete={handleExportComplete}
             onSkip={() => handleExportComplete([])}
           />
