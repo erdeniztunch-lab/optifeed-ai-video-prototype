@@ -63,7 +63,7 @@ const getPreviousStage = (current: Stage): Stage | null => {
 const Videos = () => {
   // ── Routing ────────────────────────────────────────────────────────────────
   const [searchParams] = useSearchParams();
-  const [stage, setStage] = useState<Stage>("library");
+  const [stage, setStage] = useState<Stage>("select");
   const [showCampaignModal, setShowCampaignModal] = useState(false);
 
   useEffect(() => {
