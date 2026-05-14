@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { AppShell } from "@/components/AppShell";
 import { StepIndicator } from "@/components/videos/StepIndicator";
 import { LibraryStep } from "@/components/videos/LibraryStep";
@@ -14,6 +15,7 @@ import { FOLDERS, type VideoFolder } from "@/data/folders";
 import { MOCK_TOKEN_BALANCE, TOKEN_COST_PER_VIDEO, SAMPLE_VIDEO } from "@/data/tokens";
 import { type GuidedPrompt, DEFAULT_GUIDED_PROMPT, type VideoJob, type TemplateId } from "@/types/video-flow";
 import { ArrowLeft } from "lucide-react";
+import { CampaignNameModal } from "@/components/videos/CampaignNameModal";
 
 // ─── Stage machine ────────────────────────────────────────────────────────────
 //
@@ -60,7 +62,15 @@ const getPreviousStage = (current: Stage): Stage | null => {
 
 const Videos = () => {
   // ── Routing ────────────────────────────────────────────────────────────────
+  const [searchParams] = useSearchParams();
   const [stage, setStage] = useState<Stage>("library");
+  const [showCampaignModal, setShowCampaignModal] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("view") === "library") {
+      setStage("library");
+    }
+  }, [searchParams]);
 
   // ── Library / folder state ─────────────────────────────────────────────────
   const [folders, setFolders] = useState<VideoFolder[]>(FOLDERS);
@@ -103,21 +113,29 @@ const Videos = () => {
     setStage("select");
   };
 
-  const handleCreateFolder = (name: string) => {
+  const handleNewCampaign = () => setStage("select");
+
+  // Select → Campaign modal → Template
+  const handleChooseTemplate = () => setShowCampaignModal(true);
+
+  const handleCampaignConfirm = (name: string) => {
     const newFolder: VideoFolder = {
       id: `f${Date.now()}`,
       name,
       createdAt: new Date().toISOString().split("T")[0],
+      updatedAt: new Date().toISOString().split("T")[0],
       videoCount: 0,
       status: "draft",
     };
     setFolders((prev) => [newFolder, ...prev]);
     setActiveFolderName(name);
-    setStage("select");
+    setShowCampaignModal(false);
+    setStage("template");
   };
 
-  // Select → Template
-  const handleChooseTemplate = () => setStage("template");
+  const handleCampaignCancel = () => setShowCampaignModal(false);
+
+  const handleGoToLibrary = () => setStage("library");
 
   // Template → Progress
   const handleStartGeneration = (opts: { template: TemplateId; guidedPrompt: GuidedPrompt }) => {
@@ -256,18 +274,28 @@ const Videos = () => {
           <LibraryStep
             folders={folders}
             onOpenFolder={handleOpenFolder}
-            onCreateFolder={handleCreateFolder}
+            onNewCampaign={handleNewCampaign}
+            tokenBalance={tokenBalance}
           />
         )}
 
         {/* ── Phase 2: Product Selection ───────────────────────────────────── */}
         {stage === "select" && (
-          <SelectStep
-            selectedIds={selectedIds}
-            setSelectedIds={setSelectedIds}
-            onContinue={handleChooseTemplate}
-            tokenBalance={tokenBalance}
-          />
+          <>
+            <SelectStep
+              selectedIds={selectedIds}
+              setSelectedIds={setSelectedIds}
+              onContinue={handleChooseTemplate}
+              tokenBalance={tokenBalance}
+              onGoToLibrary={handleGoToLibrary}
+            />
+            <CampaignNameModal
+              open={showCampaignModal}
+              folders={folders}
+              onConfirm={handleCampaignConfirm}
+              onCancel={handleCampaignCancel}
+            />
+          </>
         )}
 
         {/* ── Phase 3: Template Selection ──────────────────────────────────── */}

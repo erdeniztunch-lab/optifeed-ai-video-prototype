@@ -34,7 +34,7 @@ Hedef deneyim, video üretimini feed yönetimi akışının içine entegre edere
 
 **Kullanıcı ihtiyacı (JTBD):** "Yüzlerce ürünüm var. Hangisinin videosu yok biliyorum ama üretmek zahmetli ve pahalı. Bunu kampanya bazlı, kontrollü biçimde otomatize etmek istiyorum."
 
-**Kullanıcı alışkanlığı:** Kampanya ve promo bazlı çalışır. Ürettiği içerikleri kampanyaya göre gruplar ve sonradan tekrar erişmek ister.
+**Kullanıcı alışkanlığı:** Kampanya ve promo bazlı çalışır. Ürettiği içerikleri kampanyaya göre gruplar ve sonradan tekrar erişmek ister. <!-- updated: E-ticaret kullanıcısı "önce ürünü bul, sonra işlem yap" mantığıyla çalışır; klasör yaratmak giriş noktası olmamalı (Zafer feedback) -->
 
 ---
 
@@ -46,6 +46,7 @@ Hedef deneyim, video üretimini feed yönetimi akışının içine entegre edere
 4. **Kampanya bazlı organizasyon:** Üretilen videolar klasör/library yapısında saklanır; kullanıcı kampanya bazlı çalışabilir.
 5. **İnsan onayı:** Hiçbir video otomatik olarak feed'e gönderilmez. Kullanıcı her videoyu inceleyip onaylar.
 6. **Güvenli üretim:** Uygunsuz içerik üretimini engelleyen temel güvenlik katmanı bulunur.
+7. **Ürün öncelikli giriş:** Kullanıcı platforma girişte önce ürün kataloğunu görür; önce ürün seçer, sonra kampanya adı verir. <!-- updated: Zafer feedback — kullanıcı neyi seçeceğini görmeden klasör yaratmak istemez -->
 
 ---
 
@@ -53,26 +54,33 @@ Hedef deneyim, video üretimini feed yönetimi akışının içine entegre edere
 
 **Kapsam dahilindeki özellikler:**
 
-- Folder / library başlangıç yapısı (temel seviye — kampanya bazlı organizasyon)
+- Folder / library yapısı (temel seviye — kampanya bazlı organizasyon; sidebar/nav üzerinden erişilir) <!-- updated: Library artık zorunlu giriş noktası değil; sidebar'dan erişilir (Zafer feedback) -->
 - Ürün arama (ürün adı, ID, item group ID)
+- Ürün filtreleme: ID, Kategori, Marka <!-- updated: Zafer feedback — filtrelerle ürün arama giriş deneyiminin çekirdeği -->
 - "Recently added" sıralama seçeneği
 - Ürün metadata gösterimi (ad, ID, item group ID, kategori, marka, ana görsel, ek görsel sayısı)
 - Ek görsel sayısı göstergesi (stacked image indicator)
+- Ürün üretim geçmişi uyarısı ("bu ürün için daha önce video üretildi" göstergesi) <!-- updated: Zeynep/Zafer feedback — gereksiz token harcamasını önler -->
 - Ürün seçim limiti ve bu limitin UI'da gösterimi
 - Seçime bağlı tahmini maliyet ve süre göstergesi (anlık güncellenen)
-- "Choose template" CTA'sı (ürün seçimi sonrası)
+- **Kampanya adı modal'ı** — ürün seçimi sonrası, şablon seçimine geçmeden önce bir pop-up ile kampanya/klasör ismi alınır <!-- updated: Zafer feedback — yeni akış gerekliliği -->
+- "Choose template" CTA'sı (kampanya adı modal'ından sonra)
 - Template seçim ekranı (açık grid yapısında)
+- **Senaryo bazlı şablon isimlendirmesi** — soyut isimler yerine somut, kullanım senaryosu tanımlayan isimler <!-- updated: Zeynep feedback — "Ürün Odağı" gibi soyut isimler yerine "Alışveriş caddesinde durup vitrine bakan kadın" tarzı somut isimler -->
 - Guided template akışı (sektör, tema, kampanya bağlamı, background, ürün tipi gibi yönlendirmeli giriş alanları)
 - 1:1 format (1080×1080) video üretimi
-- Token / kredi bakiyesi görünürlüğü (sağ üstte sabit)
+- Token / kredi bakiyesi görünürlüğü (sol sidebar'da sabit) <!-- updated: feedback2 — sol menüde sürekli görünür olmalı -->
+- **Harcanan token ve dakika maliyeti gösterimi** (sol sidebar'da, bakiyenin yanında) <!-- updated: Zafer feedback — harcamanın sürekli görünür olması -->
 - Üretim sırasında progress ekranı (tamamlanan videolar belirirken gerisinin "pending/generating" olarak gösterimi)
+- **Üretilen videolar klasörde "onay bekliyor" statüsünde saklanır** — onaylanmayan/reddedilmeyen videolar kaybolmaz <!-- updated: Zeynep feedback — kullanıcı token harcadığı için tüm çıktılara sonradan ulaşabilmeli -->
 - Output inceleme ekranı (liste veya grid)
 - Her video için approve / edit / reject aksiyonları
 - Edit Prompt akışı (dropdown preset seçenekleri + free text alanı + örnek promptlar)
 - Tekil video indirme (MP4)
-- ZIP toplu indirme (tüm onaylanan videolar)
+- **Toplu indirme — tüm videolar** (onaylı veya onaysız, tek tuşla ZIP) <!-- updated: Zeynep/Zafer feedback — "ben görmemiştim, yayına gitmiş" şikayetini önler; tüm çıktılara erişim sağlanmalı -->
 - Temel güvenlik katmanı (safety guardrails)
-- Feed'e gönderim (Send to Feed) adımı — kanalın seçimi ve gönderim; detay Open Questions'da
+- Feed'e gönderim (Send to Feed) adımı — klasör bazlı, seçilen kanalların tamamına tek seferde gönderim <!-- updated: Zafer feedback — her video için ayrı platform seçimi kaldırıldı; klasördeki onaylı videolar bütün olarak gönderilir -->
+- **Klasör aktif/pasif toggle'ı** — Dynamic Creative ile tutarlı deneyim için <!-- updated: Zafer feedback -->
 
 ---
 
@@ -85,36 +93,45 @@ Hedef deneyim, video üretimini feed yönetimi akışının içine entegre edere
 - 1000 ürün ölçeğinde bulk generation — farklı mimari gerektirir; request-based flow olarak ayrıca değerlendirilecek
 - Scheduling (start / end date) — V1 dışı
 - Bulk upload (kullanıcı hazır liste yükler) — V1 dışı
-- Hover preview — nice-to-have, V2 olabilir
+- Hover preview (şablon kartlarında animasyonlu önizleme) — nice-to-have, V2 <!-- updated: feedback2 — Zeynep istek olarak dile getirdi; V2'de değerlendirilecek -->
 - Otomatik feed yayını (insan onayı olmadan)
 - E-posta ve in-app bildirim — V1 dışı
+- **Statik fotoğraftan manken giydirme** — fotoğrafı yüklenen kıyafetin AI ile bir mankene giydirilmesi bu MVP'nin kapsamı dışında <!-- updated: feedback2 kapsam dışı kararı -->
+- **Video bazında özel export** — aynı klasördeki videoların farklı mecralara bölünerek gönderilmesi kapsam dışı <!-- updated: feedback2 kapsam dışı kararı — klasör seviyesinde tek export -->
+- **İnteraktif canlı demo** — tüm müşterilerin görebileceği simüle edilebilir genel demo kapsam dışı; MVP aşamasında yalnızca dahili demo hesabıyla test edilecek <!-- updated: feedback2 kapsam dışı kararı -->
+- **Menü gruplandırması (AI Studio / Optif Visuals)** — Dynamic Creative, OptiVideo vb. özelliklerin tek başlık altında toplanması; şu an yalnızca Video olduğu için park edildi <!-- updated: Zeynep feedback — deferred -->
 
 ---
 
 ## Main User Flow
 
-```
-1. LIBRARY / FOLDER
-   → Mevcut klasörler görüntülenir
-   → Yeni klasör oluşturulur veya mevcut klasör açılır
-   → Video üretim akışı başlatılır
+<!-- updated: Zafer feedback — akış sırası değişti; ürün listesi giriş noktası oldu, klasör ikinci plana alındı -->
 
-2. PRODUCT SELECTION
-   → Ürünler listelenir (arama + recently added sıralama)
-   → Kullanıcı ürün(leri) seçer (limit dahilinde)
+```
+1. PRODUCT SELECTION (giriş noktası)
+   → Kullanıcı platforma girdiğinde ürün kataloğu görünür
+   → Filtreler (ID, Kategori, Marka) + arama ile ürünler bulunur
+   → Ürün seçilir (limit dahilinde)
    → Seçime bağlı tahmini maliyet ve süre anlık gösterilir
-   → CTA: "Choose template"
+   → Daha önce video üretilmiş ürünler uyarı ile işaretlenir
+   → CTA: "Şablon seç" (kampanya adı modal'ını açar)
+
+2. CAMPAIGN NAME MODAL (pop-up)
+   → Kullanıcı kampanya / klasör adı girer
+   → Mevcut klasöre ekleme veya yeni klasör seçeneği
+   → Onaylayınca şablon seçimine geçilir
 
 3. TEMPLATE SELECTION
-   → Şablonlar açık grid yapısında gösterilir
-   → Kullanıcı guided alanları doldurur (sektör, tema, kampanya bağlamı vb.)
+   → Senaryo bazlı şablonlar açık grid yapısında gösterilir
+   → Kullanıcı guided alanları doldurur (sektör, ürün tipi, tema, background)
    → Üretim başlamadan son maliyet ve süre teyidi gösterilir
-   → CTA: "Generate videos"
+   → CTA: "Videoları üret"
 
 4. GENERATION PROGRESS
    → Üretim başlar, progress ekranı açılır
    → Tamamlanan videolar ekrana belirir
    → Bekleyenler "pending / generating" olarak gösterilir
+   → Üretilen videolar otomatik olarak klasörde "onay bekliyor" statüsünde saklanır
 
 5. PREVIEW / REVIEW
    → Tamamlanan videolar liste veya grid halinde incelenir
@@ -126,47 +143,41 @@ Hedef deneyim, video üretimini feed yönetimi akışının içine entegre edere
    → Yeni çıktı preview'a döner
 
 7. EXPORT / SEND
-   → Onaylanan videolar indirilir (tekil)
-   → Seçilen feed kanallarına gönderilir (Google, Meta, TikTok)
+   → Onaylanan tüm videolar bir bütün olarak seçilen kanallara gönderilir (klasör bazlı)
+   → Toplu indirme: tüm videolar (onaylı veya değil) tek ZIP'te indirilebilir
    → Videolar ilgili klasöre kaydedilir
+
+8. LIBRARY / FOLDER (sidebar üzerinden her an erişilebilir)
+   → Mevcut kampanya klasörleri görüntülenir
+   → Klasör aktif/pasif toggle'ı ile durum yönetimi
+   → "Onay bekliyor" statüsündeki video'lar geçmişe dönük izlenebilir
 ```
 
 ---
 
 ## Screens
 
-### 1. Library / Folder Ekranı
+### 1. Product Selection Ekranı (Giriş Noktası) <!-- updated: Zafer feedback — ilk ekran ürün listesi -->
 
-**Amaç:** Kullanıcının kampanya bazlı organize çalışmasını sağlar. Daha önce üretilen videolar klasör yapısında bulunur.
-
-**İçerik:**
-- Mevcut klasör listesi (kampanya adı, oluşturma tarihi, video sayısı)
-- "Yeni klasör oluştur" aksiyonu
-- Her klasöre tıklayarak içeriğe erişim
-
-**Empty State:**
-- Henüz hiç klasör ve video yoksa kullanıcıyı yönlendiren başlangıç mesajı ve "İlk videoyu oluştur" CTA'sı gösterilir.
-- Sıfırdan başlayan kullanıcıya boş bir generation ekranı yerine bağlamsal yönlendirme yapılır.
-
-**Karar:** Library yapısı en az temel seviyede MVP'de yer alır.
-
----
-
-### 2. Product Selection Ekranı
-
-**Amaç:** Kullanıcının katalogdan video üretilecek ürünleri seçmesi.
+**Amaç:** Kullanıcının katalogdan video üretilecek ürünleri seçmesi. Platform açıldığında bu ekran gösterilir.
 
 **Görüntülenecek ürün bilgileri:**
 - Ana görsel
 - Ek görsel sayısı göstergesi (stacked / iskambil kağıdı benzeri indicator)
 - Ürün adı
 - Status (video var / yok)
+- **Üretim geçmişi uyarısı** — bu ürün için daha önce video üretilmişse görsel işaret <!-- updated: Zeynep/Zafer feedback — gereksiz token harcamasını önler -->
 - ID
 - Item group ID
 - Kategori / product type
 - Marka
 
 **Arama:** Ürün adı, ID ve item group ID üzerinden arama yapılabilir.
+
+**Filtreler:** <!-- updated: Zafer feedback — giriş deneyiminin çekirdeği -->
+- ID ile filtre
+- Kategori ile filtre
+- Marka ile filtre
 
 **Sıralama:** "Recently added" seçeneği mutlaka bulunur.
 
@@ -178,7 +189,21 @@ Hedef deneyim, video üretimini feed yönetimi akışının içine entegre edere
 - Tahmini maliyet / token kullanımı (yaklaşık)
 - "Bu aşamada ödeme alınmayacaktır" veya benzeri güven veren mikrocopy (değerlendirmeye alınmalı)
 
-**CTA:** "Choose template" — "Generate video" değil. Kullanıcı ürün seçtikten sonra doğrudan üretime geçmez; önce şablon seçer.
+**CTA:** "Şablon seç" — tıklandığında kampanya adı modal'ı açılır.
+
+---
+
+### 2. Kampanya Adı Modal'ı <!-- updated: Zafer feedback — yeni ekran; ürün seçimi sonrası, şablon öncesi -->
+
+**Amaç:** Kullanıcının üretim akışını bir kampanya / klasör adıyla etiketlemesi.
+
+**İçerik:**
+- Text input: "Kampanya adı" (zorunlu)
+- Mevcut klasörlerden seçim veya yeni klasör oluşturma seçeneği
+- Onay CTA'sı: "Devam et" → şablon seçimine geçer
+- İptal: modal kapanır, ürün seçiminde kalınır
+
+**Kural:** Klasör adı boşken "Devam et" disabled.
 
 ---
 
@@ -188,13 +213,15 @@ Hedef deneyim, video üretimini feed yönetimi akışının içine entegre edere
 
 **Template listesi:** Açık grid yapısında (2×2 veya benzeri) gösterilir. Gizli "Change" butonu kullanılmaz.
 
-**Mevcut şablonlar:**
+**Mevcut şablonlar:** <!-- updated: Zeynep feedback — isimler senaryo bazlı ve somut olmalı; örnek: "Alışveriş caddesinde yürüyen ve durup vitrine bakan bir kadın" -->
 | id | Etiket | Kullanım amacı |
 |----|--------|---------------|
-| `product-spotlight` | Product Spotlight | Tek ürün odaklı, temiz format |
-| `sale-promotion` | Sale Promotion | İndirim ve fiyat vurgulu |
-| `new-arrival` | New Arrival | Yeni ürün lansmanı |
-| `social-story` | Social Story | Dikey, mobil-öncelikli (Not: MVP'de 1:1 üretim yapılıyor; bu şablon V1'de 1:1 boyutunda üretilir) |
+| `product-spotlight` | *(senaryo bazlı isim — bkz. Open Questions #6)* | Tek ürün odaklı, temiz format |
+| `sale-promotion` | *(senaryo bazlı isim — bkz. Open Questions #6)* | İndirim ve fiyat vurgulu |
+| `new-arrival` | *(senaryo bazlı isim — bkz. Open Questions #6)* | Yeni ürün lansmanı |
+| `social-story` | *(senaryo bazlı isim — bkz. Open Questions #6)* | Dikey, mobil-öncelikli (Not: MVP'de 1:1 üretim yapılıyor; bu şablon V1'de 1:1 boyutunda üretilir) |
+
+**Not:** Tekstil sektörü için ilk 3–5 şablonun somut senaryo isim ve promptlarının belirlenmesi Open Questions'dadır. Öncelik: Yüksek.
 
 **Guided prompt alanları (şablon seçiminin altında):**
 - Sektör
@@ -204,7 +231,7 @@ Hedef deneyim, video üretimini feed yönetimi akışının içine entegre edere
 
 Kullanıcı sıfırdan prompt yazmak zorunda değildir; preset seçenekler ve örnek girdiler gösterilir. Gerektiğinde kontrollü free text alanı sunulur.
 
-**CTA:** "Generate videos" — üretim başlamadan tahmini maliyet ve süre teyidi gösterilir.
+**CTA:** "Videoları üret" — üretim başlamadan tahmini maliyet ve süre teyidi gösterilir.
 
 **Format:** Tüm üretimler **1:1, 1080×1080** formatında yapılır. Diğer boyutlar MVP dışındadır.
 
@@ -219,6 +246,7 @@ Kullanıcı sıfırdan prompt yazmak zorunda değildir; preset seçenekler ve ö
 - Her video tamamlandıkça ekranda belirir ve izlenebilir hale gelir.
 - Henüz tamamlanmayan videolar "Generating..." veya "Pending" durumunda görünür.
 - Toplam video sayısı, tamamlanan sayısı ve kalan tahmini süre gösterilir.
+- **Tamamlanan her video otomatik olarak klasörde "onay bekliyor" statüsüyle kaydedilir.** <!-- updated: Zeynep feedback — token harcandığı için üretilen videolar kaybolmamalı -->
 
 **Önemli:** Her video yaklaşık 2 dakika sürebilir. 10 video seçildiyse kullanıcı bu süre zarfında tamamlanan videoları görmeye başlar; tümünün bitmesini beklemek zorunda kalmaz.
 
@@ -260,8 +288,8 @@ Kullanıcı sıfırdan prompt yazmak zorunda değildir; preset seçenekler ve ö
 
 **Aksiyonlar:**
 - Tekil video indirme (MP4)
-- ZIP toplu indirme (tüm onaylanan videolar)
-- Feed'e gönderim: konfigüre edilmiş export'lara video asset URL'sini yaz
+- **Toplu indirme — tüm videolar** (onaylı veya onaysız): tek ZIP paketi <!-- updated: Zeynep feedback — kullanıcı token harcadığı için tüm çıktılara ulaşabilmeli -->
+- Feed'e gönderim: **klasördeki onaylı videolar bütün olarak** seçilen kanallara gönderilir <!-- updated: Zafer feedback — video bazında platform seçimi kaldırıldı -->
 
 **Karar:** Hiçbir video insan onayı olmadan otomatik olarak feed'e gönderilmez.
 
@@ -296,7 +324,25 @@ Her feed kartı için:
   → "Apply" butonu
 ```
 
-**Açık tasarım kararı:** Mevcut ekranda her feed için ayrı "Apply" var. Video akışında "Apply All" seçeneği de değerlendirilebilir.
+**Karar:** "Apply All" seçeneği V1'de eklenecek. <!-- updated: feedback2 kararı — toplu export netleşti -->
+
+---
+
+### 8. Library / Folder Ekranı (Sidebar Üzerinden Erişilir) <!-- updated: Zafer feedback — Library artık zorunlu giriş noktası değil -->
+
+**Amaç:** Kullanıcının kampanya bazlı organize çalışmasını sağlar. Daha önce üretilen videolar klasör yapısında bulunur.
+
+**İçerik:**
+- Mevcut klasör listesi (kampanya adı, oluşturma tarihi, video sayısı)
+- **Aktif / pasif toggle'ı** her klasör için <!-- updated: Zafer feedback — Dynamic Creative ile tutarlı deneyim -->
+- "Yeni klasör oluştur" aksiyonu
+- Her klasöre tıklayarak içeriğe erişim
+- Klasör içinde "onay bekliyor" statüsündeki videolara erişim <!-- updated: Zeynep feedback — draft video persistence -->
+
+**Empty State:**
+- Henüz hiç klasör ve video yoksa kullanıcıyı yönlendiren başlangıç mesajı ve "İlk videoyu oluştur" CTA'sı gösterilir.
+
+**Karar:** Library yapısı en az temel seviyede MVP'de yer alır; ancak giriş noktası değildir.
 
 ---
 
@@ -306,6 +352,10 @@ Her feed kartı için:
 Görüntülenen ürünler:
   - Tüm katalog (varsayılan sıralama: "Recently added")
   - Arama: ürün adı, ID veya item group ID üzerinden
+  - Filtreler: ID, Kategori, Marka  ← updated: Zafer feedback
+
+Üretim geçmişi:
+  - Daha önce video üretilmiş ürünler işaretlenir  ← updated: feedback2
 
 Seçim limiti:
   - Minimum: 1
@@ -326,6 +376,8 @@ Maliyet/süre güncelleme:
 
 **MVP'de şablon önerisi statiktir.** Varsayılan şablon: `product-spotlight`.
 
+**Şablon isimlendirmesi senaryo bazlı olacak.** Soyut isimler (örn. "Ürün Odağı") yerine somut senaryo açıklamaları kullanılacak (örn. "Vitrin önünde yürüyüp duran kadın"). Tekstil için 3–5 şablonun somut isimleri ve promptları belirlenmesi gerekmektedir — bkz. Open Questions #6. <!-- updated: Zeynep feedback -->
+
 Gelecekte dinamik öneri hedeflenmektedir: ürünün indirim durumu, yayın tarihi, satış verisi gibi sinyallere göre sistem şablon önerebilir. Bu V2 kapsamındadır.
 
 Şablon seçim ekranı açık bir grid yapısında sunulur; kullanıcı şablonları doğrudan görür. Gizli "Change" butonu kullanılmaz.
@@ -335,7 +387,8 @@ Gelecekte dinamik öneri hedeflenmektedir: ürünün indirim durumu, yayın tari
 ## Cost / Token Logic
 
 **Sabit görünüm:**
-- Kullanıcının mevcut token / kredi bakiyesi sağ üstte her zaman görünür.
+- Kullanıcının mevcut token / kredi bakiyesi **sol sidebar'da** her zaman görünür. <!-- updated: feedback2 — sol menüde sabit gösterim -->
+- **Harcanan token miktarı ve dakika bazlı maliyet** de sol sidebar'da gösterilir. <!-- updated: Zafer feedback — harcama şeffaflığı -->
 
 **Üretim öncesi:**
 - Seçilen ürün sayısı
@@ -367,6 +420,7 @@ Gelecekte dinamik öneri hedeflenmektedir: ürünün indirim durumu, yayın tari
 
 Her video tamamlandığında:
   - Kart "Ready" durumuna geçer
+  - Video klasörde "onay bekliyor" statüsüyle kaydedilir  ← updated: Zeynep feedback
   - Kullanıcı o videoyu beklemeye gerek kalmadan incelemeye başlayabilir
 ```
 
@@ -382,7 +436,7 @@ Her video için:
     - Maliyet gösterilir, onay alınır
     - Yeniden üretim başlar
     - Yeni çıktı preview'a döner
-  - Reject → video akıştan çıkar
+  - Reject → video akıştan çıkar; klasörde "reddedildi" statüsünde saklanır  ← updated: Zeynep feedback
 
 Tüm videolar işlendiğinde:
   - Export / Send to Feed adımına geçilir
@@ -394,14 +448,17 @@ Tüm videolar işlendiğinde:
 
 **Tekil indirme:** Her video için MP4 indirme seçeneği.
 
-**Send to Feed:**
-- Onaylanan videolar seçilen kanallara gönderilir.
+**Toplu indirme:** <!-- updated: Zeynep feedback — tüm videolar indirilebilmeli, yalnızca onaylananlar değil -->
+- Onaylanan videolar ZIP olarak indirilebilir.
+- **Tüm videolar** (onaylı veya değil) da ayrı bir ZIP ile indirilebilir.
+
+**Send to Feed:** <!-- updated: Zafer feedback — klasör bazlı export -->
+- Klasördeki **onaylanan videolar bir bütün olarak** seçilen kanallara gönderilir.
+- Video bazında ayrı platform seçimi yoktur.
 - Kanal seçenekleri: Google Merchant Center, Meta Catalog, TikTok Catalog.
 - Gönderim kullanıcı aksiyonuyla tetiklenir; otomatik yayın yoktur.
 
 **Klasöre kayıt:** Onaylanan ve gönderilen videolar ilgili library klasöründe saklanır.
-
-**ZIP toplu indirme:** V1 kapsamına dahildir. Onaylanan tüm videolar tek ZIP paketi olarak indirilebilir.
 
 **Scheduling:** V1 dışıdır. Kampanya bazlı başlangıç/bitiş tarihi otomasyonu V2'ye bırakılmıştır.
 
@@ -433,11 +490,14 @@ Sistem, uygunsuz video üretimini önlemek amacıyla temel bir güvenlik katman�
 
 | # | Soru | Öncelik |
 |---|------|---------|
-| 1 | "Apply to Exports" ekranı referans alındı (bkz. Export/Send to Feed bölümü). Açık kalan: her feed için ayrı "Apply" mı kalacak, yoksa "Apply All" seçeneği de eklenecek mi? | Orta |
+| 1 | "Apply to Exports" ekranında her feed için ayrı "Apply" mı kalacak, yoksa "Apply All" tek aksiyon mı olacak? | Orta |
 | 2 | Kanal gönderimi başarısız olursa kullanıcı nasıl bilgilendirilecek? Webhook / polling yapısı planlanıyor mu? | Yüksek |
 | 3 | Gerçek AI video üretim servisi hangisi olacak? (Runway, Pika, Kling vb.) | Teknik |
 | 4 | Aynı ürün için birden fazla video versiyonu saklanabilir mi? Versiyon yönetimi var mı? | Düşük |
 | 5 | Hover preview V2'de mi kesin olarak? | Düşük |
+| 6 | Tekstil sektörü için 3–5 senaryo bazlı şablon isim ve promptları kim yazacak ve ne zaman hazır olacak? | Yüksek — bkz. feedback2 aksiyon #2 <!-- updated: Zeynep feedback + feedback2 aksiyon #2 --> |
+| 7 | Mevcut AI altyapısı bir ürün için birden fazla görsel (kıyafetin ön/arka/detay açıları) aynı anda işleyebiliyor mu? | Kritik — bkz. feedback2 teknik risk <!-- updated: Zeynep feedback — çoklu görsel girdisi; teknik doğrulama gerekmez UI'ı blocklıyor --> |
+| 8 | Ürün üretim geçmişi uyarısı ("bu ürün için daha önce video üretildi") V1'de eklenecek mi, yoksa V2'ye mi bırakılacak? | Orta <!-- updated: feedback2 — gereksiz token harcamasını önler --> |
 
 ---
 
@@ -448,39 +508,46 @@ Sistem, uygunsuz video üretimini önlemek amacıyla temel bir güvenlik katman�
 | Ürün seçim limiti | **10 ürün** |
 | Token iadesi | **Yok** — üretim başlatıldıktan ve Edit Prompt sonrası iade edilmez |
 | Safety guardrails | **Prompt seviyesi** — bkz. Safety bölümü |
-| ZIP toplu indirme | **V1 kapsamında** |
+| ZIP toplu indirme | **V1 kapsamında — tüm videolar (onaylı veya değil)** <!-- updated: Zeynep feedback --> |
 | Scheduling | **V1 dışı** |
 | Bulk upload | **V1 dışı** |
 | E-posta / in-app bildirim | **V1 dışı** |
 | Per video üretim süresi | **~2 dakika** |
 | Asset depolama detayı | **Kapsam dışı bırakıldı** |
+| Giriş noktası | **Ürün listesi (product-first)** — Library zorunlu giriş noktası değil <!-- updated: Zafer feedback --> |
+| Export granülasyonu | **Klasör seviyesi** — video bazında platform seçimi yok <!-- updated: Zafer feedback --> |
+| Draft video persistence | **Üretilen videolar "onay bekliyor" statüsünde klasörde saklanır** <!-- updated: Zeynep feedback --> |
+| Klasör aktif/pasif toggle | **V1 kapsamında** <!-- updated: Zafer feedback --> |
+| Statik foto → manken giydirme | **Kapsam dışı** <!-- updated: feedback2 --> |
+| İnteraktif canlı demo | **Kapsam dışı** — yalnızca dahili demo hesabı <!-- updated: feedback2 --> |
 
 ---
 
 ## Success Criteria
 
 ### Güçlü sinyaller (akışın çalıştığını gösterir)
-- Kullanıcı akışı baştan sona tamamlıyor (library → product selection → template → generate → review → export).
-- Kullanıcı "Create another video" ile akışı birden fazla kez döngüye alıyor.
+- Kullanıcı akışı baştan sona tamamlıyor (ürün seçimi → kampanya adı → şablon → üretim → inceleme → export). <!-- updated: akış sırası güncellendi -->
+- Kullanıcı "Yeni video oluştur" ile akışı birden fazla kez döngüye alıyor.
 - Onaylanan videolar seçilen kanallarda feed'e başarıyla ekleniyor.
 - Feed kampanya performansı, video asset eklenen ürünlerde artıyor.
 
 ### Zayıf sinyaller (kullanıcı deneyiminde sorun olduğunu gösterir)
 - Kullanıcı ürün seçim ekranında ilerlemiyor.
-- "Generate" başlatıyor ama review ekranından çıkıyor veya redediyor.
+- "Generate" başlatıyor ama review ekranından çıkıyor veya reddediyor.
 - Videoları indiriyor ancak kanallara göndermiyor.
 - Edit Prompt'u kullanmayıp tüm videoları reddediyor.
 
 ### Metrikler
 | Metrik | Açıklama |
 |--------|----------|
-| Akış tamamlama oranı | Library girişinden SuccessStep'e kadar tamamlayan kullanıcı yüzdesi |
+| Akış tamamlama oranı | Ürün seçiminden SuccessStep'e kadar tamamlayan kullanıcı yüzdesi |
 | Ürün başına üretim süresi | Seçimden onaya kadar geçen ortalama süre |
 | Edit Prompt kullanım oranı | Approve'a karşı Edit oranı |
 | Kanal dağıtım oranı | "Skip" vs "Send to Feed" tercihi |
-| Döngüsel kullanım | "Create another" oranı, tek seferde işlenen ortalama ürün sayısı |
+| Döngüsel kullanım | "Yeni video oluştur" oranı, tek seferde işlenen ortalama ürün sayısı |
 | Şablon dağılımı | Hangi şablon en çok seçiliyor |
 | Token iade oranı | Kaçta kaçı üretim sonrası beğenmeyip revize istiyor |
+| Draft video erişim oranı | Kaç kullanıcı klasörden "onay bekliyor" videoya geri dönüyor <!-- updated: Zeynep feedback metriği --> |
 
 ---
 
@@ -509,3 +576,14 @@ Bu doküman discovery meeting ve internal feedback notları temel alınarak haz�
 - **Scheduling, bulk upload, e-posta/in-app bildirim V1 dışı** olarak netleşti.
 - **Per video üretim süresi ~2 dakika** olarak netleşti.
 - **Send to Feed UX** "Apply to Exports" ekranından türetildi: her feed için kanal kartı + "Video attribute" dropdown + "Apply" butonu pattern'i benimsendi. Detay Export/Send to Feed bölümünde.
+
+### Discovery Meeting & feedback2.md (3. revizyon) <!-- updated: feedback2.md kararları eklendi -->
+- **Giriş akışı değişti:** Kullanıcı platforma girince ilk ekran ürün listesidir; Library zorunlu giriş noktası olmaktan çıktı.
+- **Kampanya adı modal'ı eklendi:** Ürün seçimi sonrası, şablon öncesi kullanıcıdan kampanya/klasör adı alınıyor.
+- **Şablon isimlendirmesi senaryo bazlı olacak:** Soyut isimler somut senaryo açıklamalarına dönüştürülecek; tekstil için 3–5 şablon belirlenmesi aksiyon.
+- **Export granülasyonu klasör seviyesine taşındı:** Video bazlı platform seçimi kaldırıldı.
+- **Draft video persistence eklendi:** Üretilen videolar "onay bekliyor" statüsünde saklanıyor.
+- **Klasör aktif/pasif toggle eklendi.**
+- **Toplu indirme genişletildi:** Yalnızca onaylananlar değil, tüm videolar indirilebilir.
+- **Üç yeni kapsam dışı karar:** Manken giydirme, video bazlı platform dağıtımı, interaktif genel demo.
+- **Çoklu görsel girdisi teknik risk olarak işaretlendi** — mevcut AI altyapısının kapasitesi doğrulanmadan UI tasarımı blocklıyor.

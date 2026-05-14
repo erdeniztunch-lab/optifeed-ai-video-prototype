@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { LayoutGrid, List, Search } from "lucide-react";
+import { FolderOpen, LayoutGrid, List, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { PRODUCTS } from "@/data/products";
@@ -12,31 +12,45 @@ interface Props {
   setSelectedIds: (ids: string[]) => void;
   onContinue: () => void;
   tokenBalance: number;
+  onGoToLibrary: () => void;
 }
 
-export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalance }: Props) {
+export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalance, onGoToLibrary }: Props) {
   const [query, setQuery] = useState("");
   const [view, setView] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState<"recent" | "name" | "brand" | "status">("recent");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [brandFilter, setBrandFilter] = useState("");
 
   const atLimit = selectedIds.length >= PRODUCT_SELECTION_LIMIT;
 
+  const categoryOptions = useMemo(
+    () => [...new Set(PRODUCTS.map((p) => p.category))].sort(),
+    [],
+  );
+  const brandOptions = useMemo(
+    () => [...new Set(PRODUCTS.map((p) => p.brand))].sort(),
+    [],
+  );
+
   const products = useMemo(() => {
     const q = query.toLowerCase();
-    const filtered = !q
+    let filtered = !q
       ? [...PRODUCTS]
       : PRODUCTS.filter((p) =>
           `${p.name} ${p.brand} ${p.productId} ${p.itemGroupId}`
             .toLowerCase()
             .includes(q),
         );
+    if (categoryFilter) filtered = filtered.filter((p) => p.category === categoryFilter);
+    if (brandFilter) filtered = filtered.filter((p) => p.brand === brandFilter);
     switch (sortBy) {
       case "name": return filtered.sort((a, b) => a.name.localeCompare(b.name, "tr"));
       case "brand": return filtered.sort((a, b) => a.brand.localeCompare(b.brand, "tr"));
       case "status": return filtered.sort((a, b) => a.status.localeCompare(b.status));
       default: return filtered;
     }
-  }, [query, sortBy]);
+  }, [query, sortBy, categoryFilter, brandFilter]);
 
   const allVisibleSelected =
     products.length > 0 && products.every((p) => selectedIds.includes(p.id));
@@ -66,13 +80,23 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
   return (
     <div className="px-6 pb-32 pt-2 md:px-10">
       <div className="mx-auto max-w-7xl">
-        <header className="mb-6">
-          <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-            Video oluşturmak için ürün seçin
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            En fazla {PRODUCT_SELECTION_LIMIT} ürün seçin. Maliyet ve süre tahmini seçiminize göre güncellenir.
-          </p>
+        <header className="mb-6 flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+              Video oluşturmak için ürün seçin
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              En fazla {PRODUCT_SELECTION_LIMIT} ürün seçin. Maliyet ve süre tahmini seçiminize göre güncellenir.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onGoToLibrary}
+            className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground"
+          >
+            <FolderOpen className="h-3.5 w-3.5" />
+            Kütüphane
+          </button>
         </header>
 
         {/* Toolbar */}
@@ -105,8 +129,32 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
             )}
           </div>
 
-          {/* Right: sort label + view toggle + search */}
+          {/* Right: filters + sort + view toggle + search */}
           <div className="flex w-full items-center justify-end gap-3 sm:w-auto">
+            {/* Kategori filtresi */}
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="hidden cursor-pointer rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs text-muted-foreground focus:outline-none sm:block"
+            >
+              <option value="">Tüm kategoriler</option>
+              {categoryOptions.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+
+            {/* Marka filtresi */}
+            <select
+              value={brandFilter}
+              onChange={(e) => setBrandFilter(e.target.value)}
+              className="hidden cursor-pointer rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs text-muted-foreground focus:outline-none sm:block"
+            >
+              <option value="">Tüm markalar</option>
+              {brandOptions.map((b) => (
+                <option key={b} value={b}>{b}</option>
+              ))}
+            </select>
+
             {/* Sort control */}
             <select
               value={sortBy}

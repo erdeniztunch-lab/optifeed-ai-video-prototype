@@ -11,15 +11,21 @@ import {
   Megaphone,
   Settings,
 } from "lucide-react";
+import { LucideIcon } from "lucide-react";
 
-const navItems = [
-  { label: "Dashboard", icon: LayoutDashboard, to: "/dashboard" },
-  { label: "Feed Sources", icon: Database, to: "/feed-sources" },
-  { label: "Exports", icon: Upload, to: "/exports" },
-  { label: "Videos", icon: Video, to: "/videos", badge: "New" },
-  { label: "Dynamic Templates", icon: LayoutTemplate, to: "/templates" },
-  { label: "GA4 Analytics", icon: BarChart3, to: "/analytics" },
-  { label: "Meta Ads", icon: Megaphone, to: "/meta-ads" },
+type NavItem =
+  | { label: string; icon: LucideIcon; to: string; badge?: string; indent?: boolean }
+  | { sectionHeader: string };
+
+const navItems: NavItem[] = [
+  { label: "Dashboard",    icon: LayoutDashboard, to: "/dashboard" },
+  { label: "Feed Sources", icon: Database,        to: "/feed-sources" },
+  { label: "Exports",      icon: Upload,          to: "/exports" },
+  { sectionHeader: "AI Studio" },
+  { label: "Video",            icon: Video,          to: "/videos?view=library", badge: "New" },
+  { label: "Dynamic Creative", icon: LayoutTemplate, to: "/templates", indent: true },
+  { label: "GA4 Analytics", icon: BarChart3,  to: "/analytics" },
+  { label: "Meta Ads",      icon: Megaphone,  to: "/meta-ads" },
 ];
 
 export function AppShell({ children, tokenBalance }: { children: ReactNode; tokenBalance?: number }) {
@@ -34,25 +40,34 @@ export function AppShell({ children, tokenBalance }: { children: ReactNode; toke
           <span className="text-lg font-semibold tracking-tight text-white">Optifeed</span>
         </div>
 
-        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-2">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className="group flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-white transition-colors"
-              activeClassName="bg-sidebar-accent text-white"
-            >
-              <span className="flex items-center gap-3">
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </span>
-              {item.badge && (
-                <span className="rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary-foreground/90">
-                  {item.badge}
+        <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-2">
+          {navItems.map((item, i) =>
+            "sectionHeader" in item ? (
+              <p
+                key={`header-${i}`}
+                className="mt-4 mb-1 px-3 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/40"
+              >
+                {item.sectionHeader}
+              </p>
+            ) : (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={`group flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-white transition-colors${item.indent ? " pl-7 text-xs" : ""}`}
+                activeClassName="bg-sidebar-accent text-white"
+              >
+                <span className="flex items-center gap-3">
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
                 </span>
-              )}
-            </NavLink>
-          ))}
+                {item.badge && (
+                  <span className="rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary-foreground/90">
+                    {item.badge}
+                  </span>
+                )}
+              </NavLink>
+            ),
+          )}
         </nav>
 
         <div className="border-t border-sidebar-border p-3 space-y-1">
