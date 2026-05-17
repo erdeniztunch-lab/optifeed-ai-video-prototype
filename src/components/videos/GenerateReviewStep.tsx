@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Loader2, Pencil, Send, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { cn } from "@/lib/utils";
 import { type Product } from "@/data/products";
 import { TEMPLATES } from "@/data/templates";
@@ -122,15 +123,16 @@ export function GenerateReviewStep({
     }
   }, [allDone, notifyOnComplete]);
 
+  const [approveAllOpen, setApproveAllOpen] = useState(false);
+
   const handleApproveAll = () => {
     if (pendingReviewIds.length === 0) return;
-    if (
-      window.confirm(
-        `İncelemeyi bekleyen ${pendingReviewIds.length} video onaylanacak. Devam edilsin mi?`,
-      )
-    ) {
-      pendingReviewIds.forEach((id) => onApprove(id));
-    }
+    setApproveAllOpen(true);
+  };
+
+  const handleApproveAllConfirm = () => {
+    pendingReviewIds.forEach((id) => onApprove(id));
+    setApproveAllOpen(false);
   };
 
   const templateDef = TEMPLATES.find((t) => t.id === selectedTemplate);
@@ -226,6 +228,16 @@ export function GenerateReviewStep({
           </Button>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={approveAllOpen}
+        title="Tümünü onayla"
+        description={`İncelemeyi bekleyen ${pendingReviewIds.length} video onaylanacak. Devam edilsin mi?`}
+        confirmLabel="Onayla"
+        cancelLabel="İptal"
+        onConfirm={handleApproveAllConfirm}
+        onCancel={() => setApproveAllOpen(false)}
+      />
     </div>
   );
 }

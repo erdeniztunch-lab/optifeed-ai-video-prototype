@@ -3,6 +3,7 @@ import { AlertTriangle, MoreVertical } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { type VideoFolder } from "@/data/folders";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 interface FolderCardProps {
   folder: VideoFolder;
@@ -28,6 +29,7 @@ export function FolderCard({
   onArchive,
 }: FolderCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -63,68 +65,68 @@ export function FolderCard({
   };
 
   const handleDeleteClick = (e: React.MouseEvent) => {
-    closeAndRun(e, () => {
-      if (
-        window.confirm(
-          `"${folder.name}" kampanyası silinecek. Bu işlem geri alınamaz. Devam edilsin mi?`,
-        )
-      ) {
-        onDelete?.();
-      }
-    });
+    closeAndRun(e, () => setDeleteOpen(true));
   };
+
+  // ── Shared confirm dialog ─────────────────────────────────────────────────────
+
+  const confirmDialog = (
+    <ConfirmDialog
+      open={deleteOpen}
+      title="Kampanyayı sil"
+      description={`"${folder.name}" kalıcı olarak silinecek. Bu işlem geri alınamaz.`}
+      confirmLabel="Sil"
+      cancelLabel="İptal"
+      confirmVariant="destructive"
+      onConfirm={() => { onDelete?.(); setDeleteOpen(false); }}
+      onCancel={() => setDeleteOpen(false)}
+    />
+  );
 
   // ── setup_in_progress variant ─────────────────────────────────────────────────
 
   if (folder.status === "setup_in_progress") {
     return (
-      <div className="flex w-full flex-col overflow-hidden rounded-xl border border-amber-200/60 bg-card opacity-80">
-        <div className="flex h-28 items-center justify-center bg-slate-200/60">
-          <span className="select-none text-4xl font-bold text-slate-400/50">
-            {folder.name.charAt(0).toUpperCase()}
-          </span>
-        </div>
-
-        <div className="flex flex-col gap-2 p-3">
-          <p className="line-clamp-1 text-sm font-semibold text-foreground leading-snug">
-            {folder.name}
-          </p>
-
-          <div className="flex items-center gap-1.5 text-xs text-amber-600">
-            <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-            <span>Kurulum yarım kaldı</span>
+      <>
+        <div className="flex w-full flex-col overflow-hidden rounded-xl border border-amber-200/60 bg-card opacity-80">
+          <div className="flex h-28 items-center justify-center bg-slate-200/60">
+            <span className="select-none text-4xl font-bold text-slate-400/50">
+              {folder.name.charAt(0).toUpperCase()}
+            </span>
           </div>
 
-          <p className="text-xs text-muted-foreground">Son güncelleme {formattedUpdatedAt}</p>
+          <div className="flex flex-col gap-2 p-3">
+            <p className="line-clamp-1 text-sm font-semibold text-foreground leading-snug">
+              {folder.name}
+            </p>
 
-          <div className="mt-1 flex items-center gap-2">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onResume?.();
-              }}
-              className="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              Devam et →
-            </button>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (
-                  window.confirm(`"${folder.name}" kurulumu silinecek. Devam edilsin mi?`)
-                ) {
-                  onDelete?.();
-                }
-              }}
-              className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive"
-            >
-              Sil
-            </button>
+            <div className="flex items-center gap-1.5 text-xs text-amber-600">
+              <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+              <span>Kurulum yarım kaldı</span>
+            </div>
+
+            <p className="text-xs text-muted-foreground">Son güncelleme {formattedUpdatedAt}</p>
+
+            <div className="mt-1 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); onResume?.(); }}
+                className="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                Devam et →
+              </button>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setDeleteOpen(true); }}
+                className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive"
+              >
+                Sil
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+        {confirmDialog}
+      </>
     );
   }
 
@@ -140,6 +142,7 @@ export function FolderCard({
   const hasImages = productImages && productImages.length > 0;
 
   return (
+    <>
     <div
       role="button"
       tabIndex={0}
@@ -269,6 +272,8 @@ export function FolderCard({
         <p className="text-xs text-muted-foreground">Son güncelleme {formattedUpdatedAt}</p>
       </div>
     </div>
+    {confirmDialog}
+  </>
   );
 }
 
