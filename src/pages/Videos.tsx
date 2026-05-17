@@ -7,6 +7,7 @@ import { SelectStep } from "@/components/videos/SelectStep";
 import { TemplateSelectionStep } from "@/components/videos/TemplateSelectionStep";
 import { GenerationProgressStep } from "@/components/videos/GenerationProgressStep";
 import { ReviewStep } from "@/components/videos/ReviewStep";
+import { GenerateReviewStep } from "@/components/videos/GenerateReviewStep";
 import { EditPromptStep } from "@/components/videos/EditPromptStep";
 import { ExportStep } from "@/components/videos/ExportStep";
 import { SuccessStep } from "@/components/videos/SuccessStep";
@@ -25,6 +26,7 @@ type Stage =
   | "select"
   | "template"
   | "confirm"
+  | "generate-review"
   | "progress"
   | "review"
   | "edit-prompt"
@@ -36,6 +38,7 @@ const stageToStep: Record<Stage, number> = {
   select: 1,
   template: 2,
   confirm: 3,
+  "generate-review": 4,
   progress: 4,
   review: 4,
   "edit-prompt": 4,
@@ -48,6 +51,7 @@ const getPreviousStage = (current: Stage): Stage | null => {
     case "select":      return "library";
     case "template":    return "select";
     case "confirm":     return "template";
+    case "generate-review": return null;
     case "progress":    return null;
     case "review":      return null;
     case "edit-prompt": return "review";
@@ -196,7 +200,7 @@ const Videos = () => {
     setVideoJobs(
       selectedIds.map((id) => ({ productId: id, status: "pending", videoUrl: null })),
     );
-    setStage("progress");
+    setStage("generate-review");
   };
 
   // Progress → Review (save snapshot for 3.2)
@@ -243,12 +247,12 @@ const Videos = () => {
     setApprovedIds((prev) => prev.filter((id) => id !== productId));
     setRejectedIds((prev) => prev.filter((id) => id !== productId));
     setEditingProductId(null);
-    setStage("review");
+    setStage("generate-review");
   };
 
   const handleCancelEdit = () => {
     setEditingProductId(null);
-    setStage("review");
+    setStage("generate-review");
   };
 
   // Review → Export
@@ -385,7 +389,22 @@ const Videos = () => {
           />
         )}
 
-        {/* ── Phase 4: Generation Progress ─────────────────────────────────── */}
+        {/* ── Phase 4: Generate & Review (merged) ──────────────────────────── */}
+        {stage === "generate-review" && (
+          <GenerateReviewStep
+            products={selectedProducts}
+            selectedTemplate={template}
+            approvedIds={approvedIds}
+            rejectedIds={rejectedIds}
+            notifyOnComplete={notifyOnComplete}
+            onApprove={handleApprove}
+            onReject={handleReject}
+            onEditPrompt={handleOpenEditPrompt}
+            onGoToExport={handleGoToExport}
+          />
+        )}
+
+        {/* ── Phase 4: Generation Progress (legacy, unreachable) ────────────── */}
         {stage === "progress" && (
           <GenerationProgressStep
             products={selectedProducts}
