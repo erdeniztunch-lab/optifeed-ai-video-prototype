@@ -6,10 +6,11 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 interface TemplateCardProps {
   template: TemplateDefinition;
   selected: boolean;
+  isRecommended?: boolean;
   onSelect: () => void;
 }
 
-export function TemplateCard({ template, selected, onSelect }: TemplateCardProps) {
+export function TemplateCard({ template, selected, isRecommended, onSelect }: TemplateCardProps) {
   return (
     <div
       role="button"
@@ -54,7 +55,7 @@ export function TemplateCard({ template, selected, onSelect }: TemplateCardProps
       {/* Card body */}
       <div className={cn("flex flex-col gap-1 p-3", selected && "bg-accent/30")}>
 
-        {/* Label row: label solda, ⓘ sağda */}
+        {/* Label row */}
         <div className="flex items-start justify-between gap-2">
           <p className="font-semibold text-foreground">{template.label}</p>
 
@@ -102,11 +103,19 @@ export function TemplateCard({ template, selected, onSelect }: TemplateCardProps
         </div>
 
         <p className="text-sm text-muted-foreground">{template.description}</p>
-        {template.helperText && (
-          <span className="mt-1 inline-flex self-start rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-            {template.helperText}
-          </span>
-        )}
+
+        <div className="mt-1 flex flex-wrap gap-1">
+          {template.helperText && (
+            <span className="inline-flex rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+              {template.helperText}
+            </span>
+          )}
+          {isRecommended && (
+            <span className="inline-flex rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+              Önerilen
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );

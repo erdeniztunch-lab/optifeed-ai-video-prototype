@@ -1,112 +1,137 @@
 import { useState } from "react";
+import { ArrowLeft, Info } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { type Product } from "@/data/products";
 import { TEMPLATES } from "@/data/templates";
-import { type GuidedPrompt, DEFAULT_GUIDED_PROMPT, type TemplateId } from "@/types/video-flow";
+import { SECTORS, THEMES, PRODUCT_TYPES } from "@/data/taxonomy";
+import { type TemplateId, type CampaignContext } from "@/types/video-flow";
 import { TemplateCard } from "./TemplateCard";
-import { GuidedPromptFields } from "./GuidedPromptFields";
-import { TemplateActionBar } from "./TemplateActionBar";
 
 interface TemplateSelectionStepProps {
   products: Product[];
-  tokenBalance: number;
-  onGenerate: (opts: { template: TemplateId; guidedPrompt: GuidedPrompt }) => void;
+  campaignContext: CampaignContext;
+  onContinue: (opts: { template: TemplateId; templateNote: string }) => void;
+  onBack: () => void;
 }
 
 export function TemplateSelectionStep({
   products,
-  tokenBalance,
-  onGenerate,
+  campaignContext,
+  onContinue,
+  onBack,
 }: TemplateSelectionStepProps) {
-  const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>("product-spotlight");
-  const [guidedPrompt, setGuidedPrompt] = useState<GuidedPrompt>(DEFAULT_GUIDED_PROMPT);
+  const [selectedTemplate, setSelectedTemplate] = useState<TemplateId | null>(null);
+  const [templateNote, setTemplateNote] = useState("");
 
-  const handleGenerate = () => {
-    onGenerate({ template: selectedTemplate, guidedPrompt });
+  const handleContinue = () => {
+    if (!selectedTemplate) return;
+    onContinue({ template: selectedTemplate, templateNote });
+  };
+
+  // Campaign context summary
+  const sectorLabel = SECTORS.find((s) => s.value === campaignContext.sector)?.label;
+  const themeLabel =
+    campaignContext.theme === "other"
+      ? campaignContext.themeCustom
+      : THEMES.find((t) => t.value === campaignContext.theme)?.label;
+  const productTypeLabel = PRODUCT_TYPES.find(
+    (p) => p.value === campaignContext.productType,
+  )?.label;
+  const summaryParts = [sectorLabel, themeLabel, productTypeLabel].filter(Boolean) as string[];
+
+  const selectedDef = TEMPLATES.find((t) => t.id === selectedTemplate);
+
+  const isRecommended = (tpl: (typeof TEMPLATES)[0]) => {
+    if (!campaignContext.sector) return false;
+    return tpl.recommendedSectors.includes(campaignContext.sector);
   };
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-8 pb-28 md:px-10">
       {/* Header */}
-      <header className="mb-6">
-        <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-          Şablon seçin
-        </h2>
+      <header className="mb-2">
+        <h2 className="text-2xl font-semibold tracking-tight text-foreground">Şablon seçin</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Ürünlerinize uygun video şablonunu seçin.
+          Ürünlerinize en uygun video senaryosunu seçin.
         </p>
       </header>
 
-      {/* Selected products strip */}
-      {products.length > 0 && (
-        <div className="mb-6 flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3">
-          <div className="flex -space-x-2">
-            {products.slice(0, 5).map((p, i) => (
-              <div
-                key={p.id}
-                className="h-9 w-9 overflow-hidden rounded-lg border-2 border-background bg-muted"
-                style={{ zIndex: 10 - i }}
-              >
-                <img src={p.image} alt={p.name} className="h-full w-full object-cover" />
-              </div>
-            ))}
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-foreground">
-              {products.length} ürün seçildi
-            </p>
-            {products.length > 0 && (
-              <p className="text-xs text-muted-foreground line-clamp-1">
-                {products
-                  .slice(0, 3)
-                  .map((p) => p.name)
-                  .join(", ")}
-                {products.length > 3 && ` +${products.length - 3} daha`}
-              </p>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Two-column layout: template grid (left) + context (right) */}
-      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_300px]">
-
-        {/* Left: Template grid */}
-        <section>
-          <h3 className="mb-4 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
-            Video şablonu
-          </h3>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {TEMPLATES.map((t) => (
-              <TemplateCard
-                key={t.id}
-                template={t}
-                selected={selectedTemplate === t.id}
-                onSelect={() => setSelectedTemplate(t.id)}
-              />
-            ))}
-          </div>
-        </section>
-
-        {/* Right: Campaign context */}
-        <section className="lg:border-l lg:border-border lg:pl-10">
-          <div className="mb-4">
-            <h3 className="text-xs font-medium uppercase tracking-widest text-muted-foreground/60">
-              Kampanya ayarları
-            </h3>
-            <p className="mt-1 text-xs text-muted-foreground/50">
-              İsteğe bağlı
-            </p>
-          </div>
-          <GuidedPromptFields value={guidedPrompt} onChange={setGuidedPrompt} />
-        </section>
-
+      {/* Campaign summary */}
+      <div className="mb-6">
+        {summaryParts.length > 0 ? (
+          <p className="text-xs text-muted-foreground/70">{summaryParts.join(" · ")}</p>
+        ) : (
+          <div className="h-4" />
+        )}
       </div>
 
-      <TemplateActionBar
-        videoCount={products.length}
-        tokenBalance={tokenBalance}
-        onGenerate={handleGenerate}
-      />
+      {/* 2×2 Template grid */}
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {TEMPLATES.map((t) => (
+          <TemplateCard
+            key={t.id}
+            template={t}
+            selected={selectedTemplate === t.id}
+            isRecommended={isRecommended(t)}
+            onSelect={() => setSelectedTemplate(t.id)}
+          />
+        ))}
+      </div>
+
+      {/* Ek detay textarea */}
+      <div className="mb-4">
+        <label className="mb-1.5 block text-sm font-medium text-foreground">
+          Ek detay{" "}
+          <span className="ml-1 text-xs font-normal text-muted-foreground">(opsiyonel)</span>
+        </label>
+        <textarea
+          value={templateNote}
+          onChange={(e) => setTemplateNote(e.target.value)}
+          placeholder="Örn. ürün metalik yüzey, gece sahnesi tercih edilsin, 25–35 yaş kadın kitlesine hitap etsin..."
+          rows={3}
+          maxLength={300}
+          className="w-full resize-none rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30"
+        />
+        <p className="mt-1 text-right text-xs text-muted-foreground/60">
+          {templateNote.length} / 300
+        </p>
+      </div>
+
+      {/* Info note */}
+      <div className="mb-6 flex items-start gap-2 rounded-lg bg-muted/40 px-4 py-3">
+        <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
+        <p className="text-xs leading-relaxed text-muted-foreground/70">
+          Videolar 8–10 saniye, 1:1 formatta üretilir. Fiyat/marka bilgisi sonradan Dynamic
+          Creative ile eklenebilir.
+        </p>
+      </div>
+
+      {/* Fixed bottom bar */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-card/95 backdrop-blur md:left-64">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-4 md:px-10">
+          {/* Left: product count + selected template name */}
+          <p className="text-sm text-muted-foreground">
+            <span className="font-semibold text-foreground">{products.length} ürün</span>
+            {selectedDef && <> · {selectedDef.label}</>}
+          </p>
+
+          {/* Right: hint + Geri + Devam */}
+          <div className="flex items-center gap-2">
+            {!selectedTemplate && (
+              <p className="hidden text-xs text-muted-foreground/60 sm:block">
+                Devam etmek için bir şablon seçin
+              </p>
+            )}
+            <Button variant="outline" onClick={onBack}>
+              <ArrowLeft className="mr-1.5 h-4 w-4" />
+              Geri
+            </Button>
+            <Button disabled={!selectedTemplate} onClick={handleContinue}>
+              Devam →
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

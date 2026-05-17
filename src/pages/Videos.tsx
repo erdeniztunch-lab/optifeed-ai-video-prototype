@@ -175,10 +175,10 @@ const Videos = () => {
 
   const handleGoToLibrary = () => setStage("library");
 
-  // Template → Progress
-  const handleStartGeneration = (opts: { template: TemplateId; guidedPrompt: GuidedPrompt }) => {
+  // Template → Progress (TODO Phase 3: route to "confirm" stage instead)
+  const handleStartGeneration = (opts: { template: TemplateId; templateNote: string }) => {
     setTemplate(opts.template);
-    setGuidedPrompt(opts.guidedPrompt);
+    setCampaignContext((prev) => ({ ...prev, templateNote: opts.templateNote }));
     setTokenBalance((b) => b - selectedIds.length * TOKEN_COST_PER_VIDEO);
     setVideoJobs(
       selectedIds.map((id) => ({ productId: id, status: "pending", videoUrl: null })),
@@ -352,8 +352,9 @@ const Videos = () => {
         {stage === "template" && (
           <TemplateSelectionStep
             products={selectedProducts}
-            tokenBalance={tokenBalance}
-            onGenerate={handleStartGeneration}
+            campaignContext={campaignContext}
+            onContinue={handleStartGeneration}
+            onBack={() => setStage("select")}
           />
         )}
 
