@@ -13,8 +13,8 @@ export const CHANNELS: Channel[] = [
     name: "Meta Catalog",
     platform: "meta",
     description: "Facebook ve Instagram ürün kataloğuna gönder",
-    isConnected: false,
-    accountName: null,
+    isConnected: true,
+    accountName: "Optifeed Demo Store",
   },
   {
     id: "google-merchant",

@@ -55,7 +55,7 @@ const getPreviousStage = (current: Stage): Stage | null => {
     case "progress":    return null;
     case "review":      return null;
     case "edit-prompt": return "review";
-    case "export":      return "review";
+    case "export":      return "generate-review";
     case "success":     return null;
     default:            return null;
   }
@@ -442,11 +442,9 @@ const Videos = () => {
         {stage === "export" && (
           <ExportStep
             approvedCount={approvedIds.length}
-            approvedIds={approvedIds}
-            selectedProducts={selectedProducts}
-            totalVideoCount={videoJobs.length}
             onComplete={handleExportComplete}
             onSkip={() => handleExportComplete([])}
+            onBack={() => setStage("generate-review")}
           />
         )}
 
