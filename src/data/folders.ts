@@ -1,4 +1,4 @@
-export type FolderStatus = "active" | "draft" | "archived";
+export type FolderStatus = "active" | "draft" | "archived" | "setup_in_progress";
 
 export interface VideoFolder {
   id: string;
@@ -37,5 +37,14 @@ export const FOLDERS: VideoFolder[] = [
     videoCount: 12,
     status: "active",
     productIds: ["p7", "p8", "p9", "p10"],
+  },
+  {
+    id: "f4",
+    name: "İlkbahar Yenilikleri",
+    createdAt: "2025-05-15",
+    updatedAt: "2025-05-15",
+    videoCount: 0,
+    status: "setup_in_progress",
+    productIds: ["p1", "p5"],
   },
 ];

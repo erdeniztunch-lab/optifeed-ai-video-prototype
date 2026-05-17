@@ -129,7 +129,7 @@ const Videos = () => {
 
   // ─── Handlers ──────────────────────────────────────────────────────────────
 
-  // Library → Select (or Review if pending snapshot exists)
+  // Library → Select (or generate-review if pending snapshot exists)
   const handleOpenFolder = (folderId: string) => {
     const folder = folders.find((f) => f.id === folderId);
     setActiveFolderName(folder?.name ?? "");
@@ -138,7 +138,7 @@ const Videos = () => {
     if (snap && snap.jobs.length > 0) {
       setVideoJobs(snap.jobs);
       setSelectedIds(snap.productIds);
-      setStage("review");
+      setStage("generate-review");
     } else {
       setStage("select");
     }
@@ -156,6 +156,38 @@ const Videos = () => {
               status: f.status === "active" ? "draft" : "active",
               updatedAt: new Date().toISOString().split("T")[0],
             }
+          : f,
+      ),
+    );
+  };
+
+  // Folder management (Phase 6)
+  const handleResumeFolder = (folderId: string) => handleOpenFolder(folderId);
+
+  const handleDeleteFolder = (id: string) => {
+    setFolders((prev) => prev.filter((f) => f.id !== id));
+    setFolderSnapshots((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+  };
+
+  const handleRenameFolder = (id: string, newName: string) => {
+    setFolders((prev) =>
+      prev.map((f) =>
+        f.id === id
+          ? { ...f, name: newName, updatedAt: new Date().toISOString().split("T")[0] }
+          : f,
+      ),
+    );
+  };
+
+  const handleArchiveFolder = (id: string) => {
+    setFolders((prev) =>
+      prev.map((f) =>
+        f.id === id
+          ? { ...f, status: "archived", updatedAt: new Date().toISOString().split("T")[0] }
           : f,
       ),
     );
@@ -345,6 +377,10 @@ const Videos = () => {
             onToggleStatus={handleToggleFolderStatus}
             tokenBalance={tokenBalance}
             pendingCounts={pendingCounts}
+            onResumeFolder={handleResumeFolder}
+            onDeleteFolder={handleDeleteFolder}
+            onRenameFolder={handleRenameFolder}
+            onArchiveFolder={handleArchiveFolder}
           />
         )}
 

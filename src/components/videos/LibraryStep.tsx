@@ -13,6 +13,7 @@ const TAB_LABELS: Record<TabValue, string> = {
   all: "Tümü",
   active: "Aktif",
   draft: "Taslak",
+  setup_in_progress: "Üretim sürüyor",
   archived: "Arşiv",
 };
 
@@ -29,9 +30,24 @@ interface LibraryStepProps {
   onToggleStatus: (id: string) => void;
   tokenBalance: number;
   pendingCounts: Record<string, number>;
+  onResumeFolder: (id: string) => void;
+  onDeleteFolder: (id: string) => void;
+  onRenameFolder: (id: string, newName: string) => void;
+  onArchiveFolder: (id: string) => void;
 }
 
-export function LibraryStep({ folders, onOpenFolder, onNewCampaign, onToggleStatus, tokenBalance, pendingCounts }: LibraryStepProps) {
+export function LibraryStep({
+  folders,
+  onOpenFolder,
+  onNewCampaign,
+  onToggleStatus,
+  tokenBalance,
+  pendingCounts,
+  onResumeFolder,
+  onDeleteFolder,
+  onRenameFolder,
+  onArchiveFolder,
+}: LibraryStepProps) {
   const [activeTab, setActiveTab] = useState<TabValue>("all");
   const [sortBy, setSortBy] = useState<SortValue>("updatedAt");
   const [query, setQuery] = useState("");
@@ -196,6 +212,10 @@ export function LibraryStep({ folders, onOpenFolder, onNewCampaign, onToggleStat
                   onToggleStatus={(e) => { e.stopPropagation(); onToggleStatus(folder.id); }}
                   pendingCount={pendingCounts[folder.id] ?? 0}
                   productImages={productImagesMap[folder.id]}
+                  onResume={() => onResumeFolder(folder.id)}
+                  onDelete={() => onDeleteFolder(folder.id)}
+                  onRename={(newName) => onRenameFolder(folder.id, newName)}
+                  onArchive={() => onArchiveFolder(folder.id)}
                 />
               ))}
 
