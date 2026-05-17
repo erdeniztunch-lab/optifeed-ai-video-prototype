@@ -10,6 +10,7 @@ import { ReviewStep } from "@/components/videos/ReviewStep";
 import { EditPromptStep } from "@/components/videos/EditPromptStep";
 import { ExportStep } from "@/components/videos/ExportStep";
 import { SuccessStep } from "@/components/videos/SuccessStep";
+import { ConfirmStep } from "@/components/videos/ConfirmStep";
 import { PRODUCTS } from "@/data/products";
 import { FOLDERS, type VideoFolder } from "@/data/folders";
 import { MOCK_TOKEN_BALANCE, TOKEN_COST_PER_VIDEO, SAMPLE_VIDEO } from "@/data/tokens";
@@ -23,6 +24,7 @@ type Stage =
   | "library"
   | "select"
   | "template"
+  | "confirm"
   | "progress"
   | "review"
   | "edit-prompt"
@@ -33,7 +35,8 @@ const stageToStep: Record<Stage, number> = {
   library: 0,
   select: 1,
   template: 2,
-  progress: 4, // "Üret & İncele" — step 3 "Onayla" added in Phase 3
+  confirm: 3,
+  progress: 4,
   review: 4,
   "edit-prompt": 4,
   export: 5,
@@ -44,6 +47,7 @@ const getPreviousStage = (current: Stage): Stage | null => {
   switch (current) {
     case "select":      return "library";
     case "template":    return "select";
+    case "confirm":     return "template";
     case "progress":    return null;
     case "review":      return null;
     case "edit-prompt": return "review";
@@ -98,6 +102,9 @@ const Videos = () => {
 
   // ── Export state ───────────────────────────────────────────────────────────
   const [exportedFeeds, setExportedFeeds] = useState<string[]>([]);
+
+  // ── Notification preference (set at ConfirmStep) ───────────────────────────
+  const [notifyOnComplete, setNotifyOnComplete] = useState(false);
 
   // ── Campaign context (design.md v2 fields — populated by CampaignSetupModal in Phase 1) ──
   const [campaignContext, setCampaignContext] = useState<CampaignContext>(DEFAULT_CAMPAIGN_CONTEXT);
@@ -175,10 +182,16 @@ const Videos = () => {
 
   const handleGoToLibrary = () => setStage("library");
 
-  // Template → Progress (TODO Phase 3: route to "confirm" stage instead)
-  const handleStartGeneration = (opts: { template: TemplateId; templateNote: string }) => {
+  // Template → Confirm
+  const handleTemplateComplete = (opts: { template: TemplateId; templateNote: string }) => {
     setTemplate(opts.template);
     setCampaignContext((prev) => ({ ...prev, templateNote: opts.templateNote }));
+    setStage("confirm");
+  };
+
+  // Confirm → Progress
+  const handleConfirmGenerate = (notify: boolean) => {
+    setNotifyOnComplete(notify);
     setTokenBalance((b) => b - selectedIds.length * TOKEN_COST_PER_VIDEO);
     setVideoJobs(
       selectedIds.map((id) => ({ productId: id, status: "pending", videoUrl: null })),
@@ -262,6 +275,7 @@ const Videos = () => {
     setVideoJobs([]);
     setGuidedPrompt(DEFAULT_GUIDED_PROMPT);
     setCampaignContext(DEFAULT_CAMPAIGN_CONTEXT);
+    setNotifyOnComplete(false);
     setEditingProductId(null);
     setExportedFeeds([]);
     setActiveFolderName("");
@@ -353,8 +367,21 @@ const Videos = () => {
           <TemplateSelectionStep
             products={selectedProducts}
             campaignContext={campaignContext}
-            onContinue={handleStartGeneration}
+            onContinue={handleTemplateComplete}
             onBack={() => setStage("select")}
+          />
+        )}
+
+        {/* ── Confirm ──────────────────────────────────────────────────────── */}
+        {stage === "confirm" && (
+          <ConfirmStep
+            products={selectedProducts}
+            selectedTemplate={template}
+            campaignContext={campaignContext}
+            tokenBalance={tokenBalance}
+            onConfirm={handleConfirmGenerate}
+            onBack={() => setStage("template")}
+            onEditTemplate={() => setStage("template")}
           />
         )}
 
