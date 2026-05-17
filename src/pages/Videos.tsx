@@ -33,11 +33,11 @@ const stageToStep: Record<Stage, number> = {
   library: 0,
   select: 1,
   template: 2,
-  progress: 3,
+  progress: 4, // "Üret & İncele" — step 3 "Onayla" added in Phase 3
   review: 4,
   "edit-prompt": 4,
   export: 5,
-  success: 6,
+  success: 5,
 };
 
 const getPreviousStage = (current: Stage): Stage | null => {
@@ -153,10 +153,10 @@ const Videos = () => {
   // Select → Campaign modal → Template
   const handleChooseTemplate = () => setShowCampaignModal(true);
 
-  const handleCampaignConfirm = (name: string) => {
+  const handleCampaignConfirm = (context: CampaignContext) => {
     const newFolder: VideoFolder = {
       id: `f${Date.now()}`,
-      name,
+      name: context.name,
       createdAt: new Date().toISOString().split("T")[0],
       updatedAt: new Date().toISOString().split("T")[0],
       videoCount: 0,
@@ -164,9 +164,9 @@ const Videos = () => {
       productIds: selectedIds,
     };
     setFolders((prev) => [newFolder, ...prev]);
-    setActiveFolderName(name);
+    setActiveFolderName(context.name);
     setActiveFolderId(newFolder.id);
-    setCampaignContext((prev) => ({ ...prev, name }));
+    setCampaignContext(context);
     setShowCampaignModal(false);
     setStage("template");
   };
@@ -342,7 +342,6 @@ const Videos = () => {
             />
             <CampaignNameModal
               open={showCampaignModal}
-              folders={folders}
               onConfirm={handleCampaignConfirm}
               onCancel={handleCampaignCancel}
             />
