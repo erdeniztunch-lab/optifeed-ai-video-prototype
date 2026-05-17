@@ -13,7 +13,7 @@ import { SuccessStep } from "@/components/videos/SuccessStep";
 import { PRODUCTS } from "@/data/products";
 import { FOLDERS, type VideoFolder } from "@/data/folders";
 import { MOCK_TOKEN_BALANCE, TOKEN_COST_PER_VIDEO, SAMPLE_VIDEO } from "@/data/tokens";
-import { type GuidedPrompt, DEFAULT_GUIDED_PROMPT, type VideoJob, type TemplateId } from "@/types/video-flow";
+import { type GuidedPrompt, DEFAULT_GUIDED_PROMPT, type VideoJob, type TemplateId, type CampaignContext, DEFAULT_CAMPAIGN_CONTEXT } from "@/types/video-flow";
 import { ArrowLeft } from "lucide-react";
 import { CampaignNameModal } from "@/components/videos/CampaignNameModal";
 
@@ -99,6 +99,9 @@ const Videos = () => {
   // ── Export state ───────────────────────────────────────────────────────────
   const [exportedFeeds, setExportedFeeds] = useState<string[]>([]);
 
+  // ── Campaign context (design.md v2 fields — populated by CampaignSetupModal in Phase 1) ──
+  const [campaignContext, setCampaignContext] = useState<CampaignContext>(DEFAULT_CAMPAIGN_CONTEXT);
+
   // ── Active campaign context ────────────────────────────────────────────────
   const [activeFolderName, setActiveFolderName] = useState<string>("");
   const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
@@ -163,6 +166,7 @@ const Videos = () => {
     setFolders((prev) => [newFolder, ...prev]);
     setActiveFolderName(name);
     setActiveFolderId(newFolder.id);
+    setCampaignContext((prev) => ({ ...prev, name }));
     setShowCampaignModal(false);
     setStage("template");
   };
@@ -257,6 +261,7 @@ const Videos = () => {
     setRejectedIds([]);
     setVideoJobs([]);
     setGuidedPrompt(DEFAULT_GUIDED_PROMPT);
+    setCampaignContext(DEFAULT_CAMPAIGN_CONTEXT);
     setEditingProductId(null);
     setExportedFeeds([]);
     setActiveFolderName("");

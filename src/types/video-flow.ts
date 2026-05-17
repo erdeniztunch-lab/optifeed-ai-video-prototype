@@ -1,12 +1,45 @@
-// ─── Template ────────────────────────────────────────────────────────────────
+// ─── Stage (design.md v2 target flow) ────────────────────────────────────────
+
+export type FlowStage =
+  | "catalog"
+  | "library"
+  | "campaign-setup"
+  | "template"
+  | "confirm"
+  | "generate-review"
+  | "edit-prompt"
+  | "export"
+  | "success";
+
+// ─── Template ─────────────────────────────────────────────────────────────────
 
 export type TemplateId =
-  | "product-spotlight"
-  | "sale-promotion"
-  | "new-arrival"
-  | "social-story";
+  | "vitrine-bakan-kadin"
+  | "paris-yuruyen-kadin"
+  | "bahce-bulusmasi"
+  | "product-spotlight";
 
-// ─── Guided Prompt ───────────────────────────────────────────────────────────
+// ─── Campaign Context ─────────────────────────────────────────────────────────
+
+export interface CampaignContext {
+  name: string;
+  sector: string;
+  theme: string;
+  themeCustom: string;
+  productType: string;
+  templateNote: string;
+}
+
+export const DEFAULT_CAMPAIGN_CONTEXT: CampaignContext = {
+  name: "",
+  sector: "",
+  theme: "",
+  themeCustom: "",
+  productType: "",
+  templateNote: "",
+};
+
+// ─── Guided Prompt (kept for backward compat with existing screens) ────────────
 
 export interface GuidedPrompt {
   sector: string;
@@ -24,9 +57,20 @@ export const DEFAULT_GUIDED_PROMPT: GuidedPrompt = {
   productType: "",
 };
 
-// ─── Video Generation Job ────────────────────────────────────────────────────
+// ─── Video Status ──────────────────────────────────────────────────────────────
 
-export type VideoStatus = "pending" | "generating" | "ready";
+export type VideoStatus =
+  | "pending"        // legacy — VideoJob in current flow
+  | "ready"          // legacy — VideoJob in current flow
+  | "generating"
+  | "pending_review"
+  | "approved"
+  | "rejected"
+  | "failed"
+  | "draft"
+  | "live";
+
+// ─── Video Generation Job ──────────────────────────────────────────────────────
 
 export interface VideoJob {
   productId: string;
@@ -34,7 +78,7 @@ export interface VideoJob {
   videoUrl: string | null;
 }
 
-// ─── Video Progress Job (used in GenerationProgressStep simulation) ───────────
+// ─── Video Progress Job ────────────────────────────────────────────────────────
 
 export interface VideoProgressJob {
   productId: string;
@@ -44,6 +88,6 @@ export interface VideoProgressJob {
   videoUrl: string | null;
 }
 
-// ─── Review ──────────────────────────────────────────────────────────────────
+// ─── Review ───────────────────────────────────────────────────────────────────
 
 export type ReviewStatus = "pending" | "approved" | "rejected";

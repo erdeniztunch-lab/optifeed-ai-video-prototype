@@ -1,6 +1,13 @@
 export type ProductStatus = "no-video" | "ready";
 export type ProductTag = "no-video" | "best-seller" | "recent";
 
+export interface VideoHistoryEntry {
+  campaignId: string;
+  campaignName: string;
+  date: string;
+  templateId: string;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -12,6 +19,7 @@ export interface Product {
   itemGroupId: string;
   category: string;
   additionalImageCount: number;
+  videoHistory: VideoHistoryEntry[];
 }
 
 // Unsplash placeholder images (no API key required)
@@ -19,6 +27,7 @@ const img = (q: string, n: number) =>
   `https://images.unsplash.com/${q}?auto=format&fit=crop&w=600&h=600&q=80&v=${n}`;
 
 export const PRODUCTS: Product[] = [
+  // ── Original 12 ──────────────────────────────────────────────────────────────
   {
     id: "p1",
     name: "Cloudrunner Sneakers",
@@ -30,6 +39,7 @@ export const PRODUCTS: Product[] = [
     itemGroupId: "GRP-FOOTWEAR-01",
     category: "Sneakers",
     additionalImageCount: 3,
+    videoHistory: [],
   },
   {
     id: "p2",
@@ -42,6 +52,7 @@ export const PRODUCTS: Product[] = [
     itemGroupId: "GRP-BAGS-01",
     category: "Bags",
     additionalImageCount: 2,
+    videoHistory: [],
   },
   {
     id: "p3",
@@ -54,6 +65,14 @@ export const PRODUCTS: Product[] = [
     itemGroupId: "GRP-APPAREL-01",
     category: "Tops",
     additionalImageCount: 4,
+    videoHistory: [
+      {
+        campaignId: "campaign-001",
+        campaignName: "İlkbahar Koleksiyonu 2025",
+        date: "2025-03-15",
+        templateId: "product-spotlight",
+      },
+    ],
   },
   {
     id: "p4",
@@ -66,6 +85,7 @@ export const PRODUCTS: Product[] = [
     itemGroupId: "GRP-APPAREL-02",
     category: "Outerwear",
     additionalImageCount: 1,
+    videoHistory: [],
   },
   {
     id: "p5",
@@ -78,6 +98,7 @@ export const PRODUCTS: Product[] = [
     itemGroupId: "GRP-HOME-01",
     category: "Kitchenware",
     additionalImageCount: 2,
+    videoHistory: [],
   },
   {
     id: "p6",
@@ -90,6 +111,7 @@ export const PRODUCTS: Product[] = [
     itemGroupId: "GRP-HOME-02",
     category: "Lighting",
     additionalImageCount: 0,
+    videoHistory: [],
   },
   {
     id: "p7",
@@ -102,6 +124,14 @@ export const PRODUCTS: Product[] = [
     itemGroupId: "GRP-BAGS-02",
     category: "Backpacks",
     additionalImageCount: 3,
+    videoHistory: [
+      {
+        campaignId: "campaign-002",
+        campaignName: "Outdoor Sezon Açılışı",
+        date: "2025-04-02",
+        templateId: "bahce-bulusmasi",
+      },
+    ],
   },
   {
     id: "p8",
@@ -114,6 +144,7 @@ export const PRODUCTS: Product[] = [
     itemGroupId: "GRP-ACCESSORIES-01",
     category: "Watches",
     additionalImageCount: 1,
+    videoHistory: [],
   },
   {
     id: "p9",
@@ -126,6 +157,7 @@ export const PRODUCTS: Product[] = [
     itemGroupId: "GRP-HOME-01",
     category: "Kitchenware",
     additionalImageCount: 2,
+    videoHistory: [],
   },
   {
     id: "p10",
@@ -138,6 +170,14 @@ export const PRODUCTS: Product[] = [
     itemGroupId: "GRP-ACCESSORIES-02",
     category: "Headwear",
     additionalImageCount: 0,
+    videoHistory: [
+      {
+        campaignId: "campaign-001",
+        campaignName: "İlkbahar Koleksiyonu 2025",
+        date: "2025-03-15",
+        templateId: "product-spotlight",
+      },
+    ],
   },
   {
     id: "p11",
@@ -150,6 +190,7 @@ export const PRODUCTS: Product[] = [
     itemGroupId: "GRP-HOME-03",
     category: "Textiles",
     additionalImageCount: 1,
+    videoHistory: [],
   },
   {
     id: "p12",
@@ -162,5 +203,242 @@ export const PRODUCTS: Product[] = [
     itemGroupId: "GRP-ACCESSORIES-01",
     category: "Wallets",
     additionalImageCount: 2,
+    videoHistory: [],
+  },
+
+  // ── New 18 ────────────────────────────────────────────────────────────────────
+  {
+    id: "p13",
+    name: "Silk Slip Dress",
+    brand: "Atelier Mira",
+    image: img("photo-1515886657613-9f3515b0c78f", 13),
+    status: "no-video",
+    tags: ["no-video", "recent"],
+    productId: "PRD-1054",
+    itemGroupId: "GRP-APPAREL-03",
+    category: "Dresses",
+    additionalImageCount: 3,
+    videoHistory: [],
+  },
+  {
+    id: "p14",
+    name: "Canvas Low-Top",
+    brand: "Northwave",
+    image: img("photo-1539109136881-3be0616acf4b", 14),
+    status: "no-video",
+    tags: ["no-video"],
+    productId: "PRD-1055",
+    itemGroupId: "GRP-FOOTWEAR-01",
+    category: "Sneakers",
+    additionalImageCount: 2,
+    videoHistory: [],
+  },
+  {
+    id: "p15",
+    name: "Oak Serving Board",
+    brand: "Hearth & Form",
+    image: img("photo-1566479179817-c68f16e41396", 15),
+    status: "no-video",
+    tags: ["no-video", "best-seller"],
+    productId: "PRD-1056",
+    itemGroupId: "GRP-HOME-01",
+    category: "Kitchenware",
+    additionalImageCount: 1,
+    videoHistory: [],
+  },
+  {
+    id: "p16",
+    name: "Bamboo Desk Organizer",
+    brand: "Roam Goods",
+    image: img("photo-1586023492125-27b2c045efd7", 16),
+    status: "no-video",
+    tags: ["no-video"],
+    productId: "PRD-1057",
+    itemGroupId: "GRP-HOME-04",
+    category: "Office",
+    additionalImageCount: 0,
+    videoHistory: [],
+  },
+  {
+    id: "p17",
+    name: "Merino Wool Scarf",
+    brand: "Kinfolk",
+    image: img("photo-1523381210434-271e8be1f52b", 17),
+    status: "no-video",
+    tags: ["no-video", "recent"],
+    productId: "PRD-1058",
+    itemGroupId: "GRP-ACCESSORIES-02",
+    category: "Scarves",
+    additionalImageCount: 2,
+    videoHistory: [],
+  },
+  {
+    id: "p18",
+    name: "Copper Kettle",
+    brand: "Hearth & Form",
+    image: img("photo-1517142089942-ba376ce32a2e", 18),
+    status: "no-video",
+    tags: ["no-video"],
+    productId: "PRD-1059",
+    itemGroupId: "GRP-HOME-01",
+    category: "Kitchenware",
+    additionalImageCount: 1,
+    videoHistory: [],
+  },
+  {
+    id: "p19",
+    name: "Reflective Run Jacket",
+    brand: "Northwave",
+    image: img("photo-1571019613454-1cb2f99b2d8b", 19),
+    status: "no-video",
+    tags: ["no-video", "best-seller"],
+    productId: "PRD-1060",
+    itemGroupId: "GRP-APPAREL-04",
+    category: "Sportswear",
+    additionalImageCount: 2,
+    videoHistory: [],
+  },
+  {
+    id: "p20",
+    name: "Weekender Duffel",
+    brand: "Atelier Mira",
+    image: img("photo-1548036328-c9fa89d128fa", 20),
+    status: "no-video",
+    tags: ["no-video", "recent"],
+    productId: "PRD-1061",
+    itemGroupId: "GRP-BAGS-02",
+    category: "Bags",
+    additionalImageCount: 3,
+    videoHistory: [],
+  },
+  {
+    id: "p21",
+    name: "Vintage Sunglasses",
+    brand: "Halden",
+    image: img("photo-1572635196237-14b3f281503f", 21),
+    status: "no-video",
+    tags: ["no-video"],
+    productId: "PRD-1062",
+    itemGroupId: "GRP-ACCESSORIES-03",
+    category: "Eyewear",
+    additionalImageCount: 1,
+    videoHistory: [],
+  },
+  {
+    id: "p22",
+    name: "Linen Wide-Leg Trousers",
+    brand: "Kinfolk",
+    image: img("photo-1523381294911-8d3cead13475", 22),
+    status: "no-video",
+    tags: ["no-video", "recent"],
+    productId: "PRD-1063",
+    itemGroupId: "GRP-APPAREL-01",
+    category: "Bottoms",
+    additionalImageCount: 2,
+    videoHistory: [],
+  },
+  {
+    id: "p23",
+    name: "Wireless Earbuds",
+    brand: "Lumen Co",
+    image: img("photo-1505740420928-5e560c06d30e", 23),
+    status: "no-video",
+    tags: ["no-video", "best-seller"],
+    productId: "PRD-1064",
+    itemGroupId: "GRP-ELECTRONICS-01",
+    category: "Electronics",
+    additionalImageCount: 2,
+    videoHistory: [],
+  },
+  {
+    id: "p24",
+    name: "Steel Water Bottle",
+    brand: "Roam Goods",
+    image: img("photo-1551024601-bec78aea704b", 24),
+    status: "no-video",
+    tags: ["no-video"],
+    productId: "PRD-1065",
+    itemGroupId: "GRP-OUTDOOR-01",
+    category: "Drinkware",
+    additionalImageCount: 1,
+    videoHistory: [],
+  },
+  {
+    id: "p25",
+    name: "Artisan Soy Candle",
+    brand: "Hearth & Form",
+    image: img("photo-1543485399-34d3bc99bba2", 25),
+    status: "no-video",
+    tags: ["no-video", "recent"],
+    productId: "PRD-1066",
+    itemGroupId: "GRP-HOME-05",
+    category: "Home Fragrance",
+    additionalImageCount: 0,
+    videoHistory: [],
+  },
+  {
+    id: "p26",
+    name: "Leather Ankle Boots",
+    brand: "Atelier Mira",
+    image: img("photo-1460353581641-37baddab0fa2", 26),
+    status: "no-video",
+    tags: ["no-video", "best-seller"],
+    productId: "PRD-1067",
+    itemGroupId: "GRP-FOOTWEAR-02",
+    category: "Boots",
+    additionalImageCount: 3,
+    videoHistory: [],
+  },
+  {
+    id: "p27",
+    name: "Classic Denim Jacket",
+    brand: "Kinfolk",
+    image: img("photo-1516257984-b1b57ef8f7e5", 27),
+    status: "no-video",
+    tags: ["no-video"],
+    productId: "PRD-1068",
+    itemGroupId: "GRP-APPAREL-02",
+    category: "Outerwear",
+    additionalImageCount: 2,
+    videoHistory: [],
+  },
+  {
+    id: "p28",
+    name: "Rattan Storage Basket",
+    brand: "Hearth & Form",
+    image: img("photo-1555041469-a586c61ea9bc", 28),
+    status: "no-video",
+    tags: ["no-video", "recent"],
+    productId: "PRD-1069",
+    itemGroupId: "GRP-HOME-03",
+    category: "Storage",
+    additionalImageCount: 1,
+    videoHistory: [],
+  },
+  {
+    id: "p29",
+    name: "Sport Compression Top",
+    brand: "Northwave",
+    image: img("photo-1571019614242-c5c5dee9f50b", 29),
+    status: "no-video",
+    tags: ["no-video"],
+    productId: "PRD-1070",
+    itemGroupId: "GRP-APPAREL-04",
+    category: "Sportswear",
+    additionalImageCount: 1,
+    videoHistory: [],
+  },
+  {
+    id: "p30",
+    name: "Macrame Wall Hanging",
+    brand: "Hearth & Form",
+    image: img("photo-1524758631624-e2822e304c36", 30),
+    status: "no-video",
+    tags: ["no-video", "recent"],
+    productId: "PRD-1071",
+    itemGroupId: "GRP-HOME-06",
+    category: "Wall Decor",
+    additionalImageCount: 0,
+    videoHistory: [],
   },
 ];

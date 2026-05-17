@@ -1,929 +1,1106 @@
-# feedback-implementation.md
-
-## Frontend-Only Implementation Plan
-### Validated Prototype: Eski Prototip → product.md
-
-> **Kapsam:** Frontend-only. Backend yok, gerçek API yok, auth değişikliği yok.
-> **Kaynak:** product.md (V1 Validated Prototype)
-> **Referans:** Gap analysis (conversation context)
+# AI Videos Feedback Implementation Plan
 
 ---
 
-## Genel Strateji
+## 1. Source of Truth
 
-Akış şu sıraya göre inşa edilecek: önce temel (veri modeli + stage machine), ardından her ekran sırasıyla. Her faz kendi içinde test edilebilir ve bir öncekine bağımlıdır.
+`design.md` (v2) bu proje için ürün deneyimini tanımlayan tek doğruluk kaynağıdır. Mevcut codebase `design.md`'ye yaklaştırılacak; tasarımda yer almayan hiçbir özellik eklenmeyecek.
 
-**Toplam faz: 7**
+Gap analizi 26 eksiklik tespit etti: 6 Critical, 13 Medium, 7 Low. Bu doküman o gap'leri kapalı, güvenli ve doğrulanabilir aşamalara böler.
+
+---
+
+## 2. Target Flow
 
 ```
-Faz 0 — Temel: Veri modeli, mock data, stage machine, layout
-Faz 1 — Library / Folder ekranı
-Faz 2 — Product Selection (rework)
-Faz 3 — Template Selection (rework: full page + guided fields)
-Faz 4 — Generation Progress (yeni)
-Faz 5 — Preview / Review + Edit Prompt (rework + yeni)
-Faz 6 — Export / Send to Feed (rework: Apply to Exports)
-Faz 7 — Bütünleştirme, SuccessStep, temizlik
+/videos (varsayılan giriş)
+  → catalog          [Ürün Kataloğu — tablo, filtre, arama, seçim]
+      ↓ "Şablon seç →"
+  → campaign-setup   [Modal: isim + sektör + tema + ürün tipi]
+      ↓ "Şablona geç →"
+  → template         [2×2 şablon grid + ek not textarea]
+      ↓ "Devam →"
+  → confirm          [Maliyet özeti + bakiye + bildirim opt-in]
+      ↓ "Üretimi başlat"
+  → generate-review  [BİRLEŞİK — üretim + inceleme aynı ekran]
+      └─ edit-prompt [Modal olarak açılır]
+      ↓ "Dışa aktar →" (ilk onaylanan videodan sonra aktif)
+  → export           [Kanal toggle kartları + ZIP]
+      ↓ "Gönder →" / "Atla"
+  → success          [Özet + ilk kampanya mesajı]
+
+/videos?view=library [İkincil görünüm — Kampanyalarım]
 ```
 
 ---
 
-## Faz 0 — Temel Altyapı
+## 3. Implementation Principles
 
-### Goal
-Sonraki tüm fazların bağlı olduğu veri modeli, mock data ve stage machine'i hazırlamak. Herhangi bir ekran değişmeden önce bu faz tamamlanmalıdır.
+1. **Frontend-only:** Gerçek API, backend, database, auth yok. Tüm veri mock veya local state.
+2. **Mock/local state only:** Üretim simülasyonu `setTimeout` ile devam eder. Token işlemleri sabit sabitlere dayanır.
+3. **Hiçbir özellik icat edilmez:** Yalnızca `design.md`'de açıkça tanımlanan özellikler uygulanır.
+4. **Mevcut bileşenler mümkün olduğunca korunur:** Gerekmeyen yeniden yazım yapılmaz.
+5. **Big-bang yok:** Her aşama bağımsız olarak build edilebilir ve test edilebilir. Bir önceki aşama bitmeden bir sonrakine geçilmez.
+6. **Her aşama sonrası:** `npm run build` + `npm run lint` çalıştırılır. Hatalar düzeltilmeden bir sonraki aşamaya geçilmez.
+7. **Her aşama sonrası onay beklenir.**
 
-### Screens Affected
-- `src/pages/Videos.tsx` (stage machine)
-- `src/data/products.ts` (veri modeli)
-- `src/components/AppShell.tsx` (header)
+---
 
-### Components Affected
-- `Videos.tsx` — stage tipi ve başlangıç stage'i
-- `AppShell.tsx` — token badge için slot hazırlanacak
-- `StepIndicator.tsx` — yeni step listesi
+## 4. Phased Implementation Plan
 
-### New Mock Data Needed
+---
 
-**`src/data/products.ts` güncellemesi:**
+### Phase 0 — Foundation & State Cleanup
+
+**Goal:** UI değişikliği olmadan state yapısını, type'ları ve mock veriyi `design.md §13` ve `§14`'e hizala. Tüm sonraki aşamalar bu temele dayanır.
+
+**Gaps addressed:** G-02 (kısmi — type altyapısı), G-03 (kısmi — campaignContext type), G-05 (kısmi — template ID'leri), G-19 (mock veri)
+
+**Files/components affected:**
+- `src/types/video-flow.ts`
+- `src/data/products.ts`
+- `src/data/templates.ts`
+- `src/data/tokens.ts`
+- `src/data/folders.ts`
+- `src/pages/Videos.tsx` (state değişkenleri, stage isimleri)
+- Yeni: `src/data/channels.ts`
+- Yeni: `src/data/taxonomy.ts`
+
+**Exact changes:**
+
+**`src/types/video-flow.ts`:**
 ```ts
-export interface Product {
-  id: string             // mevcut
-  name: string           // mevcut
-  brand: string          // mevcut
-  image: string          // mevcut
-  status: ProductStatus  // mevcut
-  tags: ProductTag[]     // mevcut — korunacak ama filtre UI'dan kaldırılacak
-  productId: string      // YENİ: "PRD-001" gibi harici ID
-  itemGroupId: string    // YENİ: "GRP-SHOES-01" gibi item group
-  category: string       // YENİ: "Sneakers", "Accessories" vb.
-  additionalImageCount: number  // YENİ: ek görsel sayısı (0-5 arası mock)
-}
-```
-12 mevcut ürüne yukarıdaki 4 alan eklenecek.
+// Stage isimleri design.md §13 ile hizalanır:
+type Stage =
+  | "catalog"         // Ürün kataloğu (eski: "select")
+  | "library"         // Kampanyalarım (değişmez)
+  | "campaign-setup"  // Modal açık (eski: modal Videos.tsx'te inline)
+  | "template"        // Şablon seçimi (değişmez)
+  | "confirm"         // YENİ — Maliyet onayı
+  | "generate-review" // YENİ — Birleşik üretim+inceleme (eski: "progress"+"review")
+  | "edit-prompt"     // Modal olarak açılır (değişmez)
+  | "export"          // Dışa aktarma (değişmez)
+  | "success"         // Başarı (değişmez)
 
-**`src/data/folders.ts` — yeni dosya:**
-```ts
-export interface VideoFolder {
+// Video statüleri design.md §2.6 ile hizalanır:
+type VideoStatus =
+  | "generating"
+  | "pending_review"
+  | "approved"
+  | "rejected"
+  | "failed"
+  | "draft"
+  | "live"
+
+// Video type genişletilir:
+interface Video {
   id: string
-  name: string
-  createdAt: string   // "2025-04-15" gibi
-  videoCount: number
-  status: "active" | "draft"
-}
-
-export const FOLDERS: VideoFolder[] = [
-  // 2-3 örnek klasör (mock) — Anneler Günü Kampanyası, Yaz Koleksiyonu vb.
-]
-```
-
-**`src/data/feedExports.ts` — yeni dosya:**
-```ts
-export interface FeedExport {
-  id: string
-  name: string
-  channel: "google" | "meta" | "criteo"
-  source: string          // "Shopify Feed (all collections)"
-  productCount: number    // mock: 147
-  selectedCount: number   // mock: 26
-  videoAttribute: string  // seçili attribute — başlangıç default'u
-}
-
-export const FEED_EXPORTS: FeedExport[] = [
-  // "Google Merchant Export", "Meta Export", "Meta Export (Copy)" vb.
-  // Apply to Exports görselinden türetilmiş ~5 mock kayıt
-]
-
-export const VIDEO_ATTRIBUTE_OPTIONS = [
-  "video_url",
-  "g:video_link",
-  "g:custom_label_4",
-  "internal_video",
-  "custom_label_0",
-]
-```
-
-**`src/data/tokens.ts` — yeni dosya:**
-```ts
-export const MOCK_TOKEN_BALANCE = 500
-export const TOKEN_COST_PER_VIDEO = 10
-// 1 video = 10 token; 10 video = 100 token
-// Tahmini süre: 1 video = ~2 dakika
-```
-
-### UI States Needed
-- Stage machine yeni stage listesini tanımalı
-- Token balance `Videos.tsx`'te `useState` ile tutulacak, tüketime göre düşecek
-
-### What Will Be Changed
-
-**`Videos.tsx`:**
-- `Stage` tipi yeniden tanımlanacak:
-  ```ts
-  type Stage =
-    | "library"
-    | "select"
-    | "template"
-    | "progress"
-    | "review"
-    | "edit-prompt"
-    | "export"
-    | "success"
-  ```
-- Başlangıç stage: `"entry"` → `"library"`
-- Token balance state ekleniyor: `const [tokenBalance, setTokenBalance] = useState(MOCK_TOKEN_BALANCE)`
-- `editingProductId` state ekleniyor (hangi ürünün Edit Prompt'u açık)
-- `folders` state ekleniyor (klasör listesi, mock)
-- `approvedIds`, `rejectedIds` state'leri ekleniyor (review sonuçları)
-- `getPreviousStage()` yeni stage listesine göre güncelleniyor
-- `showStepBar` koşulu: `stage !== "library"` olacak
-
-**`StepIndicator.tsx`:**
-- Step dizisi güncelleniyor:
-  ```ts
-  const STEPS = ["Select", "Template", "Progress", "Review", "Export", "Done"]
-  // 5 → 6 step (library entry point olduğu için sayılmaz)
-  ```
-- `current` prop değerleri yeni sıraya göre ayarlanacak
-
-**`AppShell.tsx`:**
-- Header'a sağ üste `{children}` slot veya `tokenBadge` prop ekleniyor — TokenBadge bileşeni Faz 1'de yazılacak
-
-### What Will Not Be Changed
-- `ui/` klasörü altındaki hiçbir bileşen
-- `tailwind.config.ts`, `index.css`, `vite.config.ts`
-- `cn()` utility, hooks
-- Mevcut ürün verilerinin temel alanları (`id, name, brand, image, status`)
-- `SAMPLE_VIDEO` URL sabit kalır
-
-### Acceptance Criteria
-- [ ] `Product` interface 4 yeni alan içeriyor, 12 ürünün tamamında dolu
-- [ ] `FOLDERS` mock array en az 2 klasör içeriyor (biri boş state testi için yok sayılabilir)
-- [ ] `FEED_EXPORTS` mock array en az 4 kayıt içeriyor
-- [ ] `Videos.tsx` içinde stage `"library"` ile başlıyor, console'da hata yok
-- [ ] `StepIndicator` yeni 6 step'i doğru render ediyor
-- [ ] Uygulama çalışıyor (mevcut akış kırılmadı — geçici olarak `"library"` stage boş bir `<div>` render edebilir)
-
----
-
-## Faz 1 — Library / Folder Ekranı
-
-### Goal
-Kullanıcının üretime kampanya bazlı organize edilmiş bir entry point'ten başlamasını sağlamak. EntryStep'in yerini alacak.
-
-### Screens Affected
-- **Library ekranı** — tamamen yeni (`LibraryStep.tsx`)
-- AppShell header (TokenBadge ilk kez görünür)
-
-### Components Affected
-- `Videos.tsx` — `stage === "library"` artık `<LibraryStep>` render ediyor, `<EntryStep>` değil
-- `EntryStep.tsx` — artık kullanılmıyor (silinmeyecek, import'tan çıkarılacak)
-
-### New Mock Data Needed
-- Faz 0'da oluşturulan `FOLDERS` array kullanılacak
-- "Empty state" testi için `FOLDERS = []` durumu da çalışmalı
-
-### UI States Needed
-
-**Klasör listesi (dolu state):**
-- 2 kolonlu kart grid (masaüstü), 1 kolon (mobil)
-- Her FolderCard: klasör adı, oluşturma tarihi, video sayısı, "Aç" ikonu
-
-**Empty state:**
-- Merkezi ikon + başlık: "Henüz video klasörünüz yok"
-- Alt metin: "İlk videonuzu üretmek için bir klasör oluşturun."
-- CTA: "İlk klasörü oluştur" butonu
-
-**Yeni klasör oluştur:**
-- "Yeni klasör" butonu (sağ üst veya empty state CTA'sı)
-- Tıklandığında: inline isim girişi veya küçük Dialog — kullanıcı klasör adı yazar, onaylar
-- Yeni klasör `folders` state'ine eklenir (frontend-only, persist etmez)
-
-**Klasör açıldığında:**
-- `stage = "select"` geçişi yapılır
-- `activeFolderId` state'e set edilir
-
-### What Will Be Changed
-- `Videos.tsx`: `stage === "library"` → `<LibraryStep>` çağrısı
-- `Videos.tsx`: `stage === "entry"` satırı kaldırılıyor
-
-**Yeni bileşenler:**
-- `src/components/videos/LibraryStep.tsx`
-  - Props: `folders`, `onOpenFolder(id)`, `onCreateFolder(name)`, `tokenBalance`
-  - İçerik: FolderCard grid + "Yeni klasör" butonu + empty state
-- `src/components/videos/FolderCard.tsx`
-  - Props: `folder: VideoFolder`, `onOpen()`
-  - İçerik: kampanya adı, tarih, video sayısı, ok ikonu
-- `src/components/videos/TokenBadge.tsx`
-  - Props: `balance: number`
-  - Görünüm: "500 tokens" — küçük pill, mor/accent rengi
-  - AppShell header'ına yerleştirilecek
-
-### What Will Not Be Changed
-- `SelectStep`, `GenerateDialog`, `PreviewStep`, `SendStep`, `SuccessStep` — bu fazda dokunulmaz
-- `EntryStep.tsx` dosyası silinmez, sadece artık render edilmez
-- Sidebar navigasyonu değişmez
-
-### Acceptance Criteria
-- [ ] Uygulama `"library"` stage ile açılıyor, EntryStep görünmüyor
-- [ ] Dolu state: en az 2 klasör kartı görünüyor
-- [ ] Empty state: `FOLDERS = []` iken yönlendirici mesaj ve CTA görünüyor
-- [ ] "Yeni klasör oluştur" → isim girişi → klasör listeye ekleniyor
-- [ ] Klasöre tıklandığında `stage = "select"` oluyor
-- [ ] TokenBadge AppShell header'ında görünüyor, bakiye doğru
-- [ ] Back butonu: SelectStep'ten "library"'e dönüyor
-
----
-
-## Faz 2 — Product Selection Rework
-
-### Goal
-Ürün seçim ekranını product.md ile uyumlu hale getirmek: yeni metadata alanları, limit enforcement, maliyet/süre bar'ı, CTA etiketi değişikliği.
-
-### Screens Affected
-- Product Selection ekranı (`SelectStep.tsx`)
-
-### Components Affected
-- `SelectStep.tsx` — kapsamlı modifikasyon
-- `ProductCard.tsx` — yeni alanlar + stacked indicator
-- Yeni: `CostEstimateBar.tsx`
-- Yeni: `StackedImageIndicator.tsx`
-
-### New Mock Data Needed
-- Faz 0'da eklenen `productId`, `itemGroupId`, `category`, `additionalImageCount` alanları kullanılacak
-- `TOKEN_COST_PER_VIDEO` ve süre hesabı için `src/data/tokens.ts` kullanılacak
-
-### UI States Needed
-
-**Normal state (seçim yok):**
-- Arama input'u aktif
-- "Recently added" sort seçeneği görünür
-- Sticky bar: "0 / 10 ürün seçildi" + CTA disabled
-
-**Seçim yapılırken:**
-- Her seçimde sticky bar anlık güncelleniyor:
-  - `{n} / 10 ürün seçildi`
-  - `Tahmini süre: ~{n × 2} dk`
-  - `Tahmini maliyet: ~{n × 10} token`
-- Bakiyeyle karşılaştırma: yeterli bakiye varsa yeşil, yetersizse amber uyarı
-
-**Limit aşımı (10 ürün):**
-- 10. ürün seçildikten sonra diğer kartlar disabled görünür (tıklanamaz)
-- Sticky bar'da: "Maksimum seçime ulaştınız (10/10)"
-- CTA aktif kalır
-
-**0 seçim:**
-- CTA "Choose template" disabled
-- Sticky bar: seçim yapmaya yönlendiren mikrocopy
-
-**Boş arama sonucu:**
-- "Aramanızla eşleşen ürün bulunamadı" — boş state mesajı
-
-### What Will Be Changed
-
-**`SelectStep.tsx`:**
-- Filtre tab'ları (`no-video / best-seller / recent`) **kaldırılıyor**
-- Yerine: sağ üste "Sort: Recently added" dropdown (tek seçenek veya ileride genişletilebilir basit seçici)
-- Grid/list view toggle **korunuyor** (product.md kapsam dışı yazmıyor)
-- Seçim limiti: `selectedIds.length >= 10` iken yeni seçim engelleniyor; "Clear selection" ile sıfırlanabilir
-- Sticky alt bar tamamen değişiyor → `<CostEstimateBar>` bileşenine çıkarılıyor
-- CTA etiketi: `"Generate videos"` → `"Choose template"`
-- CTA handler: `onContinue` prop adı → `onChooseTemplate` (anlamlı isim)
-- "Select all" toggle: limit mantığıyla uyumlu hale getiriliyor (max 10 seçer)
-
-**`ProductCard.tsx`:**
-- Grid ve list view'da yeni alanlar ekleniyor:
-  - `productId` (küçük, muted metin — "ID: PRD-001")
-  - `itemGroupId` (küçük, muted metin — "Group: GRP-SHOES-01")
-  - `category` (liste view'da sağ kolonda; grid'de tag olarak)
-- `additionalImageCount > 0` ise `<StackedImageIndicator>` görselin üstüne overlay olarak ekleniyor
-
-**Yeni: `CostEstimateBar.tsx`:**
-- Props: `selectedCount`, `limit`, `tokenCostPerVideo`, `tokenBalance`
-- Hesaplamalar:
-  - `estimatedMinutes = selectedCount × 2`
-  - `estimatedTokens = selectedCount × tokenCostPerVideo`
-  - `hasEnoughBalance = tokenBalance >= estimatedTokens`
-- Görünüm: `{n}/{limit} ürün | ~{dk} dk | ~{token} token`
-- Token durumu: yeterli → yeşil badge, yetersiz → amber uyarı badge
-- Sağ taraf: "Choose template" CTA butonu
-
-**Yeni: `StackedImageIndicator.tsx`:**
-- Props: `count: number`
-- Görünüm: ürün görselinin sağ alt köşesinde küçük kart yığını ikonu + sayı
-- Örnek: `⊞ +3` — iskambil kağıdı benzeri offset kart efekti
-- `count === 0` ise render edilmez
-
-### What Will Not Be Changed
-- Arama input bileşeni ve arama mantığı (string match) korunuyor
-- ProductCard'ın seçim/hover/aktif style mantığı korunuyor
-- Grid/list view toggle korunuyor
-- `useMemo` ile filtreleme yapısı korunuyor (filtre sadeleşiyor, silinmiyor)
-- `PRODUCTS` array'inin 12 ürünü korunuyor
-
-### Acceptance Criteria
-- [ ] Filtre tab'ları görünmüyor
-- [ ] Her ürün kartında `productId`, `itemGroupId`, `category` gösteriliyor
-- [ ] `additionalImageCount > 0` olan ürünlerde StackedImageIndicator görünüyor
-- [ ] 10 ürün seçilince 11. seçim engellenliyor, kullanıcıya mesaj gösteriliyor
-- [ ] Sticky bar: seçim, süre, token maliyeti anlık güncelliyor
-- [ ] Bakiye yetersizse amber uyarı görünüyor
-- [ ] CTA "Choose template" yazıyor ve 0 seçimde disabled
-- [ ] CTA tıklanınca `stage = "template"` oluyor
-
----
-
-## Faz 3 — Template Selection Rework
-
-### Goal
-GenerateDialog'u dialog'dan full-page step'e dönüştürmek. 4 şablonu açık grid'de göstermek. Guided prompt alanları eklemek. Üretim öncesi maliyet teyidi sunmak.
-
-### Screens Affected
-- Template Selection ekranı — mevcut `GenerateDialog.tsx` yerini `TemplateSelectionStep.tsx` alıyor
-
-### Components Affected
-- `GenerateDialog.tsx` — artık kullanılmıyor (silinmez, sadece import'tan çıkarılır)
-- `Videos.tsx` — `stage === "template"` yeni bileşeni render ediyor
-- Yeni: `TemplateSelectionStep.tsx`
-- Yeni: `TemplateCard.tsx`
-- Yeni: `GuidedPromptFields.tsx`
-- Yeni: `GenerateCostConfirm.tsx` (inline confirmation widget)
-
-### New Mock Data Needed
-
-**`src/data/templates.ts` — yeni dosya (GenerateDialog'daki sabit veriden türetilecek):**
-```ts
-export interface Template {
-  id: TemplateId
-  label: string
-  description: string
-  helperText: string
-  previewImage: string
-  // renderPreviewChrome kaldırılıyor — yeni TemplateCard bileşeni kendi chrome'unu yönetir
-}
-
-export type TemplateId = "product-spotlight" | "sale-promotion" | "new-arrival" | "social-story"
-
-export const TEMPLATES: Template[] = [ /* mevcut 4 şablon */ ]
-```
-
-**`src/data/guidedPromptOptions.ts` — yeni dosya:**
-```ts
-export const SECTOR_OPTIONS = ["Moda & Giyim", "Ayakkabı", "Aksesuar", "Ev & Yaşam", "Elektronik", "Gıda", "Kozmetik"]
-export const THEME_OPTIONS = ["Anneler Günü", "Ramazan", "Yaz Koleksiyonu", "İndirim Sezonu", "Yeni Sezon", "Özel Günler"]
-export const BACKGROUND_OPTIONS = ["Beyaz fon", "Lifestyle", "Stüdyo", "Doğal ışık", "Gradient", "Şeffaf"]
-export const PRODUCT_TYPE_OPTIONS = ["Tekil ürün", "Ürün grubu", "Kombine/Set", "Lifestyle kullanım"]
-```
-
-### UI States Needed
-
-**Template grid (default):**
-- 2×2 grid (masaüstü) / 1 kolon (mobil)
-- Her TemplateCard: görsel preview + etiket + kısa açıklama + seçim indicator
-- İlk açılışta `product-spotlight` seçili (varsayılan)
-- Seçilen kart: `border-primary ring-2` gibi seçim state'i
-
-**Guided prompt alanları (şablon kartının altında):**
-- "Sektör" — dropdown (SECTOR_OPTIONS) — zorunlu değil
-- "Tema / kampanya bağlamı" — dropdown (THEME_OPTIONS) + free text alanı
-- "Background / concept" — dropdown (BACKGROUND_OPTIONS)
-- "Ürün tipi" — dropdown (PRODUCT_TYPE_OPTIONS)
-- Her alanda placeholder metin ve örnek değer gösterilecek
-- Alanlar doldurulmadan da ilerlenilebilir (guided ama zorunlu değil)
-
-**Maliyet teyidi (CTA öncesi, inline):**
-- "Generate videos" butonunun üstünde:
-  - `{n} video üretilecek`
-  - `Tahmini süre: ~{n × 2} dk`
-  - `Tahmini maliyet: {n × 10} token` — bakiyeden düşülecek
-  - `Kalan bakiye: {balance - cost} token`
-- CTA: "Generate videos →"
-
-**Loading / transition state:**
-- "Generate videos" tıklandığında buton disabled + spinner, ardından `stage = "progress"`
-
-### What Will Be Changed
-
-**`Videos.tsx`:**
-- `stage === "generate"` satırı kaldırılıyor
-- `stage === "template"` ekleniyor → `<TemplateSelectionStep>` render ediyor
-- `handleGenerated(opts)` → `handleGenerate(opts: { template: TemplateId, guidedPrompt: GuidedPrompt })` olarak güncelleniyor
-- `tokenBalance` üretim başlangıcında düşürülüyor: `setTokenBalance(b => b - selectedIds.length * TOKEN_COST_PER_VIDEO)`
-
-**Yeni: `TemplateSelectionStep.tsx`:**
-- Props: `products`, `tokenBalance`, `onGenerate(opts)`, `onBack()`
-- State: `selectedTemplate: TemplateId`, `guidedPrompt: GuidedPrompt`
-- Şablonları açık grid olarak render eder
-- Guided prompt alanlarını render eder
-- Maliyet teyidi widget'ı render eder
-- "Generate videos" tıklandığında önce 300ms "başlatılıyor" efekti, ardından callback
-
-**Yeni: `TemplateCard.tsx`:**
-- Props: `template: Template`, `selected: boolean`, `onSelect()`
-- Görünüm: görsel + label + description + seçim border'ı
-- Seçili değilse hover efekti
-- Gizli "Change" veya picker dialog yok — kart tıklandığında seçilir
-
-**Yeni: `GuidedPromptFields.tsx`:**
-- Props: `value: GuidedPrompt`, `onChange()`
-- Sektör, tema, background, ürün tipi dropdown'larını render eder
-- Tema alanında ek free text input (textarea, max 100 karakter)
-- Preset seçildiğinde textarea'ya otomatik dolar (kullanıcı düzenleyebilir)
-
-**Yeni: `GenerateCostConfirm.tsx`:**
-- Props: `videoCount`, `tokenCostPerVideo`, `tokenBalance`
-- Satır satır maliyet özeti gösterir
-- Yetersiz bakiyede: kırmızı uyarı + CTA disabled
-
-### What Will Not Be Changed
-- 4 şablonun id'leri, label'ları, description'ları
-- Şablon preview görsellerinin Unsplash URL'leri
-- `SAMPLE_VIDEO` (progress ve preview'da hâlâ kullanılacak)
-- `GenerateDialog.tsx` dosyası silinmez, sadece artık route edilmez
-
-### Acceptance Criteria
-- [ ] `stage === "template"` tam sayfa TemplateSelectionStep render ediyor
-- [ ] 4 şablon açık grid'de görünüyor, dialog/picker yok
-- [ ] Şablona tıklandığında seçili hale geliyor (ring efekti)
-- [ ] Varsayılan seçili şablon: `product-spotlight`
-- [ ] Guided prompt alanları render ediliyor, dropdown'lar çalışıyor
-- [ ] Maliyet teyidi bölümü: video sayısı, süre, token, kalan bakiye doğru hesaplanıyor
-- [ ] Yetersiz bakiyede CTA disabled ve uyarı görünüyor
-- [ ] "Generate videos" → `tokenBalance` düşüyor, `stage = "progress"` oluyor
-- [ ] Back butonu → `stage = "select"` oluyor
-
----
-
-## Faz 4 — Generation Progress
-
-### Goal
-Sahte 1200ms delay'in yerine gerçekçi per-video async progress ekranı koymak. Her video sırasıyla "Pending → Generating → Ready" durumuna geçiyor. Kullanıcı tamamlanan videoları beklemeden izlemeye başlayabiliyor.
-
-### Screens Affected
-- Generation Progress ekranı — tamamen yeni (`GenerationProgressStep.tsx`)
-
-### Components Affected
-- `Videos.tsx` — `stage === "progress"` yeni bileşeni render ediyor
-- Yeni: `GenerationProgressStep.tsx`
-- Yeni: `VideoProgressCard.tsx`
-
-### New Mock Data Needed
-**Progress simulation sabitler (`src/data/tokens.ts` veya sabit olarak bileşen içinde):**
-```ts
-// Demo modunda gerçek 2dk beklenmez; her video 3 saniyede "tamamlanır"
-export const DEMO_VIDEO_GENERATION_DELAY_MS = 3000
-// İlk video 3s, ikinci video 6s, üçüncü video 9s (staggered)
-```
-
-Her tamamlanan video için `SAMPLE_VIDEO` URL atanır.
-
-**Video progress state tipi:**
-```ts
-type VideoStatus = "pending" | "generating" | "ready"
-
-interface VideoProgress {
   productId: string
-  productName: string
-  productImage: string
   status: VideoStatus
-  videoUrl: string | null
+  url: string | null
+  previousVersions: { url: string | null; timestamp: number }[]
+}
+
+// CampaignContext type eklenir:
+interface CampaignContext {
+  sector: string
+  theme: string
+  themeCustom: string
+  productType: string
+}
+
+const DEFAULT_CAMPAIGN_CONTEXT: CampaignContext = {
+  sector: "",
+  theme: "",
+  themeCustom: "",
+  productType: "",
+}
+
+// GuidedPrompt (template note için sadeleşir):
+interface GuidedPrompt {
+  templateNote: string  // Ekran 2'deki "Ek detay" alanı
+}
+
+const DEFAULT_GUIDED_PROMPT: GuidedPrompt = { templateNote: "" }
+
+// TemplateId — yeni isimler:
+type TemplateId = "vitrine-bakan-kadin" | "paris-yurüyen-kadin" | "bahce-bulusmasi" | "product-spotlight"
+```
+
+**`src/data/templates.ts`:**
+```ts
+// 4 şablon design.md §7.4 isimlerine güncellenir:
+// "vitrine-bakan-kadin" — "Vitrine bakan kadın"
+// "paris-yurüyen-kadin" — "Paris'te yürüyen kadın"
+// "bahce-bulusmasi"     — "Bahçe buluşması"
+// "product-spotlight"   — "Product spotlight"
+// previewImage, scenario, recommendedSectors[] alanları eklenir
+```
+
+**`src/data/tokens.ts`:**
+```ts
+export const MOCK_TOKEN_BALANCE = 1240      // design.md örnek değeri
+export const TOKEN_COST_PER_VIDEO = 8       // design.md §8.8: ~8 token
+export const ESTIMATED_MINUTES_PER_VIDEO = 1
+export const PRODUCT_SELECTION_LIMIT = 10
+export const DEMO_VIDEO_GENERATION_DELAY_MS = 1200  // design.md §9.8
+export const SAMPLE_VIDEO = "..."           // değişmez
+// Harcama geçmişi mock'u (Wallet panel için):
+export const MOCK_SPENDING = {
+  thisWeek: 340,
+  thisMonth: 1120,
+  lastActionLabel: "2 saat önce",
 }
 ```
 
-### UI States Needed
+**`src/data/channels.ts` (YENİ):**
+```ts
+export interface Channel {
+  id: string
+  name: string
+  description: string
+  connectionStatus: "connected" | "disconnected"
+  accountName?: string
+}
 
-**Genel ekran:**
-- Başlık: "Videolar üretiliyor..."
-- İlerleme: `{tamamlanan} / {toplam} video hazır`
-- Tahmini kalan süre: `~{kalan × 2} dk` (demo'da anlık güncellenir)
-- Alt bar: "Tamamlananları inceleyebilirsiniz"
-
-**Pending kart:**
-- Ürün görseli (sol, h-14 w-14)
-- Ürün adı
-- Durum: "Sırada bekliyor" — gri badge
-- Sağ taraf: boş/placeholder alan
-
-**Generating kart (aktif üretim):**
-- Ürün görseli
-- Ürün adı
-- Durum: "Üretiliyor..." — mor badge + spinner/animasyon
-- İlerleme bar animasyonu (CSS ile, gerçek % değil, sadece efekt)
-
-**Ready kart:**
-- Ürün görseli
-- Ürün adı
-- Durum: "Hazır ✓" — yeşil badge
-- Sağ taraf: küçük video thumbnail (SAMPLE_VIDEO poster veya statik görsel)
-- "İncele" butonu → ileride review ekranına scroll eder veya highlight yapar
-
-**Tüm videolar hazır:**
-- "Tüm videolar hazır!" banner'ı
-- CTA: "Videoları incele →" — `stage = "review"` geçişi
-
-**Erken geçiş (tümü bitmeden):**
-- İlk video "ready" olur olmaz alt kısımda "İncelemeye başlayabilirsiniz" notu görünür
-- Kullanıcı isterse beklemeden "Videoları incele" ye geçebilir
-- Geçiş yapılınca kalan videolar arka planda (state'te) tamamlanmaya devam eder
-
-### What Will Be Changed
-
-**`Videos.tsx`:**
-- `stage === "progress"` → `<GenerationProgressStep>` render ediyor
-- `videoProgressList: VideoProgress[]` state ekleniyor
-- `handleProgressComplete()` → tümü ready olunca veya kullanıcı geçiş yaparsa `stage = "review"`
-
-**Yeni: `GenerationProgressStep.tsx`:**
-- Props: `products`, `template`, `guidedPrompt`, `onComplete()`
-- `useEffect` ile staggered setTimeout zinciri başlatılır:
-  ```ts
-  // Her ürün için sırasıyla: 0ms → "generating", 3000ms → "ready"
-  // Sonraki ürün öncekinden 3000ms sonra başlar
-  // Demo modu: gerçek 2dk değil, 3s/video
-  ```
-- Tüm videolar ready olunca veya kullanıcı tıklayınca `onComplete()` çağrılır
-- Unmount'ta tüm timeout'lar temizlenir (`useRef` array)
-
-**Yeni: `VideoProgressCard.tsx`:**
-- Props: `progress: VideoProgress`
-- Status'a göre farklı görünüm (pending/generating/ready)
-- "Ready" durumunda "İncele" butonu aktif
-
-### What Will Not Be Changed
-- `TemplateSelectionStep`, `SelectStep`, `LibraryStep` — dokunulmaz
-- `SAMPLE_VIDEO` URL — ready olan videolara atanır
-
-### Acceptance Criteria
-- [ ] `stage === "progress"` GenerationProgressStep render ediyor
-- [ ] Videolar sırasıyla pending → generating → ready geçişi yapıyor (staggered, 3s/video demo)
-- [ ] İlerleme sayacı ("2 / 5 video hazır") anlık güncelleniyor
-- [ ] İlk video ready olunca "İncelemeye başlayabilirsiniz" notu görünüyor
-- [ ] "Videoları incele" CTA tıklandığında `stage = "review"` oluyor
-- [ ] Tüm videolar tamamlandıktan sonra otomatik olarak CTA beliriyor
-- [ ] Back butonu yok (üretim başlandıktan sonra geri dönüş yok) veya uyarıyla soruluyor
-- [ ] Unmount'ta timeout'lar temizleniyor, console'da hata yok
-
----
-
-## Faz 5 — Preview / Review + Edit Prompt
-
-### Goal
-Tek video carousel'ın yerine tüm videoları liste/grid halinde gösteren, her video için Approve/Edit Prompt/Reject aksiyonları sunan ekranı inşa etmek. Reject ve Edit Prompt akışlarını işler hale getirmek.
-
-### Screens Affected
-- Review ekranı — `PreviewStep.tsx` köklü rework
-- Edit Prompt ekranı — tamamen yeni (`EditPromptStep.tsx`)
-
-### Components Affected
-- `PreviewStep.tsx` — yapısal olarak yeniden yazılıyor
-- `Videos.tsx` — `stage === "review"` ve `stage === "edit-prompt"` stage'leri
-- Yeni: `EditPromptStep.tsx`
-- Yeni: `ReviewVideoCard.tsx`
-
-### New Mock Data Needed
-- Faz 4'ten gelen `videoProgressList` (ready olanlar) kullanılacak
-- Edit Prompt dropdown options `src/data/guidedPromptOptions.ts`'den gelecek
-- Edit Prompt sonrası yeniden üretim: kısa 2s fake delay (tek video için)
-
-### UI States Needed
-
-**Review ekranı — liste görünümü (varsayılan):**
-- Her video için `ReviewVideoCard` satırı
-- Sol: ürün görseli + ürün adı + marka
-- Orta: video player (kare, SAMPLE_VIDEO, muted autoplay loop)
-- Sağ: Approve / Edit Prompt / Reject butonları
-- Üst: "X / Y video onaylandı" sayacı
-- Alt sticky bar: onay sayısı yeterliyse "Dışa Aktar →" CTA görünür
-
-**Review ekranı — grid görünümü (opsiyonel toggle):**
-- 2-3 kolonlu grid
-- Her kart: video thumbnail + ürün adı + 3 aksiyon butonu
-
-**Onaylanmış video:**
-- Kart yeşil border veya "Onaylandı ✓" badge
-- Approve butonu disabled (tekrar onaylanamaz)
-- "Geri al" linki (opsiyonel)
-
-**Reddedilmiş video:**
-- Kart gri/muted görünüm, üstü çizili değil ama soluklaşmış
-- "Reddedildi" badge
-- Akış dışına çıkar (export'a gitmez)
-
-**Edit Prompt açılışı:**
-- `stage = "edit-prompt"` ile EditPromptStep açılıyor
-- `editingProductId` state hangi ürünün düzenleneceğini belirliyor
-
-**"Dışa Aktar" CTA:**
-- En az 1 video onaylıysa görünür ve aktif
-- Tüm videolar işlenmediyse: "Tüm videoları işlemeden devam edebilirsiniz" notu
-- CTA tıklanınca `stage = "export"`
-
-**EditPromptStep — tam ekran:**
-- Üstte: hangi ürün için revize yapıldığı (görsel + ad)
-- Mevcut şablon bilgisi
-- Dropdown presetler (sektöre/şablona göre)
-- Free text textarea (max 200 karakter, placeholder ile örnek prompt)
-- Örnek prompt önerileri (tıklanınca textarea'ya dolar)
-- Maliyet: "Bu revizyon {n} token kullanacak" — bakiye yeterli değilse uyarı
-- CTA: "Yeniden üret" → kısa 2s fake delay → review'a döner, video "Ready" olarak güncellenir
-- İptal: review'a döner, video durumu değişmez
-
-### What Will Be Changed
-
-**`Videos.tsx`:**
-- `stage === "preview"` satırı kaldırılıyor
-- `stage === "review"` → `<ReviewStep>` render ediyor
-- `stage === "edit-prompt"` → `<EditPromptStep>` render ediyor
-- `approvedIds: string[]` state'i — Approve tıklandığında eklenir
-- `rejectedIds: string[]` state'i — Reject tıklandığında eklenir
-- `editingProductId: string | null` state'i — Edit Prompt tıklandığında set edilir
-
-**`PreviewStep.tsx` → yeniden yazılıyor:**
-- Dosya adı: `ReviewStep.tsx` olarak rename edilebilir veya mevcut dosya yeniden yazılır
-- Carousel yapısı tamamen kaldırılıyor
-- Yerini liste/grid almaktadır
-- "Approve + Regenerate" yerini "Approve / Edit Prompt / Reject" alıyor
-
-**Yeni: `ReviewVideoCard.tsx`:**
-- Props: `progress: VideoProgress`, `status: "pending" | "approved" | "rejected"`, `onApprove()`, `onEdit()`, `onReject()`
-- Video player: `<video>` tag, `src={SAMPLE_VIDEO}`, muted, loop, autoPlay
-- Approve → yeşil state, Edit → EditPromptStep açılır, Reject → gri state
-
-**Yeni: `EditPromptStep.tsx`:**
-- Props: `product`, `template`, `currentPrompt: GuidedPrompt`, `tokenBalance`, `tokenCostPerEdit`, `onRegenerate(newPrompt)`, `onCancel()`
-- `tokenCostPerEdit = TOKEN_COST_PER_VIDEO` (aynı maliyet)
-- "Yeniden üret" → 2s setTimeout → `onRegenerate()` çağrılır
-- `tokenBalance` `Videos.tsx`'te düşürülür
-
-### What Will Not Be Changed
-- `GenerationProgressStep` — dokunulmaz
-- `LibraryStep`, `SelectStep`, `TemplateSelectionStep` — dokunulmaz
-- `SAMPLE_VIDEO` URL — video kaynağı değişmez
-
-### Acceptance Criteria
-- [ ] `stage === "review"` ReviewStep render ediyor
-- [ ] Her video için Approve / Edit Prompt / Reject üç ayrı buton görünüyor
-- [ ] Approve → video yeşil "Onaylandı" state'e geçiyor
-- [ ] Reject → video "Reddedildi" state'e geçiyor, soluklaşıyor
-- [ ] Edit Prompt tıklandığında `stage = "edit-prompt"` oluyor, doğru ürün gösteriliyor
-- [ ] EditPromptStep: preset dropdown + free text çalışıyor
-- [ ] EditPromptStep "Yeniden üret" → 2s delay → review'a dönüyor, video "hazır" görünüyor
-- [ ] En az 1 onay varken "Dışa Aktar" CTA görünür ve aktif
-- [ ] "Dışa Aktar" → `stage = "export"` oluyor
-- [ ] Token balance Approve ve Edit Prompt sonrası doğru düşüyor
-
----
-
-## Faz 6 — Export / Send to Feed
-
-### Goal
-SendStep'in toggle kartları yerine "Apply to Exports" pattern'ini uygulamak. Her feed kartı için video attribute dropdown + Apply butonu. ZIP indirme mock'u eklemek.
-
-### Screens Affected
-- Export ekranı — `SendStep.tsx` tamamen yeniden yazılıyor
-
-### Components Affected
-- `SendStep.tsx` → `ExportStep.tsx` olarak yeniden yazılıyor (veya dosya içi komple değiştirme)
-- `Videos.tsx` — `stage === "send"` → `stage === "export"` olarak yeniden adlandırılıyor
-- Yeni: `ExportFeedCard.tsx`
-- `SuccessStep.tsx` — küçük güncelleme
-
-### New Mock Data Needed
-- Faz 0'da oluşturulan `FEED_EXPORTS` array kullanılacak
-- `VIDEO_ATTRIBUTE_OPTIONS` dropdown seçenekleri
-- Her `FeedExport` kaydında `appliedAt: string | null` state'i tutulacak (apply edildi mi)
-
-### UI States Needed
-
-**Export ekranı başlangıç:**
-- Başlık: "Videoları feed'e uygula" veya "Apply to Exports"
-- Alt başlık: `{n} onaylı video dışa aktarılmaya hazır`
-- 2 kolonlu kart grid (masaüstü) / 1 kolon (mobil)
-- Her feed kartı: pending/applied state
-
-**Feed kartı (normal state):**
-- Sol: kanal logosu (Google/Meta/Criteo ikonu veya emoji placeholder — gerçek logo SVG yoksa metin badge)
-- Orta: export adı + feed kaynağı (alt metin) + ürün sayısı (mor badge)
-- Sağ üst: "Video attribute" dropdown (başlangıç değeri feed'e özel default)
-- Sağ alt: "Apply" butonu (mor, aktif)
-
-**Feed kartı (applied state):**
-- "Applied ✓" yeşil badge
-- "Apply" butonu disabled veya "Tekrar uygula" linke dönüşür
-- Dropdown hâlâ görünür (değiştirip tekrar apply edilebilir)
-
-**"Apply All" butonu (opsiyonel — open question):**
-- Tüm feed'lere tek tıkla uygula
-- Tüm kartlar applied state'e geçer
-
-**İndirme bölümü (kartların altında):**
-- Başlık: "Videoları indir"
-- "Tüm onaylı videoları indir (MP4, {n} dosya)" butonu — tekil MP4 indirme simülasyonu (SAMPLE_VIDEO)
-- "ZIP olarak indir" butonu — mock: toast gösterir "ZIP hazırlanıyor... İndirme başladı" + tarayıcı SAMPLE_VIDEO indirme
-- Her video için bireysel indirme linki (opsiyonel, liste halinde)
-
-**Tamamlama durumu:**
-- En az 1 feed'e apply yapıldıktan sonra "Tamamla" CTA görünür
-- Hiç apply yapmadan "Atla ve tamamla" linki (mevcut "Skip for now" mantığı korunuyor)
-
-### What Will Be Changed
-
-**`Videos.tsx`:**
-- `stage === "send"` → `stage === "export"` (rename)
-- `handleSend(channels)` → `handleExport(appliedFeeds: string[])` (rename ve güncelleme)
-- `sentTo` state → `exportedTo: string[]` (feed id'leri) olarak güncellenir
-
-**`SendStep.tsx` → tamamen yeniden yazılıyor (dosya adı `ExportStep.tsx` yapılabilir):**
-- Toggle kartlar kaldırılıyor
-- Feed export kartları (ExportFeedCard) grid'i ekleniyor
-- `feedStates: Record<string, { attribute: string, applied: boolean }>` local state
-- "Apply All" opsiyonel toggle
-- İndirme bölümü ekleniyor
-- "Tamamla" + "Atla" CTA'ları
-
-**Yeni: `ExportFeedCard.tsx`:**
-- Props: `feed: FeedExport`, `applied: boolean`, `selectedAttribute: string`, `onAttributeChange(attr)`, `onApply()`
-- Kanal ikonu: Google için `G` badge, Meta için `M`, Criteo için `C` — gerçek logo yoksa renkli text badge (mavi/mor/turuncu)
-- Dropdown: `VIDEO_ATTRIBUTE_OPTIONS`
-- Apply tıklandığında: kısa 500ms "uygulanıyor..." efekti → applied state
-
-**`SuccessStep.tsx`:**
-- `channels: SendChannel[]` prop → `exportedFeeds: string[]` (feed adları) olarak güncelleniyor
-- `channelText` hesabı feed adlarından yapılacak
-- "Create another video" → `stage = "library"` (mevcut: select'e gidiyordu)
-- "View products" → `stage = "library"` (basit yönlendirme)
-- "Go to feed" butonu: `stage = "library"` — placeholder
-
-### What Will Not Be Changed
-- ZIP ve indirme için `SAMPLE_VIDEO` URL kullanılmaya devam ediyor
-- SuccessStep'in genel görünüm ve animasyonu korunuyor
-- Token balance bu aşamada değişmez (export token gerektirmez)
-
-### Acceptance Criteria
-- [ ] `stage === "export"` ExportStep render ediyor
-- [ ] Feed kartları grid halinde görünüyor (en az 4 mock feed)
-- [ ] Her kartta kanal badge'i + isim + ürün sayısı + dropdown + Apply butonu var
-- [ ] Dropdown değiştirilebiliyor
-- [ ] Apply → 500ms efekti → "Applied ✓" state
-- [ ] ZIP butonu tıklandığında toast gösteriliyor ve SAMPLE_VIDEO indiriyor
-- [ ] En az 1 apply sonrası "Tamamla" CTA aktif
-- [ ] "Atla ve tamamla" → `stage = "success"` oluyor
-- [ ] "Tamamla" → `stage = "success"` oluyor
-- [ ] SuccessStep'te "Create another video" → `stage = "library"` oluyor
-
----
-
-## Faz 7 — Bütünleştirme & Temizlik
-
-### Goal
-Tüm fazların bir arada sorunsuz çalıştığını doğrulamak. Kalan küçük boşlukları kapatmak. Kullanılmayan kodları temizlemek.
-
-### Screens Affected
-- Tüm akış (library → select → template → progress → review → export → success → library)
-- AppShell
-
-### Components Affected
-- `Videos.tsx` — son gözden geçirme
-- `StepIndicator.tsx` — tüm stage → step mapping'i doğrulanacak
-- `AppShell.tsx` — token badge son hali
-- `EntryStep.tsx` — artık kullanılmıyor, dosya korunabilir veya arşivlenir
-- `GenerateDialog.tsx` — artık kullanılmıyor, dosya korunabilir
-
-### New Mock Data Needed
-- Yok — tüm mock data önceki fazlarda oluşturuldu
-
-### UI States Needed
-
-**Tam akış testi — happy path:**
-```
-library (klasör seç veya oluştur)
-  → select (5 ürün seç)
-    → template (şablon seç, guided doldur)
-      → progress (demo: 5 × 3s = 15s)
-        → review (3 approve, 1 reject, 1 edit)
-          → edit-prompt (revize → back to review)
-        → export (2 feed'e apply, ZIP indir)
-          → success
-            → library (klasör güncellendi)
+export const CHANNELS: Channel[] = [
+  { id: "meta", name: "Meta Catalog", description: "Facebook & Instagram Reklamları",
+    connectionStatus: "connected", accountName: "Anneler Günü Hesabı" },
+  { id: "google", name: "Google Merchant Center", description: "Shopping & Performance Max",
+    connectionStatus: "connected" },
+  { id: "tiktok", name: "TikTok Catalog", description: "TikTok Shop & Catalog Ads",
+    connectionStatus: "disconnected" },
+]
 ```
 
-**Edge case'ler:**
-- 1 ürün seçimi (minimum)
-- 10 ürün seçimi (maksimum)
-- Tüm videolar reddedildi → "Dışa Aktar" disabled
-- Token yetersiz → template step CTA disabled
-- Hiç feed'e apply yapılmadan "Atla ve tamamla"
-- "Create another video" → library'e döndükten sonra akış yeniden başlatılabilmeli
+**`src/data/taxonomy.ts` (YENİ):**
+```ts
+export const SECTOR_OPTIONS = ["Tekstil / Modest", "Moda & Giyim", "Ayakkabı",
+  "Aksesuar", "Ev & Yaşam", "Elektronik", "Gıda", "Kozmetik", "Spor & Outdoor", "Diğer"]
+export const THEME_OPTIONS = ["Anneler Günü", "Ramazan", "Yaz Koleksiyonu",
+  "İndirim Sezonu", "Yeni Sezon", "Sevgililer Günü", "Okul Dönemi", "Gündelik", "Diğer"]
+export const PRODUCT_TYPE_OPTIONS = ["Tekil ürün", "Ürün seti", "Görsel grubu"]
+```
 
-### What Will Be Changed
+**`src/data/products.ts`:**
+```ts
+// Product interface'e videoHistory eklenir:
+interface VideoHistory {
+  campaignName: string
+  date: string  // "2026-03-12"
+}
+interface Product {
+  // mevcut alanlar korunur...
+  images?: string[]     // çoklu görsel URL dizisi (additionalImageCount ile tutarlı)
+  videoHistory?: VideoHistory[]  // geçmiş uyarısı için
+}
+// Mock ürün sayısı 12'den 30'a çıkarılır (Unsplash URL'leri)
+// Her üründe farklı marka, kategori, additionalImageCount (0-5), bazılarında videoHistory
+```
 
-**`Videos.tsx` son kontrol:**
-- Tüm stage geçişleri ve handler'lar doğrulanacak
-- Gereksiz kalan state'ler temizlenecek (örn. `sentTo` → `exportedTo`)
-- Tüm prop geçişlerinin doğru olduğu kontrol edilecek
+**`src/pages/Videos.tsx`:**
+```ts
+// Stage tipi güncellenir (eski "select" → "catalog", "progress"+"review" → "generate-review")
+// Yeni state'ler eklenir:
+const [campaignContext, setCampaignContext] = useState<CampaignContext>(DEFAULT_CAMPAIGN_CONTEXT)
+const [templateNote, setTemplateNote] = useState("")
+const [notifyOnComplete, setNotifyOnComplete] = useState(false)
+const [videos, setVideos] = useState<Video[]>([])  // VideoJob yerine
+
+// stageToStep güncellenir (5 adım):
+// catalog→1, campaign-setup→1, template→2, confirm→3, generate-review→4, edit-prompt→4, export→5, success→5
+
+// getPreviousStage güncellenir:
+// catalog → null, template → catalog (modal bypass), confirm → template,
+// generate-review → null (üretim başladı), edit-prompt → generate-review,
+// export → generate-review, success → null
+```
+
+**Acceptance criteria:**
+- [ ] `npm run build` hatasız geçer
+- [ ] `npm run lint` hatasız geçer
+- [ ] `/videos` açılır, mevcut akış (catalog→template→...) çalışır
+- [ ] Console'da type hataları yok
+- [ ] Stage isimleri yeni isimlerle çalışır
+- [ ] 30 ürün ürün listesinde görünür
+
+**Verification checklist:**
+- [ ] `npm run build` ✓
+- [ ] `/videos` render ediyor ✓
+- [ ] Ürün listesinde 30 ürün görünüyor ✓
+- [ ] Ürün seçip "Şablon seç" tıklanabilir ✓
+- [ ] Template ekranı render ediyor ✓
+- [ ] Export ekranı render ediyor ✓
+- [ ] Success ekranı render ediyor ✓
+
+**What not to touch:** UI bileşenleri, CSS, tailwind config, index.css
+
+**Risk level:** Low — sadece tip ve veri değişikliği, UI dokunulmaz
+
+---
+
+### Phase 1 — Campaign Setup Modal + StepIndicator
+
+**Goal:** Kampanya kurulum modalını 4 alanlı forma dönüştür. Step indicator'ı 5 adıma indir.
+
+**Gaps addressed:** G-03 (Campaign setup modal eksik alanlar), G-04 (StepIndicator 6→5 adım)
+
+**Files/components affected:**
+- `src/components/videos/CampaignNameModal.tsx` → içerik genişletilir (dosya adı `CampaignSetupModal.tsx` olabilir)
+- `src/components/videos/StepIndicator.tsx` — yeniden yazılır
+- `src/pages/Videos.tsx` — modal prop'ları, stageToStep mapping
+
+**Exact changes:**
+
+**`CampaignNameModal.tsx` (veya yeni `CampaignSetupModal.tsx`):**
+```tsx
+// Mevcut: sadece text input (kampanya adı)
+// Yeni form alanları (design.md §5.1):
+// 1. Kampanya adı — text, required, 3-60 char
+// 2. Sektör — Select dropdown (SECTOR_OPTIONS), required
+// 3. Kampanya teması — Select dropdown (THEME_OPTIONS), optional
+//    "Diğer" seçilince açıklama textarea (max 40 char)
+// 4. Ürün tipi — Select dropdown (PRODUCT_TYPE_OPTIONS), optional
+
+// Validation:
+// - CTA "Şablona geç →" disabled: kampanya adı boş veya sektör seçilmedi
+// - Kampanya adı < 3 char: inline "En az 3 karakter girin"
+// - Kampanya adı > 60 char: bloklanır (maxLength)
+// - Hint: "Şablon seçimine geçmeden önce kampanya bilgilerini girin."
+
+// onConfirm(name, context: CampaignContext) imzası değişir
+```
 
 **`StepIndicator.tsx`:**
-- `stage → step` mapping son kez doğrulanacak:
-  ```ts
-  const stageToStep: Record<Stage, number> = {
-    library: 0,    // step bar gösterilmez
-    select: 1,
-    template: 2,
-    progress: 3,
-    review: 4,
-    "edit-prompt": 4,  // review ile aynı step
-    export: 5,
-    success: 6,
-  }
-  ```
+```tsx
+// Mevcut 6 adım kaldırılır, 5 adım gelir:
+const STEPS = [
+  "Ürün seç",       // step 1
+  "Şablon",         // step 2
+  "Onayla",         // step 3
+  "Üret & İncele",  // step 4
+  "Gönder",         // step 5
+]
 
-**Kullanılmayan bileşenler:**
-- `EntryStep.tsx` — import'lardan çıkarılır, dosya korunur (git history)
-- `GenerateDialog.tsx` — import'lardan çıkarılır, dosya korunur
+// Props genişler:
+interface Props {
+  current: number           // aktif step (1-5)
+  completedUpTo?: number    // tamamlanan son step
+  onStepClick?: (step: number) => void  // tamamlanan adımlara tıklanabilirlik
+}
 
-**Back navigasyon son kontrol:**
-```
-library      → back yok (giriş noktası)
-select       → library
-template     → select
-progress     → yok (veya "Üretim iptal edilsin mi?" dialog ile select)
-review       → template (veya sadece akış ileriye gider)
-edit-prompt  → review
-export       → review
-success      → library
+// design.md §2.2 görsel kuralları:
+// Aktif: mor dolu daire #7F77DD + bold etiket
+// Tamamlanan: yeşil checkmark + normal etiket + cursor-pointer
+// Bekleyen: gri daire + muted etiket + cursor-not-allowed
+
+// Tıklama: sadece completedUpTo >= step olan adımlar tıklanabilir
 ```
 
-**AppShell token badge:**
-- `tokenBalance` prop olarak AppShell'e geçilecek veya context ile sarılacak
-- Tüm akış boyunca güncel değer gösteriyor
+**`Videos.tsx`:**
+```tsx
+// handleCampaignConfirm signature değişir:
+const handleCampaignConfirm = (name: string, context: CampaignContext) => {
+  setCampaignContext(context)
+  // ... mevcut folder oluşturma mantığı korunur
+}
 
-### What Will Not Be Changed
-- `ui/` klasörü
-- CSS ve Tailwind konfigürasyonu
-- Mock veri dosyaları (artık stabilize)
+// stageToStep (5 adım):
+const stageToStep: Record<Stage, number> = {
+  catalog: 1,
+  library: 0,          // step bar gösterilmez
+  "campaign-setup": 1,
+  template: 2,
+  confirm: 3,
+  "generate-review": 4,
+  "edit-prompt": 4,
+  export: 5,
+  success: 5,
+}
 
-### Acceptance Criteria
+// Step click handler eklenir (tamamlanan adımlara dönüş)
+```
 
-**Happy path:**
-- [ ] Library → Select → Template → Progress → Review → Export → Success → Library tam akışı hatasız tamamlanıyor
-- [ ] Token bakiyesi üretimde ve edit'te doğru düşüyor
-- [ ] StepIndicator her aşamada doğru step'i gösteriyor
-- [ ] Back navigasyonu her aşamada çalışıyor
+**Acceptance criteria:**
+- [ ] Modal 4 alan içeriyor: kampanya adı, sektör, tema, ürün tipi
+- [ ] "Şablona geç →" kampanya adı boşken disabled
+- [ ] "Şablona geç →" sektör seçilmemişken disabled
+- [ ] Tema "Diğer" seçilince text input açılıyor
+- [ ] StepIndicator 5 adım gösteriyor
+- [ ] Template ekranında step 2 active görünüyor
+- [ ] `npm run build` hatasız
 
-**Edge cases:**
-- [ ] 10 ürün limiti doğru çalışıyor
-- [ ] Tüm videolar reddedilince export CTA disabled
-- [ ] Token yetersizse üretim başlamıyor
-- [ ] 0 feed apply ile "Atla ve tamamla" çalışıyor
-- [ ] "Create another video" library'e dönüyor ve yeni akış başlatılabiliyor
+**Verification checklist:**
+- [ ] `npm run build` ✓
+- [ ] Modal açılıyor ✓
+- [ ] 4 alan görünüyor ✓
+- [ ] Kampanya adı validation çalışıyor ✓
+- [ ] Sektör seçilmeden CTA disabled ✓
+- [ ] "Diğer" theme → textarea açılıyor ✓
+- [ ] StepIndicator'da 5 adım görünüyor ✓
+- [ ] Template ekranında step 2 highlighted ✓
 
-**Temizlik:**
-- [ ] Console'da sıfır hata ve uyarı (tip hataları dahil)
-- [ ] `EntryStep` ve `GenerateDialog` artık render edilmiyor
-- [ ] Tüm `TODO`, hardcoded `"124 products"` gibi eski sabitler temizlendi veya dinamik mock ile değiştirildi
+**What not to touch:** `SelectStep.tsx`, `TemplateSelectionStep.tsx`, `GenerationProgressStep.tsx`, `ReviewStep.tsx`
+
+**Risk level:** Low-Medium — modal formu genişler, StepIndicator yeniden yazılır ama flow bozulmaz
 
 ---
 
-## Faz Özeti ve Bağımlılıklar
+### Phase 2 — Template Screen Alignment
 
+**Goal:** Template ekranından guided prompt sidebar'ı kaldır. Şablon isimlerini güncelle. Ek detay textarea ekle.
+
+**Gaps addressed:** G-05 (şablon isimleri), G-06 (template ekranı layout)
+
+**Files/components affected:**
+- `src/components/videos/TemplateSelectionStep.tsx` — layout güncellenir
+- `src/components/videos/TemplateCard.tsx` — yeni isimler, önizleme modal
+- `src/components/videos/GuidedPromptFields.tsx` — artık bu ekranda kullanılmaz
+- `src/components/videos/TemplateActionBar.tsx` — kaldırılır, yeni bottom bar
+- `src/data/templates.ts` — isimler ve alanlar güncellenir
+
+**Exact changes:**
+
+**`src/data/templates.ts`:**
+```ts
+export const TEMPLATES: TemplateDefinition[] = [
+  {
+    id: "vitrine-bakan-kadin",
+    label: "Vitrine bakan kadın",
+    scenario: "Alışveriş caddesinde yürüyüp durur, vitrine bakar. Ürün duraklama anında net görünür.",
+    description: "Duraklama anı — şıklık ve keşif hissi.",
+    previewImage: "https://images.unsplash.com/...",
+    recommendedSectors: ["Tekstil / Modest", "Moda & Giyim"],
+  },
+  {
+    id: "paris-yurüyen-kadin",
+    label: "Paris'te yürüyen kadın",
+    scenario: "Haussmann tarzı caddede, café önünde yürüyor.",
+    description: "Şıklık, Avrupa estetiği.",
+    previewImage: "https://images.unsplash.com/...",
+    recommendedSectors: ["Moda & Giyim", "Aksesuar"],
+  },
+  {
+    id: "bahce-bulusmasi",
+    label: "Bahçe buluşması",
+    scenario: "Doğal ışık, çiçekli arka plan, öğleden sonra.",
+    description: "Organik, sıcak ton.",
+    previewImage: "https://images.unsplash.com/...",
+    recommendedSectors: ["Tekstil / Modest", "Ev & Yaşam"],
+  },
+  {
+    id: "product-spotlight",
+    label: "Product spotlight",
+    scenario: "Sade gradient arka plan, 360° yavaş döngü.",
+    description: "Detay çekimi, en temiz format.",
+    previewImage: "https://images.unsplash.com/...",
+    recommendedSectors: [],  // herkese uygun
+  },
+]
 ```
-Faz 0 ──────────────────────────────────────────── (temel, tüm fazlar buna bağlı)
-  │
-  ├── Faz 1 (Library) ──────────────────────────── (Faz 0 gerekli)
-  │     │
-  │     └── Faz 2 (Product Selection) ──────────── (Faz 1 gerekli)
-  │           │
-  │           └── Faz 3 (Template Selection) ────── (Faz 2 gerekli)
-  │                 │
-  │                 └── Faz 4 (Progress) ──────────  (Faz 3 gerekli)
-  │                       │
-  │                       └── Faz 5 (Review/Edit) ── (Faz 4 gerekli)
-  │                             │
-  │                             └── Faz 6 (Export) ── (Faz 5 gerekli)
-  │                                   │
-  │                                   └── Faz 7 (Integration) ── (tümü gerekli)
+
+**`TemplateSelectionStep.tsx`:**
+```tsx
+// Eski layout: left: template grid | right: GuidedPromptFields sidebar
+// Yeni layout: tam genişlik, sadece template grid
+
+// Props değişikliği:
+// Eski: onGenerate(opts: { template: TemplateId; guidedPrompt: GuidedPrompt })
+// Yeni: onContinue(opts: { template: TemplateId; templateNote: string })
+
+// Üst kısım:
+// - Başlık: "Şablon seçin"
+// - Hint: "Ürünlerinize en uygun video senaryosunu seçin."
+// - Kampanya özeti (muted): "[sektör] · [tema] · [ürün tipi]" — campaignContext'ten
+
+// 2x2 grid: TemplateCard × 4
+// recommendedSectors eşleşmesi varsa "⚹ [Sektör adı] için önerilen" amber badge
+
+// Şablon grid'inin altında, opsiyonel textarea:
+// Label: "Ek detay (opsiyonel)"
+// Placeholder: "Örn: fırfırlı kollar öne çıksın, sırt dekoltesi net görünsün"
+// Hint: "Preset seçeneklere sığmayan özel detaylar için. Bu not tüm ürünlere uygulanır."
+// maxLength: 300, karakter sayacı: "0 / 300"
+
+// Bilgi notu: "ℹ Videolar 8–10 saniye, 1:1 formatta üretilir."
+
+// Bottom bar (TemplateActionBar kaldırılır, basit bar gelir):
+// Sol: "N ürün · [şablon adı]"
+// Sağ: [← Geri] [Devam →]
+// Disabled hint: "Devam etmek için bir şablon seçin"
 ```
 
-## Bileşen Sayısı Özeti
+**`TemplateCard.tsx`:**
+```tsx
+// Mevcut: info popover butonu
+// Değişiklik:
+// - "recommended sector" badge eklenir
+// - Hover → placeholder animasyon (CSS opacity/scale geçişi — gerçek video animasyonu opsiyonel)
+// - Preview alanına tıklayınca basit detay modal açılır (design.md §7.3):
+//   Modal: şablon adı, senaryo açıklaması, "[Bu şablonu seç →]" butonu
+// - Mevcut info popover kaldırılır (yerine modal)
+```
 
-| Kategori | Sayı |
-|---|---|
-| Yeni dosya / bileşen | 15 |
-| Köklü rework (neredeyse yeniden yazılıyor) | 3 |
-| Orta modifikasyon | 5 |
-| Küçük güncelleme | 4 |
-| Dokunulmayacak | ~35 |
+**Acceptance criteria:**
+- [ ] Template ekranında sağ sidebar yok
+- [ ] 4 şablon yeni isimlerle görünüyor
+- [ ] Ek detay textarea var, 300 char sayacı çalışıyor
+- [ ] Kampanya özeti (sektör/tema/ürün tipi) muted olarak gösteriliyor
+- [ ] Bottom bar: "N ürün · [şablon adı]"
+- [ ] Şablon seçilmeden "Devam →" disabled
+- [ ] Template kartına tıklanınca seçiliyor
+- [ ] Preview alanına tıklanınca detay modal açılıyor
+- [ ] `npm run build` hatasız
 
-## Kapsam Dışı Hatırlatması
+**Verification checklist:**
+- [ ] `npm run build` ✓
+- [ ] 4 şablon yeni isimlerle görünüyor ✓
+- [ ] Sidebar yok ✓
+- [ ] Ek detay textarea çalışıyor ✓
+- [ ] Şablon seçimi + devam → confirm ekranına geçiş ✓
+- [ ] campaignContext özeti görünüyor ✓
 
-Bu plan aşağıdakileri **içermez** (product.md Out of Scope):
+**What not to touch:** `CampaignSetupModal.tsx`, `StepIndicator.tsx`, `SelectStep.tsx`, `ExportStep.tsx`
+
+**Risk level:** Medium — TemplateActionBar kaldırılıyor, yeni bottom bar geliyor; `onGenerate` prop imzası değişiyor
+
+---
+
+### Phase 3 — Confirm Step
+
+**Goal:** Üretim başlatmadan önce maliyet onayı ekranını ekle.
+
+**Gaps addressed:** G-01 (maliyet onayı ekranı yok)
+
+**Files/components affected:**
+- Yeni: `src/components/videos/ConfirmStep.tsx`
+- `src/pages/Videos.tsx` — yeni `confirm` stage, handler'lar
+
+**Exact changes:**
+
+**`ConfirmStep.tsx` (YENİ):**
+```tsx
+interface ConfirmStepProps {
+  products: Product[]
+  template: TemplateDefinition | null
+  campaignContext: CampaignContext
+  templateNote: string
+  tokenBalance: number
+  notifyOnComplete: boolean
+  onNotifyChange: (v: boolean) => void
+  onConfirm: () => void
+  onBack: () => void
+}
+
+// Layout (design.md §8):
+// Step göstergesi: ✓ Ürün seç → ✓ Şablon → ● Onayla → ...
+
+// Başlık: "Üretimi onayla"
+// Hint: "Üretim başladıktan sonra token bakiyenizden düşülecektir."
+
+// 3'lü özet grid:
+// [Ürün sayısı: N] [Tahmini süre: ~N dk] [Tahmini token: ~N token]
+// Tüm değerler "~" ile başlar
+
+// Şablon özeti:
+// 🎬 [Şablon adı]  [Düzenle →]
+// "N ürün için bu şablon kullanılacak."
+// "Düzenle" → stage="template"'e döner
+
+// Bakiye özet kartı:
+// Mevcut bakiye: N,NNN token
+// Bu üretim:   −N token
+// ─────────────────────────
+// Tahmini kalan: ≈ N,NNN token
+// (yetersiz ise: kalan satırı kırmızı, "Eksik: N token")
+
+// Insufficient balance state:
+// CTA disabled
+// Warning alert: "⚠ Bakiyeniz bu üretim için yetersiz. N token eksik."
+// (MVP'de "Token al" → mock toast "Bu özellik yakında")
+
+// Opsiyonel checkbox:
+// ☐ Üretim bittiğinde bana bildir (tarayıcı bildirim izni)
+// İlk işaretlemede Notification.requestPermission() (izin reddedilirse warning)
+
+// Footer:
+// [← Geri]    [Üretimi başlat →]
+```
+
+**`Videos.tsx`:**
+```tsx
+// confirm stage eklenir:
+// handleTemplateNext(template, templateNote) → stage="confirm"
+// handleConfirm() → token düşürülür, video'lar oluşturulur, stage="generate-review"
+// handleBackFromConfirm() → stage="template"
+
+// getPreviousStage güncellemesi:
+// confirm → template
+// generate-review → null  (geri butonu yok, üretim başladı)
+```
+
+**Acceptance criteria:**
+- [ ] Template → "Devam" → Confirm ekranı açılıyor
+- [ ] 3 özet kart: ürün sayısı, süre, token doğru
+- [ ] Şablon adı gösteriliyor, "Düzenle" → template'e dönüyor
+- [ ] Bakiye kart doğru hesaplıyor (bakiye - maliyet)
+- [ ] Yetersiz bakiyede CTA disabled + kırmızı uyarı
+- [ ] Bildirim checkbox çalışıyor
+- [ ] "Üretimi başlat" → token düşüyor, generate-review açılıyor
+- [ ] `npm run build` hatasız
+
+**Verification checklist:**
+- [ ] `npm run build` ✓
+- [ ] Template → Confirm geçişi ✓
+- [ ] Token hesaplamaları doğru ✓
+- [ ] Yetersiz bakiye state'i görünüyor ✓
+- [ ] Confirm → generate-review geçişi ✓
+- [ ] Token balance düşüyor ✓
+
+**What not to touch:** `GenerationProgressStep.tsx`, `ReviewStep.tsx`, `ExportStep.tsx`
+
+**Risk level:** Low — yeni bileşen, mevcut akışa ekleniyor
+
+---
+
+### Phase 4 — Generate-Review Merge (Birleşik Ekran)
+
+**Goal:** `progress` ve `review` stage'lerini tek `generate-review` ekranında birleştir. Videolar üretildikçe kart `generating → pending_review`'e geçer; kullanıcı hemen aksiyon alabilir.
+
+**Gaps addressed:** G-02 (en büyük mimari değişim), G-13 (toplu aksiyon butonları)
+
+**Files/components affected:**
+- Yeni: `src/components/videos/GenerateReviewStep.tsx`
+- `src/components/videos/ReviewVideoCard.tsx` — `generating` state eklenir
+- `src/components/videos/VideoProgressCard.tsx` — gerekirse reuse
+- `src/pages/Videos.tsx` — stage logic, video state
+- `src/types/video-flow.ts` — Video type kullanılır
+
+**Exact changes:**
+
+**`GenerateReviewStep.tsx` (YENİ — GenerationProgressStep + ReviewStep birleşimi):**
+```tsx
+interface GenerateReviewStepProps {
+  products: Product[]
+  videos: Video[]
+  onVideoStatusChange: (id: string, status: VideoStatus) => void
+  onEditPrompt: (productId: string) => void
+  onContinue: () => void          // "Dışa aktar →"
+  onBulkApprove: () => void       // "Tümünü onayla" — confirmation ile
+  notifyOnComplete: boolean
+}
+
+// Header (dinamik):
+// Üretim sürüyorsa: "Videolar üretiliyor..."
+// Tüm üretim bittiyse: "Videolar hazır — inceleme tamamlanınca gönderebilirsiniz"
+// Hint: "Videolar hazır oldukça inceleyebilirsiniz. Onay vermeden hiçbir video kanala gönderilmez."
+// Progress satırı: "N / M tamamlandı · ~N dk kaldı"
+// Progress bar (4px yükseklik, primary color → tümü bitince success green)
+
+// Toplu aksiyonlar (sağ üst) — design.md §9.5:
+// [↻ Tümünü yeniden üret] — confirmation + token uyarısı
+// [✓ Tümünü onayla] — confirmation dialog: "N videoyu onayla?"
+// [▼ İndir dropdown]: "Onaylananları indir" / "Tümünü indir"
+
+// Video kart listesi:
+// Her kart: ReviewVideoCard ile (generating state desteği eklenerek)
+
+// Footer (sticky):
+// Sol: "N onaylandı / M toplam"
+// Sağ: [← Geri (disabled)] [Dışa aktar →]
+// "Dışa aktar" disabled hint: "Dışa aktarmak için en az 1 videoyu onaylayın"
+// İlk onaylananın ardından aktifleşir
+
+// Mock üretim logic (setTimeout chain):
+// Her video sırayla: generating (0ms) → pending_review (1200ms × i)
+// ~5% random failed rate (G-02 isteğe bağlı)
+// Tüm üretim bitince progress bar yeşile döner, başlık değişir
+
+// Browser notification (notifyOnComplete=true ise):
+// Tüm üretim bitince: new Notification("Kampanyandaki N video hazır.")
+```
+
+**`ReviewVideoCard.tsx` güncellemesi:**
+```tsx
+// Mevcut: pending_review | approved | rejected
+// Yeni: generating state eklenir
+
+// generating state (design.md §9.4.1):
+// - Thumbnail alanında spinner + soluk ürün görseli arka plan
+// - Badge: "Üretiliyor" (amber, pulse animasyonu)
+// - Aksiyon butonları görünmez
+// - Sol kenar: 3px amber çizgi
+
+// pending_review state (design.md §9.4.2):
+// - Thumbnail fade-in (300ms)
+// - Oynat ikonu overlay + süre
+// - Badge: "İncele" (mor)
+// - Aksiyon butonları: [▶ Önizle] [✓ Onayla] [✎ Düzenle] [✕ Reddet]
+
+// approved (§9.4.3): yeşil checkmark overlay, [Değiştir] linki
+// rejected (§9.4.4): kırmızı overlay, opacity 0.5, [Geri al] linki
+// failed (§9.4.5): error ikon, "Token iade edildi" hint, [↻ Yeniden dene]
+```
+
+**`Videos.tsx`:**
+```tsx
+// Stage değişimi:
+// "progress" ve "review" kaldırılır
+// "generate-review" eklenir
+
+// Video state: VideoJob[] yerine Video[] kullanılır
+// Üretim Videos.tsx yerine GenerateReviewStep içinde yönetilir
+// (veya Videos'ta useEffect ile — consistency için)
+
+// Kalan handler'lar:
+// handleApprove(videoId) — Video.status = "approved"
+// handleReject(videoId) — Video.status = "rejected"
+// handleBulkApprove() — window.confirm → tüm pending_review → approved
+//   (Phase 7'de confirmation dialog component ile değiştirilir)
+// handleOpenEditPrompt(productId) — stage = "edit-prompt"
+```
+
+**Acceptance criteria:**
+- [ ] Üretim başlayınca kartlar sırayla generating → pending_review geçiyor
+- [ ] İlk video hazır olunca hemen onayla/reddet/düzenle butonları görünüyor
+- [ ] Üretim devam ederken kullanıcı hazır videolara aksiyon alabilir
+- [ ] "Dışa aktar" ilk onaydan sonra aktifleşiyor
+- [ ] "Tümünü onayla" confirmation soruyor
+- [ ] İndir dropdown çalışıyor (ZIP mock)
+- [ ] Ayrı progress ve review ekranları kaldırıldı
+- [ ] `npm run build` hatasız
+
+**Verification checklist:**
+- [ ] `npm run build` ✓
+- [ ] Confirm → generate-review geçişi ✓
+- [ ] Sıralı video üretimi animasyonu ✓
+- [ ] Hazır video → aksiyon butonları görünüyor ✓
+- [ ] Approve → footer sayacı artıyor ✓
+- [ ] "Dışa aktar" butonu aktifleşiyor ✓
+- [ ] Edit prompt açılıyor ✓
+- [ ] Old `GenerationProgressStep` ve `ReviewStep` artık route edilmiyor ✓
+
+**What not to touch:** `ConfirmStep.tsx`, `ExportStep.tsx`, `SuccessStep.tsx`, `LibraryStep.tsx`
+
+**Risk level:** High — en büyük yeniden yapılandırma. Mevcut progress+review akışı tamamen değişiyor. Dikkatli test edilmeli.
+
+---
+
+### Phase 5 — Export Update (Channel-Toggle Paradigması)
+
+**Goal:** Feed-attribute kartlarını kanal-toggle kartlarıyla değiştir.
+
+**Gaps addressed:** G-14 (export paradigması değişimi)
+
+**Files/components affected:**
+- `src/components/videos/ExportStep.tsx` — yeniden yazılır
+- `src/components/videos/ExportFeedCard.tsx` — replace edilir
+- Yeni: `src/components/videos/ChannelToggleCard.tsx`
+- `src/data/feedExports.ts` → artık aktif kullanılmaz; `src/data/channels.ts` devreye girer
+- `src/pages/Videos.tsx` — handleExportComplete imzası güncellenir
+
+**Exact changes:**
+
+**`ChannelToggleCard.tsx` (YENİ):**
+```tsx
+interface ChannelToggleCardProps {
+  channel: Channel
+  selected: boolean
+  onToggle: () => void
+}
+
+// Bağlı + seçili: border 2px #7F77DD, toggle on
+// Bağlı + seçilmedi: border 0.5px border-tertiary, toggle off
+// Bağlı değil: toggle disabled, "[Kanal] hesabını bağla →" (mock toast)
+// Her kartta: logo/badge (renkli metin), kanal adı, açıklama, bağlantı durumu
+```
+
+**`ExportStep.tsx` (yeniden yapılandırılır):**
+```tsx
+// Yeni layout (design.md §11):
+
+// Başlık alanı:
+// Yeşil checkmark + "N video onaylandı"
+// Hint: "Videoları reklam kanallarınıza gönderin veya ZIP olarak indirin."
+
+// Kanal listesi (3 kart: Meta, Google, TikTok):
+// ChannelToggleCard × 3
+
+// ZIP indirme kartı (dashed border):
+// [⤓ ZIP indir] (N video)
+// "Kanal seçmeden sadece indirmek istiyorsanız 'Atla'yı kullanın."
+
+// Footer:
+// [← Geri]  [Atla (taslak olarak kaydet)]  [Gönder →]
+// "Gönder" — en az 1 bağlı kanal seçili olmalı
+// Disabled hint: "Göndermek için en az bir kanal seçin"
+
+// Gönder tıklandığında: 2 sn mock delay → success
+// Atla: kampanya draft kalır → success (count=0 veya skip)
+```
+
+**Acceptance criteria:**
+- [ ] 3 kanal kartı görünüyor (Meta bağlı, Google bağlı, TikTok bağlı değil)
+- [ ] Toggle çalışıyor, bağlı değil → disabled + mock toast
+- [ ] ZIP indirme butonu mock download tetikliyor
+- [ ] "Gönder" seçim olmadan disabled
+- [ ] "Atla" → success ekranına gidiyor
+- [ ] "Gönder" → 2 sn delay → success ekranına gidiyor
+- [ ] `npm run build` hatasız
+
+**Verification checklist:**
+- [ ] `npm run build` ✓
+- [ ] 3 kanal kartı görünüyor ✓
+- [ ] Meta toggle → seçili state ✓
+- [ ] TikTok → disabled, mock toast ✓
+- [ ] Gönder → success ✓
+- [ ] Atla → success ✓
+
+**What not to touch:** `GenerateReviewStep.tsx`, `SuccessStep.tsx`, `LibraryStep.tsx`
+
+**Risk level:** Medium — ExportStep yeniden yazılıyor ama ayrı bir ekran, flow bozulma riski düşük
+
+---
+
+### Phase 6 — Library Improvements
+
+**Goal:** Library'ye kebab menü, `setup_in_progress` statüsü ve "Devam et" pathway'i ekle.
+
+**Gaps addressed:** G-15 (kebab menü), G-16 (setup_in_progress)
+
+**Files/components affected:**
+- `src/components/videos/FolderCard.tsx` — kebab menü + setup_in_progress kart
+- `src/components/videos/LibraryStep.tsx` — yeni tab eklenir (Üretim sürüyor)
+- `src/data/folders.ts` — yeni status değeri
+- `src/pages/Videos.tsx` — resume/delete handler'lar
+
+**Exact changes:**
+
+**`src/data/folders.ts`:**
+```ts
+type FolderStatus = "active" | "draft" | "archived" | "setup_in_progress"
+// setup_in_progress: kampanya kurulumu yarım kaldı
+```
+
+**`FolderCard.tsx`:**
+```tsx
+// setup_in_progress kartı (design.md §6.3):
+// Soluk thumbnails
+// "⚠ Kurulum yarım kaldı" badge
+// [Devam et →]  [Sil] butonları
+// Normal toggle ve status buton yok
+
+// Normal kartlara kebab menü (design.md §6.4):
+// Hover'da ⋮ belirir
+// Dropdown: Detay (mock toast), Yeniden adlandır (inline rename), Dışa aktar, Arşivle, Sil
+// Arşivle/Sil → window.confirm (Phase 7'de styled dialog'a yükseltilir)
+// Rename: inline text input kart başlığında
+
+// Tab bar güncellemesi (LibraryStep):
+// Tümü | Aktif | Taslak | Üretim sürüyor | Arşiv
+```
+
+**`Videos.tsx`:**
+```tsx
+// handleResumeFolder(folderId): setup_in_progress klasörünü açar
+// handleDeleteFolder(folderId): klasörü listeden çıkarır (confirmation)
+// handleRenameFolder(folderId, newName): isim güncellenir
+```
+
+**Acceptance criteria:**
+- [ ] Kampanya kartında hover → ⋮ görünüyor
+- [ ] Dropdown menü çalışıyor
+- [ ] Arşivle/Sil confirmation soruyor (window.confirm)
+- [ ] setup_in_progress kart "Devam et" ve "Sil" butonları gösteriyor
+- [ ] "Devam et" → kullanıcıyı bıraktığı adıma götürüyor
+- [ ] "Üretim sürüyor" tab eklendi
+- [ ] `npm run build` hatasız
+
+**Verification checklist:**
+- [ ] `npm run build` ✓
+- [ ] Kebab menü açılıyor ✓
+- [ ] Dropdown aksiyon'ları çalışıyor ✓
+- [ ] setup_in_progress kart görünümü ✓
+- [ ] Devam et → doğru stage ✓
+
+**What not to touch:** `GenerateReviewStep.tsx`, `ExportStep.tsx`, `ConfirmStep.tsx`
+
+**Risk level:** Medium — FolderCard genişletiliyor; mevcut toggle mantığı korunuyor
+
+---
+
+### Phase 7 — Supporting UX Patterns
+
+**Goal:** Cross-cutting UX pattern'lerini ve eksik UI elementleri ekle. Her sub-task bağımsız.
+
+**Gaps addressed:** G-07 (onboarding), G-08 (wallet panel), G-17 (confirmation dialog), G-20 (skeleton), G-23 (empty states), G-24 (ilk kampanya mesajı), G-26 (min genişlik blocker)
+
+**Sub-tasks (her biri bağımsız, sırayla yapılır):**
+
+#### 7a — Confirmation Dialog Component
+```tsx
+// Yeni: src/components/ui/ConfirmDialog.tsx (shadcn Dialog üzerine)
+// Props: open, title, description, confirmLabel, confirmVariant ("default"|"destructive"), onConfirm, onCancel
+// Replaces: window.confirm() kullanımları
+// Önce component yazılır, sonra Videos.tsx ve FolderCard'da window.confirm() değiştirilir
+```
+
+#### 7b — Wallet Panel
+```tsx
+// WalletPanel.tsx (popover/dropdown)
+// TokenBadge tıklanınca açılır
+// İçerik: bakiye, bu hafta/bu ay harcama, son işlem tarihi, "Geçmişi gör" + "Token al" (mock toast)
+// MOCK_SPENDING sabiti kullanılır (Phase 0'da eklendi)
+```
+
+#### 7c — Onboarding Banner + How It Works Modal
+```tsx
+// OnboardingBanner.tsx:
+// localStorage.getItem("has_seen_video_intro") yoksa catalog ekranı üstünde görünür
+// Banner: başlık + "Nasıl çalışır?" + "Anladım, başlayalım" + ✕
+// Kapatınca localStorage.setItem("has_seen_video_intro", "true")
+
+// HowItWorksModal.tsx:
+// 3 sekme: Önce/Sonra | 3 adımda | SSS
+// "Nasıl çalışır?" → modal açar (banner'dan ve topbar'dan)
+// SSS içeriği design.md §3.2'den
+```
+
+#### 7d — Skeleton Loading States
+```tsx
+// SelectStep'te mount sırasında 300ms sonra ürünler görünür — bu sürede 10 satır shimmer
+// LibraryStep'te mount sırasında 300ms → 6 kart shimmer
+// TemplateSelectionStep → 4 kart skeleton
+// Renk: bg-muted animate-pulse
+```
+
+#### 7e — Empty State Pattern
+```tsx
+// Mevcut empty state'ler design.md §2.9 formatına getirilir:
+// SelectStep: filtre sonucu boş + katalog boş (farklı)
+// LibraryStep: mevcut empty state zaten var, gözden geçirilir
+// Her state: 64px ikon + başlık + açıklama (max 2 satır) + opsiyonel CTA
+```
+
+#### 7f — First Campaign Success Message
+```tsx
+// SuccessStep.tsx:
+// localStorage.getItem("has_completed_first_campaign") yoksa:
+// "🎉 Bu senin ilk video kampanyan! Library'den her zaman tekrar gözden geçirebilirsin."
+// localStorage.setItem("has_completed_first_campaign", "true")
+// Confetti animasyonu: CSS keyframes, prefers-reduced-motion respect
+```
+
+#### 7g — Minimum Desktop Width Blocker
+```tsx
+// AppShell.tsx'e eklenir:
+// useWindowSize hook veya CSS media query
+// <1280px → full-screen overlay:
+// "Bu özellik şu an sadece desktop'ta kullanılabilir."
+// "En az 1280px ekran genişliği gerekiyor."
+// Zaman değil responsive fix — sadece blocker
+```
+
+**Acceptance criteria (toplu):**
+- [ ] Confirmation dialog styled, window.confirm() kaldırıldı
+- [ ] Wallet panel açılıp kapanıyor, mock data gösteriyor
+- [ ] Onboarding banner ilk girişte görünüyor, localStorage'a yazıyor
+- [ ] How it works modal 3 sekme çalışıyor
+- [ ] Skeleton animasyonları görünüyor (300ms delay)
+- [ ] Empty state'ler tek tip görünümde
+- [ ] İlk kampanya sonrası 🎉 mesajı görünüyor
+- [ ] <1280px → blocker görünüyor
+- [ ] `npm run build` hatasız
+
+**Risk level:** Low — her sub-task bağımsız, mevcut ekranları bozmaz
+
+---
+
+### Phase 8 — Optional Polish
+
+**Goal:** Öncelik sırasında en sona bırakılan iyileştirmeler. Design.md'de tanımlı ama akış için kritik değil.
+
+**Gaps addressed:** G-09 (filtre paneli), G-10 (history warning), G-12 (video player modal), G-18 (edit prompt presets), G-19 (kalan mock veri), G-21 (klavye kısayolları), G-22 (browser notification), G-25 (accessibility)
+
+**Sub-tasks:**
+
+#### 8a — Gelişmiş Filtre Paneli (G-09)
+```tsx
+// FilterPanel.tsx: Marka multi-select, Kategori multi-select, Item group ID text,
+// Görsel sayısı range, Video geçmişi toggle. SelectStep'te "[Filtre]" butonu.
+```
+
+#### 8b — Geçmiş Uyarısı (G-10)
+```tsx
+// ProductCard list view'da son sütun: videoHistory varsa amber history ikon
+// Hover tooltip: kampanya adı, tarih, "Kampanyayı gör"
+// products.ts'de videoHistory[] alanı (Phase 0'da eklendi)
+```
+
+#### 8c — Video Player Modal (G-12)
+```tsx
+// VideoPlayerModal.tsx: 1000×700px modal
+// Progress bar, full-screen, frame-step (◁/▷), hız seçimi, ses toggle
+// Aksiyon butonları: onayla/reddet/düzenle
+// Önceki/sonraki video navigasyonu
+```
+
+#### 8d — Edit Prompt Preset Kategoriler (G-18)
+```tsx
+// EditPromptStep.tsx: 4 kategori pill grid
+// Ortam (8), Hareket (7), Işık (5), Kıyafet vurgusu (6)
+// "Önceki versiyon" dropdown — previousVersions[] array kullanılır
+```
+
+#### 8e — Browser Notification (G-22)
+```tsx
+// ConfirmStep'te notifyOnComplete checkbox (Phase 3'te eklendi)
+// GenerateReviewStep'te: tüm üretim bitince new Notification(...)
+```
+
+#### 8f — Klavye Kısayolları (G-21)
+```tsx
+// useKeyboardShortcuts hook: A (approve), R (reject), E (edit), Space (play/pause)
+// GenerateReviewStep'te aktif, modal açıkken devre dışı
+```
+
+#### 8g — Accessibility Pass (G-25)
+```tsx
+// Focus ring: 2px solid #7F77DD tüm interactive element'lerde
+// aria-label, aria-busy, role="alert" toast'larda
+// Modal focus trap
+// WCAG AA contrast kontrol
+```
+
+**Risk level:** Low — hepsi bağımsız, mevcut akışı değiştirmiyor
+
+---
+
+## 5. Phase Detail Summary
+
+| Phase | Goal | Gaps | Risk | Complexity |
+|-------|------|------|------|------------|
+| 0 | State + veri temeli | G-02,03,05,19 (kısmi) | Low | Small |
+| 1 | Modal + StepIndicator | G-03, G-04 | Low-Med | Small |
+| 2 | Template ekranı | G-05, G-06 | Medium | Medium |
+| 3 | Confirm step | G-01 | Low | Medium |
+| 4 | Generate-Review birleşik | G-02, G-13 | High | Large |
+| 5 | Export kanal-toggle | G-14 | Medium | Medium |
+| 6 | Library iyileştirmeleri | G-15, G-16 | Medium | Medium |
+| 7 | UX pattern'ler | G-07,08,17,20,23,24,26 | Low | Small×7 |
+| 8 | Opsiyonel polish | G-09,10,12,18,21,22,25 | Low | Varied |
+
+---
+
+## 6. Component Map
+
+| Bileşen | Mevcut Durum | Phase 0 Sonrası | Final Rol |
+|---------|-------------|-----------------|-----------|
+| `CampaignNameModal.tsx` | Sadece isim | — | Phase 1'de 4 alanlı forma dönüşür |
+| `StepIndicator.tsx` | 6 adım, static | — | Phase 1'de 5 adım, clickable |
+| `SelectStep.tsx` | Grid/list toggle | Stage: "catalog" | Tablo formatına (Phase 8a) |
+| `ProductCard.tsx` | Grid + list | — | History warning (Phase 8b) |
+| `TemplateSelectionStep.tsx` | Grid + sidebar | — | Phase 2'de sadece grid + ek not |
+| `TemplateCard.tsx` | Info popover | — | Phase 2'de preview modal |
+| `TemplateActionBar.tsx` | Bottom bar | — | Phase 2'de kaldırılır |
+| `GuidedPromptFields.tsx` | Template sidebar | — | Phase 2'de Campaign Modal'a taşınır |
+| `GenerationProgressStep.tsx` | Ayrı ekran | — | Phase 4'te GenerateReviewStep'e birleşir |
+| `ReviewStep.tsx` | Ayrı ekran | — | Phase 4'te GenerateReviewStep'e birleşir |
+| `ReviewVideoCard.tsx` | 3 state | — | Phase 4'te generating state eklenir |
+| `VideoProgressCard.tsx` | Progress kart | — | Phase 4'te GenerateReviewStep içinde reuse |
+| `EditPromptStep.tsx` | Full-page | — | Phase 8d'de preset kategoriler |
+| `ExportStep.tsx` | Feed-attribute | — | Phase 5'te kanal-toggle |
+| `ExportFeedCard.tsx` | Feed kart | — | Phase 5'te yerini ChannelToggleCard alır |
+| `SuccessStep.tsx` | Sabit mesaj | — | Phase 7f'de ilk kampanya mesajı |
+| `LibraryStep.tsx` | 4 tab | — | Phase 6'da 5 tab |
+| `FolderCard.tsx` | Toggle button | — | Phase 6'da kebab menü + setup_in_progress |
+| `TokenBadge.tsx` | Balance + spent | — | Phase 7b'de WalletPanel tetikler |
+| `AppShell.tsx` | Sidebar | — | Phase 7g'de min-width blocker |
+| `CostEstimateBar.tsx` | Sticky bar | — | Korunur (catalog sticky bar) |
+| `StackedImageIndicator.tsx` | Image count | — | Korunur |
+| Yeni: `ConfirmStep.tsx` | — | — | Phase 3 |
+| Yeni: `GenerateReviewStep.tsx` | — | — | Phase 4 |
+| Yeni: `ChannelToggleCard.tsx` | — | — | Phase 5 |
+| Yeni: `ConfirmDialog.tsx` | — | — | Phase 7a |
+| Yeni: `WalletPanel.tsx` | — | — | Phase 7b |
+| Yeni: `OnboardingBanner.tsx` | — | — | Phase 7c |
+| Yeni: `HowItWorksModal.tsx` | — | — | Phase 7c |
+| Yeni: `VideoPlayerModal.tsx` | — | — | Phase 8c |
+| Yeni: `FilterPanel.tsx` | — | — | Phase 8a |
+| `EntryStep.tsx` | Unused | — | Korunur, import'tan çıkarılmış zaten |
+| `SendStep.tsx` | Unused | — | Korunur |
+| `PreviewStep.tsx` | Unused | — | Korunur |
+| `GenerateDialog.tsx` | Unused | — | Korunur |
+
+---
+
+## 7. Scope Boundaries
+
+Aşağıdakiler **kesinlikle kapsam dışıdır:**
+
 - Gerçek AI video üretimi
-- Backend / API entegrasyonu
-- Auth değişikliği
-- Aspect ratio seçimi (yalnızca 1:1)
-- Text overlay editörü
-- Scheduling
-- Bulk upload
-- E-posta / in-app bildirim
-- Hover video preview (V2)
-- Toplu video onaylama (tartışmalı, V1 sınırında — implement edilmeyecek)
+- Gerçek API veya backend servisi
+- Database veya kalıcı storage (localStorage dışında)
+- Kullanıcı kimlik doğrulama (auth)
+- Gerçek Meta/Google/TikTok kanal gönderimi
+- Gerçek token satın alma (sadece mock toast)
+- Gerçek kanal hesabı bağlama (sadece mock toast)
+- Mobil breakpoint desteği
+- Text overlay editörü / Dynamic Creative
+- 1000+ ürün bulk generation
+- Multi-language support
+- Telemetri/analytics
+- Ekip işbirliği/paylaşma
+- A/B test modu
+- Kullanıcı tarafından şablon oluşturma
+- `design.md` dışında tanımlanmayan herhangi bir özellik
+
+---
+
+## 8. Open Questions
+
+Aşağıdaki konular `design.md`'de belirsiz kalmış veya prototip implementasyonunda netleştirilmesi gereken seçimler:
+
+| # | Soru | Etki | Varsayım (bloke etmez) |
+|---|------|------|------------------------|
+| OQ-1 | Phase 4'te video state (generating/pending_review/...) `Videos.tsx`'te mi yoksa `GenerateReviewStep`'te local mi tutulmalı? | State yönetimi mimarisi | `Videos.tsx`'te tutulur — diğer ekranlar (export, success) video sayısına ihtiyaç duyar |
+| OQ-2 | Template screen'den Guided prompts tamamen kaldırılıyor — Campaign modal'a taşınan sektör/tema bilgisi şablon seçimine etki ediyor mu (recommended badge dışında)? | Phase 2 UI | Sadece recommended badge — kullanıcı sektöre bakılmaksızın istediği şablonu seçebilir |
+| OQ-3 | `setup_in_progress` kampanya localStorage'da nasıl saklanır? Her field mi yoksa stage mi? | Phase 6 persistence | `{ stage, selectedProductIds, campaignName, campaignContext }` JSON olarak saklanır |
+| OQ-4 | Phase 4'te "Tümünü yeniden üret" token maliyeti: sadece pending_review olanlar mı, yoksa tüm videolar mı yeniden üretilir? | Token hesaplama | Sadece pending_review ve failed olanlar |
+| OQ-5 | Export'ta "Atla" ile gidilen success ekranında kaç video "gönderildi" sayılır? | Success screen copy | 0 — "N video taslak olarak kaydedildi" |
+
+---
+
+## 9. Prototype Acceptance Criteria (End-to-End)
+
+Tüm fazlar tamamlandığında şu happy path hatasız çalışmalı:
+
+1. `/videos` açılır → ürün kataloğu (30 ürün) görünür
+2. Onboarding banner görünür (ilk giriş)
+3. 3 ürün seçilir → sticky bar güncellenir
+4. "Şablon seç →" → Campaign Setup Modal açılır
+5. Kampanya adı + sektör girilir → "Şablona geç →"
+6. Template ekranı açılır → 4 şablon yeni isimlerle görünür
+7. Şablon seçilir → ek not girilir → "Devam →"
+8. Confirm ekranı: özet kartlar + bakiye doğru
+9. "Üretimi başlat" → generate-review ekranı
+10. Kartlar sırayla generating → pending_review geçiyor
+11. İlk hazır videoya onayla tıklanıyor → footer güncelleniyor
+12. "Dışa aktar →" aktifleşiyor → export ekranı
+13. Meta toggle → seçili, "Gönder →" → 2 sn delay → success
+14. Success ekranında kampanya özeti görünüyor
+15. "Kampanyalarım" → library açılır → yeni kampanya kartı görünür
+
+---
+
+## 10. Notes on Existing Unused Components
+
+Aşağıdaki bileşenler mevcut codebase'de var ama artık route edilmiyor. Bu implementasyon boyunca **silinmeyecekler** — git history korunur:
+
+- `EntryStep.tsx` — eski giriş ekranı
+- `PreviewStep.tsx` — eski review (carousel)
+- `GenerateDialog.tsx` — eski template dialog
+- `SendStep.tsx` — eski export (channel toggle, Phase 5'te referans alınabilir!)
+- `GenerateCostConfirm.tsx` — eski maliyet widget (Phase 3'te referans alınabilir!)
+
+> **Not:** `SendStep.tsx` ve `GenerateCostConfirm.tsx` Phase 5 ve Phase 3 için iyi referans noktalarıdır. Sıfırdan yazmak yerine mevcut kod incelenmeli.
