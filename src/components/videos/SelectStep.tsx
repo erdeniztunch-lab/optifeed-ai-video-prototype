@@ -6,6 +6,7 @@ import { PRODUCTS } from "@/data/products";
 import { PRODUCT_SELECTION_LIMIT } from "@/data/tokens";
 import { ProductCard } from "./ProductCard";
 import { CostEstimateBar } from "./CostEstimateBar";
+import { OnboardingBanner } from "./OnboardingBanner";
 
 interface Props {
   selectedIds: string[];
@@ -98,6 +99,8 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
             Kütüphane
           </button>
         </header>
+
+        <OnboardingBanner />
 
         {/* Toolbar */}
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
