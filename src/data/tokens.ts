@@ -1,5 +1,11 @@
 export const MOCK_TOKEN_BALANCE = 1240;
 
+export const MOCK_SPENDING = {
+  thisWeek: 340,
+  thisMonth: 1120,
+  lastActionLabel: "2 saat önce",
+};
+
 // Cost per video generation (and per edit-prompt regeneration)
 export const TOKEN_COST_PER_VIDEO = 8;
 
