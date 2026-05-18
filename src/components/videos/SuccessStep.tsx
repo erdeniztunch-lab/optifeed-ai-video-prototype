@@ -73,7 +73,7 @@ export function SuccessStep({ count, exportedFeeds, onAnother, onViewProducts }:
             Yeni video oluştur
           </Button>
           <Button size="lg" variant="outline" onClick={onViewProducts}>
-            Ürünlere git
+            Kampanyalarıma git
           </Button>
           <button
             type="button"

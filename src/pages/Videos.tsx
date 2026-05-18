@@ -12,7 +12,7 @@ import { SuccessStep } from "@/components/videos/SuccessStep";
 import { ConfirmStep } from "@/components/videos/ConfirmStep";
 import { PRODUCTS } from "@/data/products";
 import { FOLDERS, type VideoFolder } from "@/data/folders";
-import { MOCK_TOKEN_BALANCE, TOKEN_COST_PER_VIDEO, SAMPLE_VIDEO } from "@/data/tokens";
+import { MOCK_TOKEN_BALANCE, TOKEN_COST_PER_VIDEO } from "@/data/tokens";
 import { type GuidedPrompt, DEFAULT_GUIDED_PROMPT, type VideoJob, type TemplateId, type CampaignContext, DEFAULT_CAMPAIGN_CONTEXT } from "@/types/video-flow";
 import { ArrowLeft } from "lucide-react";
 import { CampaignNameModal } from "@/components/videos/CampaignNameModal";

@@ -25,7 +25,7 @@ const navItems: NavItem[] = [
   { label: "Exports",      icon: Upload,          to: "/exports" },
   { sectionHeader: "AI Studio" },
   { label: "Video",            icon: Video,          to: "/videos",              badge: "New" },
-  { label: "Campaigns",        icon: FolderOpen,     to: "/videos?view=library", indent: true },
+  { label: "Kampanyalarım",     icon: FolderOpen,     to: "/videos?view=library", indent: true },
   { label: "Dynamic Creative", icon: LayoutTemplate, to: "/templates",           indent: true },
   { label: "GA4 Analytics", icon: BarChart3,  to: "/analytics" },
   { label: "Meta Ads",      icon: Megaphone,  to: "/meta-ads" },
