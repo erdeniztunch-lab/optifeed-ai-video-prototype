@@ -45,7 +45,13 @@ export function ConfirmStep({
       return;
     }
     if (typeof Notification === "undefined") {
-      setNotifyWarning("Bu tarayıcı bildirimleri desteklemiyor.");
+      setNotifyWarning("Tarayıcınız bildirimleri desteklemiyor.");
+      return;
+    }
+    // Already granted — no need to prompt again
+    if (Notification.permission === "granted") {
+      setNotify(true);
+      setNotifyWarning(null);
       return;
     }
     Notification.requestPermission().then((permission) => {

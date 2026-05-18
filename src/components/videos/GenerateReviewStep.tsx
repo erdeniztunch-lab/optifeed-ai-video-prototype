@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Loader2, Pencil, Send, Sparkles, X } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { cn } from "@/lib/utils";
@@ -61,6 +62,7 @@ export function GenerateReviewStep({
   );
 
   const timeoutRefs = useRef<number[]>([]);
+  const notificationSentRef = useRef(false);
 
   // Generation: transition each undecided video to pending_review, staggered.
   // Intentionally runs once on mount — products/approvedIds/rejectedIds are
@@ -109,17 +111,23 @@ export function GenerateReviewStep({
     .filter((r) => getDisplayStatus(r) === "pending_review")
     .map((r) => r.productId);
 
-  // Browser notification when all videos are done
+  // Browser notification when all videos are done — fires at most once per mount
   useEffect(() => {
     if (
-      allDone &&
-      notifyOnComplete &&
-      typeof Notification !== "undefined" &&
-      Notification.permission === "granted"
-    ) {
-      new Notification("Optifeed AI", {
-        body: "Tüm videolar hazır! İncelemeye geçebilirsiniz.",
+      !allDone ||
+      !notifyOnComplete ||
+      notificationSentRef.current ||
+      typeof Notification === "undefined" ||
+      Notification.permission !== "granted"
+    ) return;
+
+    notificationSentRef.current = true;
+    try {
+      new Notification("Videolar hazır", {
+        body: "Video üretimi tamamlandı. İncelemeye devam edebilirsiniz.",
       });
+    } catch {
+      toast("Videolar hazır.");
     }
   }, [allDone, notifyOnComplete]);
 
