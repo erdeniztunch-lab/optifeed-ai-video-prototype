@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Check, PartyPopper } from "lucide-react";
+import { TOKEN_COST_PER_VIDEO } from "@/data/tokens";
 
 const FIRST_CAMPAIGN_KEY = "has_completed_first_campaign";
 
@@ -34,12 +35,16 @@ export function SuccessStep({ count, exportedFeeds, onAnother, onViewProducts }:
     return first;
   });
 
-  const channelText =
+  const channelLabel =
     exportedFeeds.length === 0
-      ? "Taslak olarak kaydedildi"
-      : exportedFeeds.length <= 2
-        ? `${exportedFeeds.join(" ve ")}'ye uygulandı`
-        : `${exportedFeeds.length} dışa aktarıma uygulandı`;
+      ? "Taslak"
+      : exportedFeeds.length === 1
+        ? exportedFeeds[0]
+        : exportedFeeds.length === 2
+          ? `${exportedFeeds[0]} + ${exportedFeeds[1]}`
+          : `${exportedFeeds.length} kanal`;
+
+  const tokenSpent = count * TOKEN_COST_PER_VIDEO;
 
   return (
     <div className="flex min-h-[calc(100vh-7rem)] items-center justify-center px-6 py-8">
@@ -52,11 +57,24 @@ export function SuccessStep({ count, exportedFeeds, onAnother, onViewProducts }:
           Videolar başarıyla dışa aktarıldı
         </h2>
 
-        <div className="mt-3 space-y-1 text-sm text-muted-foreground">
-          <p>
-            {count} ürün artık video içeriğine sahip
-          </p>
-          <p>{channelText}</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {count} ürün artık video içeriğine sahip
+        </p>
+
+        {/* Summary cards */}
+        <div className="mt-6 grid grid-cols-3 gap-3">
+          <div className="flex flex-col items-center gap-1 rounded-xl border border-border bg-card px-3 py-4">
+            <span className="text-xs text-muted-foreground">Video</span>
+            <span className="text-lg font-bold text-foreground">{count} video</span>
+          </div>
+          <div className="flex flex-col items-center gap-1 rounded-xl border border-border bg-card px-3 py-4">
+            <span className="text-xs text-muted-foreground">Kanal</span>
+            <span className="text-lg font-bold text-foreground">{channelLabel}</span>
+          </div>
+          <div className="flex flex-col items-center gap-1 rounded-xl border border-border bg-card px-3 py-4">
+            <span className="text-xs text-muted-foreground">Harcanan</span>
+            <span className="text-lg font-bold text-foreground">{tokenSpent} token</span>
+          </div>
         </div>
 
         {isFirst && (
