@@ -129,8 +129,9 @@ export function LibraryStep({
               <h1 className="text-2xl font-bold text-foreground">Video campaigns</h1>
               <div className="flex items-center gap-3">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
                   <Input
+                    aria-label="Kampanya ara"
                     placeholder="Kampanya ara..."
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
@@ -149,11 +150,13 @@ export function LibraryStep({
             </div>
 
             {/* Tab bar */}
-            <div className="mb-5 flex gap-0 border-b border-border">
+            <div role="tablist" aria-label="Kampanya durumu" className="mb-5 flex gap-0 border-b border-border">
               {(Object.keys(TAB_LABELS) as TabValue[]).map((tab) => (
                 <button
                   key={tab}
                   type="button"
+                  role="tab"
+                  aria-selected={activeTab === tab}
                   onClick={() => setActiveTab(tab)}
                   className={cn(
                     "px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px",
@@ -173,6 +176,7 @@ export function LibraryStep({
                 <button
                   key={s}
                   type="button"
+                  aria-pressed={sortBy === s}
                   onClick={() => setSortBy(s)}
                   className={cn(
                     "rounded-full px-3 py-1.5 text-xs font-medium transition-colors",

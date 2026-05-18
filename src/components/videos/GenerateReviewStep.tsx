@@ -187,7 +187,14 @@ export function GenerateReviewStep({
             </button>
           )}
         </div>
-        <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+        <div
+          role="progressbar"
+          aria-label="Video üretim ilerlemesi"
+          aria-valuenow={completedCount}
+          aria-valuemin={0}
+          aria-valuemax={totalCount}
+          className="h-1.5 w-full overflow-hidden rounded-full bg-muted"
+        >
           <div
             className={cn(
               "h-full rounded-full transition-all duration-700 ease-out",

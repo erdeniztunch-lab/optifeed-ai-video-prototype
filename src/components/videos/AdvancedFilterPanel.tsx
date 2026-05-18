@@ -40,6 +40,7 @@ export function AdvancedFilterPanel({ filters, onChange, onClear, activeCount }:
               <button
                 key={opt.value}
                 type="button"
+                aria-pressed={filters.imageMin === opt.value}
                 onClick={() => onChange({ ...filters, imageMin: opt.value })}
                 className={cn(
                   "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
@@ -64,6 +65,7 @@ export function AdvancedFilterPanel({ filters, onChange, onClear, activeCount }:
               <button
                 key={opt.value}
                 type="button"
+                aria-pressed={filters.statusFilter === opt.value}
                 onClick={() => onChange({ ...filters, statusFilter: opt.value })}
                 className={cn(
                   "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
@@ -85,6 +87,7 @@ export function AdvancedFilterPanel({ filters, onChange, onClear, activeCount }:
           </span>
           <button
             type="button"
+            aria-pressed={filters.hasHistory}
             onClick={() => onChange({ ...filters, hasHistory: !filters.hasHistory })}
             className={cn(
               "inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium transition-colors",

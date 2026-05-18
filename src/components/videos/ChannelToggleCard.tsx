@@ -21,6 +21,7 @@ export function ChannelToggleCard({
     <div
       role={isConnected ? "button" : undefined}
       tabIndex={isConnected ? 0 : undefined}
+      aria-pressed={isConnected ? selected : undefined}
       onClick={isConnected ? onToggle : undefined}
       onKeyDown={
         isConnected

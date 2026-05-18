@@ -1,5 +1,5 @@
 import { Check, Pencil, Play, X } from "lucide-react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { type Product } from "@/data/products";
@@ -50,6 +50,9 @@ export function VideoPlayerModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg gap-0 overflow-hidden p-0">
+        {/* Accessible dialog title — visually hidden since product name is visible in body */}
+        <DialogTitle className="sr-only">{product.name} — Video önizlemesi</DialogTitle>
+
         {/* Video / preview area */}
         <div className="relative aspect-video w-full overflow-hidden bg-black">
           {videoUrl ? (

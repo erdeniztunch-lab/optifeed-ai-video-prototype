@@ -63,11 +63,14 @@ export function CampaignNameModal({ open, onConfirm, onCancel }: CampaignNameMod
         <div className="space-y-4">
           {/* Campaign name */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">
-              Kampanya adı <span className="text-destructive">*</span>
+            <label htmlFor="modal-campaign-name" className="text-sm font-medium text-foreground">
+              Kampanya adı <span className="text-destructive" aria-hidden="true">*</span>
             </label>
             <Input
+              id="modal-campaign-name"
               autoFocus
+              aria-required="true"
+              aria-describedby={nameError ? "modal-campaign-name-error" : undefined}
               placeholder="Örn. Yaz Koleksiyonu 2025"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -75,16 +78,20 @@ export function CampaignNameModal({ open, onConfirm, onCancel }: CampaignNameMod
               maxLength={60}
             />
             {nameError && (
-              <p className="text-xs text-destructive">{nameError}</p>
+              <p id="modal-campaign-name-error" role="alert" className="text-xs text-destructive">
+                {nameError}
+              </p>
             )}
           </div>
 
           {/* Sector */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">
-              Sektör <span className="text-destructive">*</span>
+            <label htmlFor="modal-sector" className="text-sm font-medium text-foreground">
+              Sektör <span className="text-destructive" aria-hidden="true">*</span>
             </label>
             <select
+              id="modal-sector"
+              aria-required="true"
               value={sector}
               onChange={(e) => setSector(e.target.value)}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
@@ -100,8 +107,11 @@ export function CampaignNameModal({ open, onConfirm, onCancel }: CampaignNameMod
 
           {/* Theme */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">Kampanya teması</label>
+            <label htmlFor="modal-theme" className="text-sm font-medium text-foreground">
+              Kampanya teması
+            </label>
             <select
+              id="modal-theme"
               value={theme}
               onChange={(e) => {
                 setTheme(e.target.value);
@@ -118,6 +128,7 @@ export function CampaignNameModal({ open, onConfirm, onCancel }: CampaignNameMod
             </select>
             {theme === "other" && (
               <Input
+                aria-label="Özel tema"
                 placeholder="Temanızı yazın..."
                 value={themeCustom}
                 onChange={(e) => setThemeCustom(e.target.value)}
@@ -128,8 +139,11 @@ export function CampaignNameModal({ open, onConfirm, onCancel }: CampaignNameMod
 
           {/* Product type */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">Ürün tipi</label>
+            <label htmlFor="modal-product-type" className="text-sm font-medium text-foreground">
+              Ürün tipi
+            </label>
             <select
+              id="modal-product-type"
               value={productType}
               onChange={(e) => setProductType(e.target.value)}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"

@@ -107,8 +107,9 @@ export function EditPromptStep({
       {/* Guided dropdowns */}
       <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-muted-foreground">Sektör</label>
+          <label htmlFor="edit-sector" className="text-xs font-medium text-muted-foreground">Sektör</label>
           <select
+            id="edit-sector"
             value={sector}
             onChange={(e) => setSector(e.target.value)}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
@@ -120,8 +121,9 @@ export function EditPromptStep({
           </select>
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-muted-foreground">Tema</label>
+          <label htmlFor="edit-theme" className="text-xs font-medium text-muted-foreground">Tema</label>
           <select
+            id="edit-theme"
             value={theme}
             onChange={(e) => setTheme(e.target.value)}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
@@ -133,8 +135,9 @@ export function EditPromptStep({
           </select>
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-muted-foreground">Arka Plan</label>
+          <label htmlFor="edit-background" className="text-xs font-medium text-muted-foreground">Arka Plan</label>
           <select
+            id="edit-background"
             value={background}
             onChange={(e) => setBackground(e.target.value)}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
@@ -184,10 +187,11 @@ export function EditPromptStep({
 
       {/* Free text area */}
       <div className="mb-8">
-        <p className="mb-1.5 text-xs text-muted-foreground">
+        <label htmlFor="edit-prompt-text" className="mb-1.5 block text-xs text-muted-foreground">
           Kendi isteğinizi yazabilir veya hazır önerilerden birkaçını seçebilirsiniz.
-        </p>
+        </label>
         <textarea
+          id="edit-prompt-text"
           value={promptText}
           onChange={(e) => setPromptText(e.target.value)}
           placeholder="Örn. Beyaz fon, ürün yavaşça dönsün, yumuşak gölgeler, premium his..."

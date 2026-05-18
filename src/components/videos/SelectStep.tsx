@@ -190,6 +190,7 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
 
             {/* Kategori filtresi */}
             <select
+              aria-label="Kategori filtresi"
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
               className="hidden cursor-pointer rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs text-muted-foreground focus:outline-none sm:block"
@@ -202,6 +203,7 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
 
             {/* Marka filtresi */}
             <select
+              aria-label="Marka filtresi"
               value={brandFilter}
               onChange={(e) => setBrandFilter(e.target.value)}
               className="hidden cursor-pointer rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs text-muted-foreground focus:outline-none sm:block"
@@ -214,6 +216,7 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
 
             {/* Sort control */}
             <select
+              aria-label="Sıralama"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
               className="hidden cursor-pointer rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-muted-foreground focus:outline-none sm:block"
@@ -225,9 +228,10 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
             </select>
 
             {/* View toggle */}
-            <div className="inline-flex rounded-full border border-border bg-card p-1">
+            <div role="group" aria-label="Görünüm seçimi" className="inline-flex rounded-full border border-border bg-card p-1">
               <button
                 type="button"
+                aria-pressed={view === "grid"}
                 onClick={() => setView("grid")}
                 className={cn(
                   "inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition-colors",
@@ -236,11 +240,12 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                <LayoutGrid className="h-4 w-4" />
+                <LayoutGrid className="h-4 w-4" aria-hidden="true" />
                 Kart
               </button>
               <button
                 type="button"
+                aria-pressed={view === "list"}
                 onClick={() => setView("list")}
                 className={cn(
                   "inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition-colors",
@@ -249,15 +254,16 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                <List className="h-4 w-4" />
+                <List className="h-4 w-4" aria-hidden="true" />
                 Liste
               </button>
             </div>
 
             {/* Search */}
             <div className="relative w-full max-w-xs">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
               <Input
+                aria-label="Ürün ara"
                 placeholder="İsim, ID veya grup ile ara..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}

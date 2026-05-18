@@ -154,7 +154,7 @@ export function ConfirmStep({
         </div>
 
         {!hasEnoughBalance && (
-          <div className="mt-4 rounded-lg bg-amber-500/10 px-3 py-2.5">
+          <div role="status" className="mt-4 rounded-lg bg-amber-500/10 px-3 py-2.5">
             <div className="flex items-start gap-2">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
               <div className="min-w-0 flex-1">

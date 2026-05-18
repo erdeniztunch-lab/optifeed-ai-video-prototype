@@ -104,11 +104,12 @@ export function TemplateSelectionStep({
 
       {/* Ek detay textarea */}
       <div className="mb-4">
-        <label className="mb-1.5 block text-sm font-medium text-foreground">
+        <label htmlFor="template-note" className="mb-1.5 block text-sm font-medium text-foreground">
           Ek detay{" "}
           <span className="ml-1 text-xs font-normal text-muted-foreground">(opsiyonel)</span>
         </label>
         <textarea
+          id="template-note"
           value={templateNote}
           onChange={(e) => setTemplateNote(e.target.value)}
           placeholder="Örn. ürün metalik yüzey, gece sahnesi tercih edilsin, 25–35 yaş kadın kitlesine hitap etsin..."
