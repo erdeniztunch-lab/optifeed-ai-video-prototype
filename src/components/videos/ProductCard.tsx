@@ -1,5 +1,5 @@
-import { Check } from "lucide-react";
-import { Product } from "@/data/products";
+import { Check, History } from "lucide-react";
+import { Product, VideoHistoryEntry } from "@/data/products";
 import { StackedImageIndicator } from "./StackedImageIndicator";
 import { cn } from "@/lib/utils";
 
@@ -81,6 +81,9 @@ export function ProductCard({ product, selected, onToggle, view = "grid", disabl
           <div className="min-w-0">
             <div className="hidden items-center gap-2 md:flex">
               <StatusBadge status={product.status} />
+              {product.videoHistory.length > 0 && (
+                <HistoryBadge history={product.videoHistory} compact />
+              )}
             </div>
             <div className="mt-1.5 hidden flex-col gap-0.5 md:flex">
               <MetaLine label="ID" value={product.productId} />
@@ -124,6 +127,9 @@ export function ProductCard({ product, selected, onToggle, view = "grid", disabl
               <StatusBadge status={product.status} />
               <span className="text-[10px] text-muted-foreground/70">{product.category}</span>
             </div>
+            {product.videoHistory.length > 0 && (
+              <HistoryBadge history={product.videoHistory} />
+            )}
             <div className="flex flex-col gap-0.5">
               <MetaLine label="ID" value={product.productId} />
               <MetaLine label="Group" value={product.itemGroupId} />
@@ -161,5 +167,36 @@ function MetaLine({ label, value }: { label: string; value: string }) {
     <p className="text-[10px] text-muted-foreground/70">
       <span className="font-medium">{label}:</span> {value}
     </p>
+  );
+}
+
+function HistoryBadge({ history, compact = false }: { history: VideoHistoryEntry[]; compact?: boolean }) {
+  const latest = history[history.length - 1];
+  const tooltipText = [
+    `Son üretim: ${latest.date}`,
+    `Kampanya: ${latest.campaignName}`,
+    "Bu ürünü tekrar seçerseniz yeni bir video üretimi başlatılır.",
+  ].join("\n");
+
+  if (compact) {
+    return (
+      <span
+        title={tooltipText}
+        className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700 ring-1 ring-amber-200 cursor-default"
+      >
+        <History className="h-2.5 w-2.5 shrink-0" />
+        {history.length}× geçmiş
+      </span>
+    );
+  }
+
+  return (
+    <span
+      title={tooltipText}
+      className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700 ring-1 ring-amber-200 cursor-default"
+    >
+      <History className="h-2.5 w-2.5 shrink-0" />
+      Daha önce video üretildi
+    </span>
   );
 }
