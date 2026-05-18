@@ -9,7 +9,16 @@ import { ProductCard } from "./ProductCard";
 import { CostEstimateBar } from "./CostEstimateBar";
 import { OnboardingBanner } from "./OnboardingBanner";
 import { EmptyState } from "./EmptyState";
-import { AdvancedFilterPanel, DEFAULT_ADV_FILTERS, type AdvFilters } from "./AdvancedFilterPanel";
+import { AdvancedFilterPanel, type AdvFilters } from "./AdvancedFilterPanel";
+
+const DEFAULT_ADV_FILTERS: AdvFilters = {
+  imageMin: 0,
+  statusFilter: "",
+  hasHistory: false,
+  category: "",
+  brand: "",
+  sortBy: "recent",
+};
 
 interface Props {
   selectedIds: string[];
@@ -160,7 +169,7 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
             )}
           </div>
 
-          {/* Right: filters + sort + view toggle + search */}
+          {/* Right: advanced filter + view toggle + search */}
           <div className="flex w-full items-center justify-end gap-3 sm:w-auto">
             {/* Gelişmiş filtre toggle */}
             <button
@@ -181,45 +190,6 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
                 </span>
               )}
             </button>
-
-            {/* Kategori filtresi */}
-            <select
-              aria-label="Kategori filtresi"
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="hidden cursor-pointer rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs text-muted-foreground focus:outline-none sm:block"
-            >
-              <option value="">Tüm kategoriler</option>
-              {categoryOptions.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-
-            {/* Marka filtresi */}
-            <select
-              aria-label="Marka filtresi"
-              value={brandFilter}
-              onChange={(e) => setBrandFilter(e.target.value)}
-              className="hidden cursor-pointer rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs text-muted-foreground focus:outline-none sm:block"
-            >
-              <option value="">Tüm markalar</option>
-              {brandOptions.map((b) => (
-                <option key={b} value={b}>{b}</option>
-              ))}
-            </select>
-
-            {/* Sort control */}
-            <select
-              aria-label="Sıralama"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-              className="hidden cursor-pointer rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-muted-foreground focus:outline-none sm:block"
-            >
-              <option value="recent">Son eklenen</option>
-              <option value="name">Ürün adı (A–Z)</option>
-              <option value="brand">Marka (A–Z)</option>
-              <option value="status">Durum</option>
-            </select>
 
             {/* View toggle */}
             <div role="group" aria-label="Görünüm seçimi" className="inline-flex rounded-full border border-border bg-card p-1">
@@ -274,6 +244,8 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
             onChange={setAdvFilters}
             onClear={clearAdvFilters}
             activeCount={advActiveCount}
+            categoryOptions={categoryOptions}
+            brandOptions={brandOptions}
           />
         )}
 

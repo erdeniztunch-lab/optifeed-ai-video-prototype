@@ -9,14 +9,6 @@ export interface AdvFilters {
   sortBy: "recent" | "name" | "brand" | "status";
 }
 
-export const DEFAULT_ADV_FILTERS: AdvFilters = {
-  imageMin: 0,
-  statusFilter: "",
-  hasHistory: false,
-  category: "",
-  brand: "",
-  sortBy: "recent",
-};
 
 interface Props {
   filters: AdvFilters;
