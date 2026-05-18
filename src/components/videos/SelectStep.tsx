@@ -9,7 +9,7 @@ import { ProductCard } from "./ProductCard";
 import { CostEstimateBar } from "./CostEstimateBar";
 import { OnboardingBanner } from "./OnboardingBanner";
 import { EmptyState } from "./EmptyState";
-import { AdvancedFilterPanel, type AdvFilters } from "./AdvancedFilterPanel";
+import { AdvancedFilterPanel, DEFAULT_ADV_FILTERS, type AdvFilters } from "./AdvancedFilterPanel";
 
 interface Props {
   selectedIds: string[];
@@ -28,15 +28,8 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
 
   const [query, setQuery] = useState("");
   const [view, setView] = useState<"grid" | "list">("grid");
-  const [sortBy, setSortBy] = useState<"recent" | "name" | "brand" | "status">("recent");
-  const [categoryFilter, setCategoryFilter] = useState("");
-  const [brandFilter, setBrandFilter] = useState("");
   const [advPanelOpen, setAdvPanelOpen] = useState(false);
-  const [advFilters, setAdvFilters] = useState<AdvFilters>({
-    imageMin: 0,
-    statusFilter: "",
-    hasHistory: false,
-  });
+  const [advFilters, setAdvFilters] = useState<AdvFilters>(DEFAULT_ADV_FILTERS);
 
   const atLimit = selectedIds.length >= PRODUCT_SELECTION_LIMIT;
 
@@ -51,7 +44,10 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
 
   const advActiveCount = (advFilters.imageMin > 0 ? 1 : 0)
     + (advFilters.statusFilter !== "" ? 1 : 0)
-    + (advFilters.hasHistory ? 1 : 0);
+    + (advFilters.hasHistory ? 1 : 0)
+    + (advFilters.category !== "" ? 1 : 0)
+    + (advFilters.brand !== "" ? 1 : 0)
+    + (advFilters.sortBy !== "recent" ? 1 : 0);
 
   const products = useMemo(() => {
     const q = query.toLowerCase();
@@ -62,18 +58,18 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
             .toLowerCase()
             .includes(q),
         );
-    if (categoryFilter) filtered = filtered.filter((p) => p.category === categoryFilter);
-    if (brandFilter) filtered = filtered.filter((p) => p.brand === brandFilter);
+    if (advFilters.category) filtered = filtered.filter((p) => p.category === advFilters.category);
+    if (advFilters.brand) filtered = filtered.filter((p) => p.brand === advFilters.brand);
     if (advFilters.imageMin > 0) filtered = filtered.filter((p) => p.additionalImageCount >= advFilters.imageMin);
     if (advFilters.statusFilter) filtered = filtered.filter((p) => p.status === advFilters.statusFilter);
     if (advFilters.hasHistory) filtered = filtered.filter((p) => p.videoHistory && p.videoHistory.length > 0);
-    switch (sortBy) {
+    switch (advFilters.sortBy) {
       case "name": return filtered.sort((a, b) => a.name.localeCompare(b.name, "tr"));
       case "brand": return filtered.sort((a, b) => a.brand.localeCompare(b.brand, "tr"));
       case "status": return filtered.sort((a, b) => a.status.localeCompare(b.status));
       default: return filtered;
     }
-  }, [query, sortBy, categoryFilter, brandFilter, advFilters]);
+  }, [query, advFilters]);
 
   const allVisibleSelected =
     products.length > 0 && products.every((p) => selectedIds.includes(p.id));
@@ -100,16 +96,14 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
 
   const canSelectMore = products.some((p) => !selectedIds.includes(p.id)) && !atLimit;
 
-  const hasActiveFilters = !!(query || categoryFilter || brandFilter) || advActiveCount > 0;
+  const hasActiveFilters = !!query || advActiveCount > 0;
   const clearFilters = () => {
     setQuery("");
-    setCategoryFilter("");
-    setBrandFilter("");
-    setAdvFilters({ imageMin: 0, statusFilter: "", hasHistory: false });
+    setAdvFilters(DEFAULT_ADV_FILTERS);
   };
 
   const clearAdvFilters = () => {
-    setAdvFilters({ imageMin: 0, statusFilter: "", hasHistory: false });
+    setAdvFilters(DEFAULT_ADV_FILTERS);
   };
 
   return (

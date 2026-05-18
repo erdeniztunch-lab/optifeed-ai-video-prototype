@@ -4,13 +4,27 @@ export interface AdvFilters {
   imageMin: 0 | 1 | 2 | 3;
   statusFilter: "" | "no-video" | "ready";
   hasHistory: boolean;
+  category: string;
+  brand: string;
+  sortBy: "recent" | "name" | "brand" | "status";
 }
+
+export const DEFAULT_ADV_FILTERS: AdvFilters = {
+  imageMin: 0,
+  statusFilter: "",
+  hasHistory: false,
+  category: "",
+  brand: "",
+  sortBy: "recent",
+};
 
 interface Props {
   filters: AdvFilters;
   onChange: (filters: AdvFilters) => void;
   onClear: () => void;
   activeCount: number;
+  categoryOptions: string[];
+  brandOptions: string[];
 }
 
 const IMAGE_OPTIONS: { label: string; value: AdvFilters["imageMin"] }[] = [
@@ -26,11 +40,54 @@ const STATUS_OPTIONS: { label: string; value: AdvFilters["statusFilter"] }[] = [
   { label: "Hazır", value: "ready" },
 ];
 
-export function AdvancedFilterPanel({ filters, onChange, onClear, activeCount }: Props) {
+const SORT_OPTIONS: { label: string; value: AdvFilters["sortBy"] }[] = [
+  { label: "Son eklenen", value: "recent" },
+  { label: "Ürün adı", value: "name" },
+  { label: "Marka", value: "brand" },
+  { label: "Durum", value: "status" },
+];
+
+export function AdvancedFilterPanel({ filters, onChange, onClear, activeCount, categoryOptions, brandOptions }: Props) {
   return (
     <div className="mb-4 rounded-xl border border-border bg-card p-4">
       <div className="flex flex-wrap items-start gap-8">
-        {/* Görsel sayısı */}
+        {/* Kategori */}
+        <div className="flex flex-col gap-2">
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Kategori
+          </span>
+          <select
+            aria-label="Kategori filtresi"
+            value={filters.category}
+            onChange={(e) => onChange({ ...filters, category: e.target.value })}
+            className="cursor-pointer rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs text-muted-foreground focus:outline-none"
+          >
+            <option value="">Tüm kategoriler</option>
+            {categoryOptions.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Marka */}
+        <div className="flex flex-col gap-2">
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Marka
+          </span>
+          <select
+            aria-label="Marka filtresi"
+            value={filters.brand}
+            onChange={(e) => onChange({ ...filters, brand: e.target.value })}
+            className="cursor-pointer rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs text-muted-foreground focus:outline-none"
+          >
+            <option value="">Tüm markalar</option>
+            {brandOptions.map((b) => (
+              <option key={b} value={b}>{b}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Ek görsel sayısı */}
         <div className="flex flex-col gap-2">
           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Ek görsel sayısı
@@ -104,6 +161,31 @@ export function AdvancedFilterPanel({ filters, onChange, onClear, activeCount }:
             />
             Daha önce video üretildi
           </button>
+        </div>
+
+        {/* Sıralama */}
+        <div className="flex flex-col gap-2">
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Sıralama
+          </span>
+          <div className="flex items-center gap-1.5">
+            {SORT_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                aria-pressed={filters.sortBy === opt.value}
+                onClick={() => onChange({ ...filters, sortBy: opt.value })}
+                className={cn(
+                  "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                  filters.sortBy === opt.value
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border bg-background text-muted-foreground hover:border-foreground/20 hover:text-foreground",
+                )}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Clear */}
