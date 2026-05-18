@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { useEffect, useState, ReactNode } from "react";
 import { NavLink } from "@/components/NavLink";
 import { TokenBadge } from "@/components/videos/TokenBadge";
 import {
@@ -10,6 +10,7 @@ import {
   LayoutTemplate,
   BarChart3,
   Megaphone,
+  Monitor,
   Settings,
   type LucideIcon,
 } from "lucide-react";
@@ -30,6 +31,18 @@ const navItems: NavItem[] = [
   { label: "Meta Ads",      icon: Megaphone,  to: "/meta-ads" },
 ];
 
+const MIN_WIDTH = 1280;
+
+function useIsTooNarrow() {
+  const [isTooNarrow, setIsTooNarrow] = useState(() => window.innerWidth < MIN_WIDTH);
+  useEffect(() => {
+    const handler = () => setIsTooNarrow(window.innerWidth < MIN_WIDTH);
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, []);
+  return isTooNarrow;
+}
+
 export function AppShell({
   children,
   tokenBalance,
@@ -39,6 +52,8 @@ export function AppShell({
   tokenBalance?: number;
   spentTokens?: number;
 }) {
+  const isTooNarrow = useIsTooNarrow();
+
   return (
     <div className="min-h-screen w-full bg-background">
       {/* Sidebar */}
@@ -101,6 +116,18 @@ export function AppShell({
 
       {/* Main */}
       <main className="min-w-0 md:pl-64">{children}</main>
+
+      {/* Desktop-width blocker */}
+      {isTooNarrow && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-background px-8 text-center">
+          <Monitor className="h-12 w-12 text-muted-foreground/50" />
+          <h2 className="text-xl font-semibold text-foreground">
+            Bu özellik şu an sadece desktop&apos;ta kullanılabilir.
+          </h2>
+          <p className="text-sm text-muted-foreground">En az 1280px ekran genişliği gerekiyor.</p>
+          <p className="text-xs text-muted-foreground/60">Lütfen daha geniş bir ekranla tekrar deneyin.</p>
+        </div>
+      )}
     </div>
   );
 }
