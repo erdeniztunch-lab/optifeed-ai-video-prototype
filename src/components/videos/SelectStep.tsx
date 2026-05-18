@@ -299,6 +299,9 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
           </div>
         ) : (
           <>
+            <p className="mb-3 text-xs text-muted-foreground">
+              {products.length} ürün gösteriliyor
+            </p>
             <div
               className={cn(
                 view === "grid"
