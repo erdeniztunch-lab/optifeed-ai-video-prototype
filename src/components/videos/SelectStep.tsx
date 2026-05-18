@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { FolderOpen, LayoutGrid, List, Search } from "lucide-react";
+import { FolderOpen, LayoutGrid, List, PackageSearch, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -8,6 +8,7 @@ import { PRODUCT_SELECTION_LIMIT } from "@/data/tokens";
 import { ProductCard } from "./ProductCard";
 import { CostEstimateBar } from "./CostEstimateBar";
 import { OnboardingBanner } from "./OnboardingBanner";
+import { EmptyState } from "./EmptyState";
 
 interface Props {
   selectedIds: string[];
@@ -84,6 +85,13 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
   };
 
   const canSelectMore = products.some((p) => !selectedIds.includes(p.id)) && !atLimit;
+
+  const hasActiveFilters = !!(query || categoryFilter || brandFilter);
+  const clearFilters = () => {
+    setQuery("");
+    setCategoryFilter("");
+    setBrandFilter("");
+  };
 
   return (
     <div className="px-6 pb-32 pt-2 md:px-10">
@@ -261,10 +269,21 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
               ))}
             </div>
 
-            {products.length === 0 && (
-              <div className="rounded-xl border border-dashed bg-card p-12 text-center text-sm text-muted-foreground">
-                Aramanızla eşleşen ürün bulunamadı.
-              </div>
+            {products.length === 0 && PRODUCTS.length > 0 && (
+              <EmptyState
+                icon={Search}
+                title="Sonuç bulunamadı"
+                description="Bu kriterlere uygun ürün bulunamadı."
+                actionLabel={hasActiveFilters ? "Filtreyi sıfırla" : undefined}
+                onAction={hasActiveFilters ? clearFilters : undefined}
+              />
+            )}
+            {PRODUCTS.length === 0 && (
+              <EmptyState
+                icon={PackageSearch}
+                title="Ürün kataloğu boş"
+                description="Henüz ürün eklenmemiş. Kataloğunuzu güncelleyin."
+              />
             )}
           </>
         )}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, Info } from "lucide-react";
+import { ArrowLeft, Info, LayoutTemplate } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { type Product } from "@/data/products";
@@ -7,6 +7,7 @@ import { TEMPLATES } from "@/data/templates";
 import { SECTORS, THEMES, PRODUCT_TYPES } from "@/data/taxonomy";
 import { type TemplateId, type CampaignContext } from "@/types/video-flow";
 import { TemplateCard } from "./TemplateCard";
+import { EmptyState } from "./EmptyState";
 
 interface TemplateSelectionStepProps {
   products: Product[];
@@ -79,6 +80,14 @@ export function TemplateSelectionStep({
             <TemplateCardSkeleton key={i} />
           ))}
         </div>
+      ) : TEMPLATES.length === 0 ? (
+        <EmptyState
+          icon={LayoutTemplate}
+          title="Şablon bulunamadı"
+          description="Kullanılabilir video şablonu yok."
+          actionLabel="Geri dön"
+          onAction={onBack}
+        />
       ) : (
         <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
           {TEMPLATES.map((t) => (

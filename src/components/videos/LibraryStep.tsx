@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { CheckCircle, ChevronRight, Plus, Search, Video, Zap } from "lucide-react";
+import { ChevronRight, Plus, Search, Video, Zap } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { FolderCard } from "@/components/videos/FolderCard";
+import { EmptyState } from "@/components/videos/EmptyState";
 import { type VideoFolder, type FolderStatus } from "@/data/folders";
 import { PRODUCTS } from "@/data/products";
 
@@ -111,37 +112,13 @@ export function LibraryStep({
 
         {/* ── Empty state ─────────────────────────────────────────────────────── */}
         {isEmpty && (
-          <div className="flex flex-col items-center justify-center gap-4 py-24 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-100">
-              <Video className="h-8 w-8 text-violet-600" />
-            </div>
-            <div>
-              <h2 className="text-xl font-semibold text-foreground">Henüz hiç kampanyanız yok</h2>
-              <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-                Ürünleriniz için yapay zeka destekli video oluşturmaya hemen başlayın.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={onNewCampaign}
-              className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
-            >
-              <Plus className="h-4 w-4" />
-              İlk kampanyayı oluştur
-            </button>
-            <div className="mt-4 flex flex-col gap-2 text-left">
-              {[
-                "Ürün seçin",
-                "Şablon ve prompt ayarlayın",
-                "Videolarınızı onaylayın ve dışa aktarın",
-              ].map((step) => (
-                <div key={step} className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <CheckCircle className="h-4 w-4 shrink-0 text-emerald-500" />
-                  {step}
-                </div>
-              ))}
-            </div>
-          </div>
+          <EmptyState
+            icon={Video}
+            title="Henüz hiç kampanyanız yok"
+            description="Ürünleriniz için yapay zeka destekli video oluşturmaya hemen başlayın."
+            actionLabel="İlk kampanyayı oluştur"
+            onAction={onNewCampaign}
+          />
         )}
 
         {/* ── Filled state ────────────────────────────────────────────────────── */}
@@ -249,9 +226,13 @@ export function LibraryStep({
                 </div>
 
                 {filtered.length === 0 && (
-                  <p className="mt-8 text-center text-sm text-muted-foreground">
-                    Bu filtreyle eşleşen kampanya bulunamadı.
-                  </p>
+                  <EmptyState
+                    icon={Search}
+                    title="Bu sekmede kampanya yok"
+                    description="Bu filtreyle eşleşen kampanya bulunamadı."
+                    actionLabel="Yeni kampanya oluştur"
+                    onAction={onNewCampaign}
+                  />
                 )}
               </>
             )}
