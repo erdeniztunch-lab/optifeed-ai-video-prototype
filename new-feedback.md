@@ -3448,4 +3448,297 @@ The lowest-risk, highest-value candidates share a profile: pure copy or pure dat
 - SOL-07: ZIP toast copy fix (one line)
 - SOL-09: Confirm template description echo (one display line)
 
+---
+
+## 18. MFX0 — Implementation Plan: Communication Safety Fixes
+
+### 18.1 Scope
+
+**Included in MFX0**
+
+| Solution | Issue(s) | Change type | File(s) |
+|----------|----------|-------------|---------|
+| SOL-03 | TS-04, CONF-01 | Copy addition | `ConfirmStep.tsx` |
+| SOL-07 | EXP-03 | Copy fix | `ExportStep.tsx` |
+| SOL-09 | CONF-02, TS-04 | Display addition | `ConfirmStep.tsx` |
+
+**Excluded from MFX0**
+
+| Solution | Reason |
+|----------|--------|
+| SOL-01 | Template copy — needs product content decision before MFX1 |
+| SOL-02 | Template textile alignment — needs product content decision before MFX1 |
+| SOL-05 | Export clarification note — defer to MFX1 (related to SOL-14 business definition) |
+| SOL-06 | Library generation progress — architectural addition, scope for MFX2 |
+| SOL-08 | Select screen budget hint — scope for MFX1 after token UX review |
+| SOL-10 | Edit prompt reframe — low priority, secondary path |
+| SOL-11 | Real persistence — backend required, out of scope for prototype |
+| SOL-12 | Duration copy — blocked on sample video duration measurement |
+| SOL-13 | Hover preview — no scenario-specific assets exist |
+| SOL-14 | Bulk download — needs business definition |
+
+---
+
+### 18.2 Why This Phase Exists
+
+Marketing feedback shows that three categories of confusion can be resolved with pure copy changes — no component architecture changes, no new states, no layout shifts, no data file modifications:
+
+1. **Users do not understand what AI generates vs. what Dynamic Creative handles.** TS-04 and CONF-01 both point to this boundary confusion. The fix is a single info note in ConfirmStep explaining the scope of generation and the DC handoff.
+
+2. **The ZIP download button implies real file delivery.** EXP-03 shows users tap it expecting a download. The current toast ("İndirme başladı.") implies the download started, which is false. The fix is one string change to make the prototype limitation explicit.
+
+3. **The Confirm screen shows the selected template name but not its description.** CONF-02 shows users want to verify their template choice before committing tokens. The template card shows this description during selection but it disappears in ConfirmStep. The fix is one conditional render of `templateDef?.description`.
+
+**Critical discovery during MFX0 planning:** `TemplateSelectionStep.tsx` (lines 126–132) already contains an info note with the following text:
+
+> "Videolar 8–10 saniye, 1:1 formatta üretilir. Fiyat/marka bilgisi sonradan Dynamic Creative ile eklenebilir."
+
+This note already addresses TS-03 (duration) and TS-04 (AI/DC boundary) at the template selection level. MFX0 does NOT modify this note. It only adds a parallel note in ConfirmStep, where the user makes the financial commitment.
+
+---
+
+### 18.3 Target Files
+
+| File | Role in MFX0 | Modification type |
+|------|-------------|-------------------|
+| `src/components/videos/ConfirmStep.tsx` | Receives Change 1 and Change 3 | Import addition + JSX addition |
+| `src/components/videos/ExportStep.tsx` | Receives Change 2 | String replacement |
+| `src/components/videos/TemplateSelectionStep.tsx` | Read-only reference | No changes |
+| `src/data/templates.ts` | Read-only reference | No changes |
+
+---
+
+### 18.4 Change 1 — AI/DC Boundary Note in ConfirmStep
+
+**Target:** `src/components/videos/ConfirmStep.tsx`
+
+**Problem addressed:** SOL-03 / TS-04 / CONF-01 — Users commit tokens without knowing the scope of what AI generates vs. what they must add in Dynamic Creative.
+
+**What to add:** An info note in the template summary card, placed after the closing `</div>` of the existing template summary block (after line 127).
+
+**Current template summary block ends at line 127:**
+```tsx
+      </div>
+    </div>
+  </div>
+```
+(The outermost closing `</div>` of the `{/* Template summary */}` section at line 127.)
+
+**Info note to add (immediately after line 127):**
+```tsx
+{/* AI scope note */}
+<div className="mb-6 flex items-start gap-2 rounded-lg bg-muted/40 px-4 py-3">
+  <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
+  <p className="text-xs leading-relaxed text-muted-foreground/70">
+    Yapay zeka videoyu oluşturur; fiyat, logo ve marka bilgisi Dynamic Creative ile sonradan eklenir.
+  </p>
+</div>
+```
+
+**Import change required:** Add `Info` to the lucide-react import line.
+
+Current import line:
+```tsx
+import { AlertTriangle, ArrowLeft, BellOff, Clock, Coins, FileVideo, Pencil } from "lucide-react";
+```
+
+Updated import line:
+```tsx
+import { AlertTriangle, ArrowLeft, BellOff, Clock, Coins, FileVideo, Info, Pencil } from "lucide-react";
+```
+
+**Copy rule check:** No em dash. No false claims. Factually accurate for the prototype.
+
+---
+
+### 18.5 Change 2 — ZIP Toast Copy Fix in ExportStep
+
+**Target:** `src/components/videos/ExportStep.tsx`
+
+**Problem addressed:** SOL-07 / EXP-03 — The current toast "İndirme başladı." implies a real file download occurred. The ZIP download is not implemented in the prototype.
+
+**Current handleZipDownload (lines 34–36):**
+```tsx
+const handleZipDownload = () => {
+  toast("İndirme başladı.");
+};
+```
+
+**Updated handleZipDownload:**
+```tsx
+const handleZipDownload = () => {
+  toast("ZIP indirme bu prototipte simüle edilmez.");
+};
+```
+
+**Only one string changes.** No logic, no layout, no imports affected.
+
+**Copy rule check:** No em dash. Honest about prototype status. Does not promise functionality that does not exist.
+
+---
+
+### 18.6 Change 3 — Template Description Echo in ConfirmStep
+
+**Target:** `src/components/videos/ConfirmStep.tsx`
+
+**Problem addressed:** SOL-09 / CONF-02 / TS-04 — The Confirm screen shows the template name but not its description. Users cannot verify their template selection before committing tokens.
+
+**Current template name and product count block (inside the template summary card):**
+```tsx
+<p className="mt-1 text-base font-semibold text-foreground">
+  {templateDef?.label ?? selectedTemplate}
+</p>
+<p className="mt-0.5 text-sm text-muted-foreground">
+  {videoCount} ürün için bu şablon kullanılacak.
+</p>
+```
+
+**Updated block (add description line between label and count):**
+```tsx
+<p className="mt-1 text-base font-semibold text-foreground">
+  {templateDef?.label ?? selectedTemplate}
+</p>
+{templateDef?.description && (
+  <p className="mt-0.5 text-sm text-muted-foreground">{templateDef.description}</p>
+)}
+<p className="mt-0.5 text-sm text-muted-foreground">
+  {videoCount} ürün için bu şablon kullanılacak.
+</p>
+```
+
+**`templateDef` is already available:** Defined at line 39 of ConfirmStep.tsx:
+```tsx
+const templateDef = TEMPLATES.find((t) => t.id === selectedTemplate);
+```
+
+**Conditional render `{templateDef?.description && ...}`** ensures nothing renders if the template has no description. This is safe — all four templates in `src/data/templates.ts` have non-empty description fields, but the guard future-proofs the render.
+
+**No new imports required for this change.**
+
+---
+
+### 18.7 Safety Rules
+
+- Do NOT modify `TemplateSelectionStep.tsx` — the existing info note at lines 126–132 is correct and complete; duplicating or altering it is out of scope.
+- Do NOT modify `src/data/templates.ts` — template data changes are deferred to MFX1.
+- Do NOT modify `GenerateReviewStep.tsx`, `LibraryStep.tsx`, `SelectStep.tsx`, or any other file.
+- Do NOT add backend calls, API calls, real ZIP generation, real file downloads.
+- Do NOT add new component files.
+- Do NOT introduce em dashes in any user-facing string.
+- Do NOT rewrite any existing block — only add or replace the specific lines specified above.
+- Lint baseline: 11 issues (3 errors, 8 warnings, all in shadcn/ui generated files). MFX0 must introduce 0 new issues beyond this baseline.
+
+---
+
+### 18.8 Acceptance Criteria
+
+**Change 1 (AI/DC boundary note in ConfirmStep)**
+- [ ] `Info` is added to the lucide-react import in `ConfirmStep.tsx` (alphabetical order preserved)
+- [ ] Info note div appears after the closing `</div>` of the template summary card
+- [ ] Info note reads: "Yapay zeka videoyu oluşturur; fiyat, logo ve marka bilgisi Dynamic Creative ile sonradan eklenir."
+- [ ] Note uses `bg-muted/40`, `text-muted-foreground/70`, `text-xs`, same styling as the existing note in TemplateSelectionStep
+- [ ] Template summary card layout and "Düzenle" button behavior unchanged
+- [ ] No em dash in the added copy
+
+**Change 2 (ZIP toast copy fix in ExportStep)**
+- [ ] `handleZipDownload` toast string changed from `"İndirme başladı."` to `"ZIP indirme bu prototipte simüle edilmez."`
+- [ ] No other change in `ExportStep.tsx`
+- [ ] ZIP download button still clickable, still triggers toast
+- [ ] No em dash in the updated copy
+
+**Change 3 (template description echo in ConfirmStep)**
+- [ ] `{templateDef?.description && <p ...>{templateDef.description}</p>}` renders between the template label and the "N ürün için bu şablon kullanılacak." line
+- [ ] Conditional guard present: renders nothing if description is empty or undefined
+- [ ] Styling: `mt-0.5 text-sm text-muted-foreground` (matches surrounding muted text)
+- [ ] Template label and product count line unchanged
+
+**Build and lint**
+- [ ] `npm run build` passes with 0 errors
+- [ ] `npm run lint` introduces 0 new issues beyond the established baseline of 11
+
+---
+
+### 18.9 Implementation Prompt Draft
+
+The following is the exact implementation instruction to execute when this plan is approved.
+
+---
+
+**MFX0 IMPLEMENTATION**
+
+Make exactly three changes. Do not modify any other file or any other line. Do not add comments.
+
+**File 1: `src/components/videos/ConfirmStep.tsx`**
+
+Step A — Update the lucide-react import to add `Info`:
+
+Old:
+```
+import { AlertTriangle, ArrowLeft, BellOff, Clock, Coins, FileVideo, Pencil } from "lucide-react";
+```
+
+New:
+```
+import { AlertTriangle, ArrowLeft, BellOff, Clock, Coins, FileVideo, Info, Pencil } from "lucide-react";
+```
+
+Step B — After the closing `</div>` of the template summary block (the block starting with `{/* Template summary */}`), add:
+
+```tsx
+{/* AI scope note */}
+<div className="mb-6 flex items-start gap-2 rounded-lg bg-muted/40 px-4 py-3">
+  <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
+  <p className="text-xs leading-relaxed text-muted-foreground/70">
+    Yapay zeka videoyu oluşturur; fiyat, logo ve marka bilgisi Dynamic Creative ile sonradan eklenir.
+  </p>
+</div>
+```
+
+Step C — Inside the template summary card, add the description line between the label `<p>` and the product count `<p>`:
+
+Old:
+```tsx
+<p className="mt-1 text-base font-semibold text-foreground">
+  {templateDef?.label ?? selectedTemplate}
+</p>
+<p className="mt-0.5 text-sm text-muted-foreground">
+  {videoCount} ürün için bu şablon kullanılacak.
+</p>
+```
+
+New:
+```tsx
+<p className="mt-1 text-base font-semibold text-foreground">
+  {templateDef?.label ?? selectedTemplate}
+</p>
+{templateDef?.description && (
+  <p className="mt-0.5 text-sm text-muted-foreground">{templateDef.description}</p>
+)}
+<p className="mt-0.5 text-sm text-muted-foreground">
+  {videoCount} ürün için bu şablon kullanılacak.
+</p>
+```
+
+---
+
+**File 2: `src/components/videos/ExportStep.tsx`**
+
+Old:
+```tsx
+const handleZipDownload = () => {
+  toast("İndirme başladı.");
+};
+```
+
+New:
+```tsx
+const handleZipDownload = () => {
+  toast("ZIP indirme bu prototipte simüle edilmez.");
+};
+```
+
+---
+
+After both files are saved, run `npm run build` and `npm run lint`. Confirm 0 new lint issues. Report the build result and the lint issue count.
+
 These four solutions touch three files (`templates.ts`, `TemplateStep` or template selection JSX, `ConfirmStep.tsx`, `ExportStep.tsx`), involve no component structure changes, have zero risk of visual regression, and address the highest-severity communication gaps identified in MFA3. They would constitute MFX0 — the first implementation phase — pending explicit approval.

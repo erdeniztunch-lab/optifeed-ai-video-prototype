@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AlertTriangle, ArrowLeft, BellOff, Clock, Coins, FileVideo, Pencil } from "lucide-react";
+import { AlertTriangle, ArrowLeft, BellOff, Clock, Coins, FileVideo, Info, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { type Product } from "@/data/products";
@@ -115,6 +115,9 @@ export function ConfirmStep({
             <p className="mt-1 text-base font-semibold text-foreground">
               {templateDef?.label ?? selectedTemplate}
             </p>
+            {templateDef?.description && (
+              <p className="mt-0.5 text-sm text-muted-foreground">{templateDef.description}</p>
+            )}
             <p className="mt-0.5 text-sm text-muted-foreground">
               {videoCount} ürün için bu şablon kullanılacak.
             </p>
@@ -124,6 +127,14 @@ export function ConfirmStep({
             Düzenle
           </Button>
         </div>
+      </div>
+
+      {/* AI scope note */}
+      <div className="mb-6 flex items-start gap-2 rounded-lg bg-muted/40 px-4 py-3">
+        <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
+        <p className="text-xs leading-relaxed text-muted-foreground/70">
+          AI Video yalnızca sahne videosunu üretir. Fiyat, marka ve kampanya metinleri Dynamic Creative ile sonradan eklenir.
+        </p>
       </div>
 
       {/* Balance summary */}

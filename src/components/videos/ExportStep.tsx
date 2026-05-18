@@ -32,7 +32,7 @@ export function ExportStep({ approvedCount, onComplete, onSkip, onBack }: Export
   };
 
   const handleZipDownload = () => {
-    toast("İndirme başladı.");
+    toast("Demo modunda indirme simüle edildi.");
   };
 
   const handleSend = () => {
