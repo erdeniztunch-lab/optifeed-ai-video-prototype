@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { FolderOpen, LayoutGrid, List, PackageSearch, Search } from "lucide-react";
+import { FolderOpen, LayoutGrid, List, PackageSearch, Search, SlidersHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -9,6 +9,7 @@ import { ProductCard } from "./ProductCard";
 import { CostEstimateBar } from "./CostEstimateBar";
 import { OnboardingBanner } from "./OnboardingBanner";
 import { EmptyState } from "./EmptyState";
+import { AdvancedFilterPanel, type AdvFilters } from "./AdvancedFilterPanel";
 
 interface Props {
   selectedIds: string[];
@@ -30,6 +31,12 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
   const [sortBy, setSortBy] = useState<"recent" | "name" | "brand" | "status">("recent");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [brandFilter, setBrandFilter] = useState("");
+  const [advPanelOpen, setAdvPanelOpen] = useState(false);
+  const [advFilters, setAdvFilters] = useState<AdvFilters>({
+    imageMin: 0,
+    statusFilter: "",
+    hasHistory: false,
+  });
 
   const atLimit = selectedIds.length >= PRODUCT_SELECTION_LIMIT;
 
@@ -42,6 +49,10 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
     [],
   );
 
+  const advActiveCount = (advFilters.imageMin > 0 ? 1 : 0)
+    + (advFilters.statusFilter !== "" ? 1 : 0)
+    + (advFilters.hasHistory ? 1 : 0);
+
   const products = useMemo(() => {
     const q = query.toLowerCase();
     let filtered = !q
@@ -53,13 +64,16 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
         );
     if (categoryFilter) filtered = filtered.filter((p) => p.category === categoryFilter);
     if (brandFilter) filtered = filtered.filter((p) => p.brand === brandFilter);
+    if (advFilters.imageMin > 0) filtered = filtered.filter((p) => p.additionalImageCount >= advFilters.imageMin);
+    if (advFilters.statusFilter) filtered = filtered.filter((p) => p.status === advFilters.statusFilter);
+    if (advFilters.hasHistory) filtered = filtered.filter((p) => p.videoHistory && p.videoHistory.length > 0);
     switch (sortBy) {
       case "name": return filtered.sort((a, b) => a.name.localeCompare(b.name, "tr"));
       case "brand": return filtered.sort((a, b) => a.brand.localeCompare(b.brand, "tr"));
       case "status": return filtered.sort((a, b) => a.status.localeCompare(b.status));
       default: return filtered;
     }
-  }, [query, sortBy, categoryFilter, brandFilter]);
+  }, [query, sortBy, categoryFilter, brandFilter, advFilters]);
 
   const allVisibleSelected =
     products.length > 0 && products.every((p) => selectedIds.includes(p.id));
@@ -86,11 +100,16 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
 
   const canSelectMore = products.some((p) => !selectedIds.includes(p.id)) && !atLimit;
 
-  const hasActiveFilters = !!(query || categoryFilter || brandFilter);
+  const hasActiveFilters = !!(query || categoryFilter || brandFilter) || advActiveCount > 0;
   const clearFilters = () => {
     setQuery("");
     setCategoryFilter("");
     setBrandFilter("");
+    setAdvFilters({ imageMin: 0, statusFilter: "", hasHistory: false });
+  };
+
+  const clearAdvFilters = () => {
+    setAdvFilters({ imageMin: 0, statusFilter: "", hasHistory: false });
   };
 
   return (
@@ -149,6 +168,26 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
 
           {/* Right: filters + sort + view toggle + search */}
           <div className="flex w-full items-center justify-end gap-3 sm:w-auto">
+            {/* Gelişmiş filtre toggle */}
+            <button
+              type="button"
+              onClick={() => setAdvPanelOpen((v) => !v)}
+              className={cn(
+                "hidden items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors sm:flex",
+                advPanelOpen || advActiveCount > 0
+                  ? "border-primary/40 bg-primary/10 text-primary"
+                  : "border-border bg-card text-muted-foreground hover:border-foreground/20 hover:text-foreground",
+              )}
+            >
+              <SlidersHorizontal className="h-3.5 w-3.5" />
+              Gelişmiş filtre
+              {advActiveCount > 0 && (
+                <span className="ml-0.5 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground leading-none">
+                  {advActiveCount}
+                </span>
+              )}
+            </button>
+
             {/* Kategori filtresi */}
             <select
               value={categoryFilter}
@@ -227,6 +266,16 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
             </div>
           </div>
         </div>
+
+        {/* Advanced filter panel */}
+        {advPanelOpen && (
+          <AdvancedFilterPanel
+            filters={advFilters}
+            onChange={setAdvFilters}
+            onClear={clearAdvFilters}
+            activeCount={advActiveCount}
+          />
+        )}
 
         {/* Limit warning banner */}
         {atLimit && (
