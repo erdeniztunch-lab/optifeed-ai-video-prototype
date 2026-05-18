@@ -1102,3 +1102,301 @@ Defer. This needs a clearer business definition before any product response: app
 | 8 | Multi-image readiness signal | Can additionalImageCount become a visible quality indicator in ProductCard or Confirm without backend? |
 | 9 | Video persistence perception | How do copy and status labels create a sense of persistence without requiring real backend state? |
 | 15 | Bulk download | Needs business definition before any product response. Defer or reject? |
+
+---
+
+## 14. MFA1 — Marketing Thinking Model
+
+---
+
+### 14.1 Core Marketing Mental Model
+
+Marketing is approaching OptiVideo through the lens of a sales and demo tool, not a production tool. Their primary question is not "how does this work?" but "how do we make this easy to understand, easy to sell, and safe to use?"
+
+The core lens has four interlocking beliefs:
+
+**1. Users should not be required to understand AI to get value from it.**
+Marketing consistently pushes away from abstraction and toward concreteness. They do not want users to write prompts, choose parameters, or understand generation mechanics. They want users to pick a scenario and see a result. This is why templates must be detailed, names must be evocative, and generation should feel automatic rather than configurable. The AI should be invisible; the output scenario should be front and center.
+
+**2. Textile products have specific visual communication requirements that generic video tools do not address.**
+Clothing must be seen from multiple angles. The fit, silhouette, and back details matter. A video that only shows a model walking forward does not communicate a garment's value. Marketing understands this intuitively because they live in campaign performance data — a video that does not show the product clearly will have poor CTR, poor engagement, and will not be reused. Every feedback item about pause moments, multiple angles, and multi-image input is downstream of this belief.
+
+**3. Token spend creates an implicit contract with the user.**
+When users spend tokens, they expect something durable, recoverable, and usable. If the output disappears, cannot be reviewed, or contains errors that went live unchecked, the platform broke its side of the contract. Marketing's concern about video persistence (Item 9), approval gating (Item 10), and the AI/DC text boundary (Item 4) all trace back to this belief: the platform must be accountable to the user's investment.
+
+**4. The product must be explainable in a 5-minute demo.**
+Marketing thinks about this tool as something they will show to potential customers, internal stakeholders, and decision-makers. If a feature cannot be demonstrated clearly in real time — if it requires explanation, setup, or imagination — it is a liability. This is why templates need fancy names, why hover preview sounds appealing, why the entry flow must be product-first, and why generation should not feel frozen. The product must demo itself.
+
+---
+
+### 14.2 What Marketing Optimizes For
+
+**Priority 1 — Fast value comprehension**
+
+Marketing wants users to understand the product's value immediately — before the first click, before the first token is spent. Template names, scenario descriptions, and the entry flow are all in service of this goal. A user who reaches the template selection screen and reads a vague one-line description has not yet understood the value.
+
+Related feedback: Items 1, 3, 5
+Why it matters for Optifeed: If users don't understand value quickly, they don't commit to generation. Each uncommitted session is a conversion failure. For a token-based product, conversion happens at the moment the user starts generation — so everything before that moment must reduce uncertainty.
+
+---
+
+**Priority 2 — Concrete scenario-based selling**
+
+Marketing thinks in physical, visual, narrative terms: "a model walking down Bağdat Caddesi," "the clothing turning left and right," "8-10 seconds from a distance to close-up." They are not thinking in technical parameters — they are thinking in the language of a creative brief. Concrete scenarios are easier to sell, easier to demo, and easier for users to evaluate.
+
+Related feedback: Items 1, 2, 3, 5, 6
+Why it matters for Optifeed: A generic AI video tool competes on features. A textile-specific scenario tool competes on relevance. By making templates feel like ready-made creative briefs, Optifeed differentiates from generic video AI and creates a stronger value story for the textile vertical.
+
+---
+
+**Priority 3 — Product visibility and output quality trust**
+
+Marketing understands that a generated video must show the textile product clearly to be approved and used. This is not an aesthetic preference — it is an operational requirement. Clothing campaigns require multiple angles, pause moments, and accurate detail. A video that fails this standard will not be approved and represents wasted token spend.
+
+Related feedback: Items 1, 2, 8
+Why it matters for Optifeed: Output quality is the core product promise. If users generate videos that are unsuitable for campaign use, they lose trust in the platform and stop using it. Every feedback item about multi-angle visibility, choreography, and multi-image input is a signal that marketing takes this seriously and expects the platform to as well.
+
+---
+
+**Priority 4 — Trust around token spend**
+
+Marketing treats tokens as a real-money proxy. Every token spent must produce something durable, visible, and recoverable. The approval gate, video persistence, and the boundary between AI Video and Dynamic Creative are all trust mechanisms. Marketing is thinking about what happens when something goes wrong: a user who spent 80 tokens and got nothing reviewable, or a video that went live with wrong pricing text.
+
+Related feedback: Items 4, 9, 10
+Why it matters for Optifeed: Token-based products succeed or fail on trust. If users feel that token spend is risky or that outputs are not protected, they will not generate at scale. Building trust through visible safeguards — approval gates, persistence signals, clear product boundaries — is not just a UX nice-to-have; it is a retention mechanism.
+
+---
+
+**Priority 5 — Operational simplicity**
+
+Marketing consistently prefers fewer steps, clearer paths, and campaign-level operations over per-item configurability. Export channels are set once for the whole campaign. Entry starts at the product catalog. Templates are pre-configured scenarios, not prompt forms. This is not laziness — it is an understanding that their users are campaign managers with limited time, not creative directors with full control requirements.
+
+Related feedback: Items 7, 11, 3, 15
+Why it matters for Optifeed: Complexity is a churn driver. If users must make too many decisions, configure too many things, or understand too many concepts before seeing value, they abandon the flow. Marketing is correctly protecting against this. Every simplification they ask for reflects a user who might otherwise drop off.
+
+---
+
+**Priority 6 — Demo narrative clarity**
+
+Marketing thinks about this product as something they will demonstrate. The demo must have a clear, short story: pick products, pick a template, generate videos, approve, send. Every friction point in that story — a frozen loading screen, a confusing template name, an invisible AI/DC boundary, an entry form that asks for folder setup before showing products — is a demo liability.
+
+Related feedback: Items 5, 6, 7, 13
+Why it matters for Optifeed: The first sale of a B2B product often happens through a demo, not through self-service onboarding. If the product cannot be demonstrated compellingly in under 10 minutes, the sales cycle is harder. Marketing is optimizing the demo path, which often overlaps with the ideal user path.
+
+---
+
+**Priority 7 — Platform coherence and brand story**
+
+Marketing wants Optifeed to feel like a unified AI creative platform, not a collection of features. The AI Studio grouping, the AI Video / Dynamic Creative boundary, and the consistent active/passive toggle across tools all serve this goal. They want users to understand: "this is where I come to make AI creatives."
+
+Related feedback: Items 4, 12, 14
+Why it matters for Optifeed: A coherent platform story is a competitive differentiator and a retention driver. Users who perceive Optifeed as a platform invest in learning it. Users who perceive it as a collection of disconnected tools stay only as long as each tool is individually useful.
+
+---
+
+### 14.3 What Marketing Worries About
+
+**Risk 1 — AI generates wrong or hallucinated clothing details**
+
+Underlying fear: If the AI only sees one product image and invents the rest, the generated video will show wrong colors, wrong textures, or wrong silhouettes. This video will fail the approval step, waste tokens, and create a negative association between AI and quality in the user's mind.
+
+Related feedback: Items 1, 2, 8
+Product implication: The prototype must communicate image readiness as a proxy for generation quality. Users who select products with limited image data should be warned — not blocked, but informed — that the output quality may be lower. This is a trust mechanism, not a technical constraint.
+
+---
+
+**Risk 2 — User spends tokens and loses the output**
+
+Underlying fear: Tokens are money. If a generated video disappears because the user navigated away, refreshed, or exited the session, the user lost real value with no recourse. This is the fastest path to a complaint, a chargeback, or a churned account.
+
+Related feedback: Item 9
+Product implication: The platform must communicate clearly that generated videos are saved — even if they are not actually persisted on the backend in the prototype. The perception of persistence is as important as actual persistence during the sales and demo phase. Copy, status labels, and library states must all reinforce this.
+
+---
+
+**Risk 3 — User exports video without reviewing it**
+
+Underlying fear: If a video goes live without the user having seen and approved it, the user will blame the platform for any errors. This is both a legal risk and a relationship risk. Marketing wants the user to be the last line of defense.
+
+Related feedback: Item 10
+Product implication: Already mitigated in the prototype by the approval gate. The risk here is that future changes to the flow — shortcuts, batch approvals, or lazy defaults — might weaken this gate. Marketing's concern should be treated as a permanent rule, not a one-time implementation.
+
+---
+
+**Risk 4 — User does not understand what a template will produce**
+
+Underlying fear: If the user selects a template without knowing what kind of video it generates, they will be surprised by the output. Surprise at this stage means rejection, re-generation, and more token spend. It also means the template selection step failed its purpose.
+
+Related feedback: Items 1, 3, 5
+Product implication: Template descriptions must communicate the scenario completely enough that users can predict the output. Duration, shot direction, scene type, and model behavior should all be implied or stated. The template card is a promise — it must be honest and specific.
+
+---
+
+**Risk 5 — User gets stuck during generation**
+
+Underlying fear: If the generation screen feels frozen, users will think the product is broken, close the tab, and potentially lose their progress. This is a high-dropout moment.
+
+Related feedback: Item 13
+Product implication: Already mitigated by the progressive reveal pattern in the current Generate-review step. The risk is that any regression to a "wait for all videos" loading state would trigger this fear.
+
+---
+
+**Risk 6 — Product feels too abstract to sell**
+
+Underlying fear: If Optifeed demos as "an AI video tool" without concrete scenario-level specificity, it will be compared to any other AI video tool on the market. The product must feel purpose-built for textile to justify the buying decision.
+
+Related feedback: Items 1, 5, 6, 12
+Product implication: Template names, descriptions, and the overall framing of the product must be sector-specific and scenario-specific. Generic copy ("generate a video of your product") is weaker than scenario copy ("model walking on Bağdat Caddesi, turning to show the garment from front and back").
+
+---
+
+**Risk 7 — User conflates AI Video output with a finished ad**
+
+Underlying fear: If users expect a finished ad (with price text, brand logo, and campaign copy) from AI generation, they will be disappointed when they get only the visual scene. This confusion creates frustration and a perception that the product is incomplete.
+
+Related feedback: Item 4
+Product implication: The boundary between AI Video (scene layer) and Dynamic Creative (text layer) must be communicated explicitly — not assumed. A single sentence at the template selection or confirm step would prevent this confusion.
+
+---
+
+### 14.4 Marketing Language Patterns
+
+**Concrete scenario language**
+Marketing describes outputs in physical, spatial, cinematic terms. They name streets ("Bağdat Caddesi"), describe motion ("walking from a distance toward the camera"), specify accessories ("holding a small branded bag"), and name duration ("8-10 seconds"). They are not thinking in feature terms — they are thinking in the language of a creative brief or a director's shot list. This is the language of outcome, not mechanism.
+
+Examples: "model walking on an outdoor shopping street," "looking at a shop window or phone," "turning left and right," "walking from a distance toward the camera"
+
+---
+
+**Visual and physical-world references**
+Marketing grounds abstract AI capabilities in real-world, observable actions. They do not say "multi-angle generation" — they say "the model should turn left and right so the clothing can be seen from front and back." This language style reflects how their users think: in terms of what they would see in a lookbook shoot, not what an AI model computes.
+
+Examples: "front and back angles," "pause moment," "1-2 second pause," "surrounded by stores," "holding accessories such as sunglasses"
+
+---
+
+**E-commerce workflow language**
+Marketing uses the language of campaign operations: folders, campaigns, channels, export, approval, draft, active/passive. They do not use product or engineering terminology. Their mental model is closest to an ad operations workflow — assets are created, reviewed, sent to channels, and managed in campaigns.
+
+Examples: "campaign-level export," "active/passive toggle," "approved videos in the folder," "export together to selected channels"
+
+---
+
+**Trust and responsibility language**
+Marketing explicitly frames trust in terms of liability and accountability. They want users to be able to say "I reviewed this before it went live." They want the platform to protect the user's token investment. They worry about things "going live" without review.
+
+Examples: "cannot later say I did not see this before it went live," "videos that are generated but not yet approved should not disappear," "spend money or tokens to generate videos"
+
+---
+
+**Simplicity language**
+Marketing uses the word "simple" explicitly (Item 15: "toplu indir should be simple") and advocates for simplicity implicitly across multiple items. They reduce complexity by preferring campaign-level operations over per-item operations, scenario selection over prompt writing, and product-first entry over folder creation.
+
+Examples: "simple bulk download button," "should not start with an empty screen," "choose concrete video scenarios," "not separately for every video"
+
+---
+
+**Sales and demo language**
+Marketing names templates with audience appeal in mind ("mağaza yazan kız"), asks for hover preview to make demos more vivid, and emphasizes the product needing to feel complete and explainable. They are designing for the demo moment, not just the user moment.
+
+Examples: "fancy names that attract users," "animated preview or preview video should play," "easier to explain or show"
+
+---
+
+### 14.5 Marketing vs Product Interpretation
+
+| Marketing says | What they probably mean | Product interpretation | Risk if implemented literally |
+|---|---|---|---|
+| "Templates should be detailed video scripts" | Users need to understand the output before spending tokens | Enrich TemplateCard description copy with scenario-level language | If descriptions don't match the sample video, demo credibility breaks |
+| "Include pause moments and 180-degree turns" | The video must show garment details clearly from multiple angles | Describe this in template copy as a scenario feature, not a configurable option | Promising specific video choreography that the static sample cannot deliver |
+| "Videos should be 8-10 seconds long" | Users and channels need a predictable output duration | Add duration spec to template cards and Confirm copy | If the sample video is a different length, the stated spec creates a credibility gap |
+| "Fancy names like mağaza yazan kız" | Template names must create immediate emotional resonance and clarity | Audit current template names; update if generic; hover preview is a separate scope decision | Renaming alone may not be enough; hover preview adds interaction complexity |
+| "Hover preview should play on hover" | Users need to see the scenario before committing to it | Assess whether a looping GIF or autoplay clip is feasible without performance risk | Multiple simultaneous autoplay videos create performance and visual noise issues |
+| "AI should receive all product photos" | A video generated from one image will hallucinate missing details | Surface additionalImageCount as a visible quality readiness signal in ProductCard | Promising real multi-image input without backend is false advertising |
+| "Generated videos should not disappear" | Token spend must produce durable, retrievable output | Use copy, status labels, and library states to communicate persistence | State is in-memory; navigating away resets it; demo navigation risk must be acknowledged |
+| "Active/passive toggle like Dynamic Creative" | Management patterns should be consistent across all AI tools | FolderCard already has toggle behavior; verify visual consistency with Dynamic Creative | If the visual pattern is inconsistent, the feature exists but does not feel consistent |
+| "Bulk download should be simple" | Users want to take generated assets out of the platform easily | Define scope: approved-only or all, relationship to channel export, mock ZIP vs real files | A mock ZIP using static sample video risks overpromising deliverability |
+| "Price overlays should not be generated by AI" | The boundary between AI Video and Dynamic Creative must be clear and safe | Add one sentence to Template selection or Confirm step communicating the scene-only promise | No risk — this is already the technical behavior, it just needs to be communicated |
+
+---
+
+### 14.6 What Marketing May Underestimate
+
+**Interaction complexity of hover preview**
+Hover video preview on template cards sounds like a small UX addition. In practice it requires: per-card video state management, pointer enter/leave event handling, multiple potential simultaneous autoplay instances, pause-on-exit behavior, and performance validation on lower-end hardware. On a grid of 4 cards, this is manageable. On a future grid of 20+ templates, it becomes a significant constraint.
+
+**The gap between scenario copy and scenario delivery**
+Marketing can write "model walking on Bağdat Caddesi with a small branded bag." The frontend can display this copy. But the sample video is a fixed MP4 that shows neither Bağdat Caddesi nor a branded bag. If the description and the video diverge visually, demo observers will notice. Richer copy without a matching video creates a more prominent credibility gap, not a smaller one.
+
+**State management complexity for persistence**
+"Videos should not disappear" is a two-word requirement that implies either backend persistence or in-memory state preservation across navigation events. Neither is trivial. In the current prototype, state lives in `useState` in `Videos.tsx`. Navigation away from the generate-review step without completing the flow means the session state is lost. Copy can imply persistence; it cannot deliver it.
+
+**AI output uncertainty**
+Marketing describes desired outputs with high specificity: exact duration, specific choreography, multi-angle coverage. These are constraints on an AI generation system that is fundamentally probabilistic. The gap between "what the template promises" and "what the AI actually generates" will vary from run to run. The frontend cannot control this variability — it can only manage user expectations around it.
+
+**False confidence from frontend-only mocks**
+A prototype that says "8-10 seconds, multi-angle, 180-degree turn" but shows a static sample video of different duration and single-angle movement creates a trust problem that did not exist before the copy was added. Every descriptive enhancement to the prototype must be measured against whether the sample video can support it. Where it cannot, the copy must be aspirational and appropriately hedged, not prescriptive.
+
+**Scope creep risk from small additions**
+Each of marketing's feedback items sounds small in isolation: richer template descriptions, a duration note, an image count indicator, a boundary sentence. Collectively, if all 8 open items are implemented without prioritization, the template selection screen and confirm step become significantly heavier. The cumulative cognitive load from "more information" may undo the simplicity that marketing is also asking for.
+
+**Backend and data requirements**
+Items 8 and 9 specifically require backend capabilities to fully deliver: real multi-image input from feed data, and real session persistence across navigation events. Marketing likely understands this at a conceptual level but may not have accounted for it in their implementation expectations. The prototype can express these capabilities through copy and visual indicators, but it cannot simulate them without risk of overpromising.
+
+---
+
+### 14.7 Translation Rules for Future Feedback
+
+The following rules should be applied whenever new marketing feedback is received, before any implementation decision is made.
+
+**Rule 1 — Do not implement feedback literally by default.**
+Marketing feedback expresses a desire, not a specification. Always ask: what is the underlying user need, and what is the smallest change that addresses it?
+
+**Rule 2 — First identify the business intent.**
+Is the feedback about conversion, trust, demo quality, brand positioning, or operational simplicity? Naming the intent makes it easier to evaluate alternatives and find better solutions than the literal request.
+
+**Rule 3 — Convert visual requests into user confidence or clarity problems.**
+"The template needs a hover preview video" is a visual request. The underlying problem is "users aren't confident about what they're selecting." A better description leads to better solutions: richer copy, a short scenario summary, a static preview image — each of which is smaller, safer, and faster than a hover video.
+
+**Rule 4 — Convert feature requests into smallest safe UX changes.**
+"There should be a bulk download button" is a feature request. The underlying problem is "users need to feel that generated content belongs to them." The smallest safe change that addresses this may be a copy change, a status label, or a deferred-to-production note — not a new button with file generation logic.
+
+**Rule 5 — Separate prototype communication from production functionality.**
+The prototype can communicate a capability that production will deliver, without simulating it. "AI uses all your product photos for more accurate generation" can appear as copy in the Confirm step without the prototype actually processing multiple images. Communicating the future capability is appropriate. Simulating it with false data is not.
+
+**Rule 6 — If feedback requires backend, express it as a future capability, not a frontend hack.**
+Multi-image input, real video generation, real state persistence, and bulk file download all require backend. In the prototype, these can be expressed as visible indicators, explanatory copy, or placeholder UI — but they must not be simulated in ways that set false user expectations.
+
+**Rule 7 — Preserve demo-ready state.**
+Every change must leave the prototype in a state that can be demonstrated without introducing new confusion, broken states, or visible placeholder behavior. A change that breaks the demo is worse than no change.
+
+**Rule 8 — Never delete large components.**
+Marketing may ask to simplify screens by removing elements. Before removing anything, evaluate whether the element serves a function that is not visible at demo time but is important for future production readiness. Prefer copy or styling changes over component removal.
+
+**Rule 9 — Prefer additive, small, reversible changes.**
+A new label is reversible. A new copy paragraph is reversible. Removing a screen is not. Deleting a component is not. When in doubt, add rather than remove, and make the addition as contained as possible.
+
+**Rule 10 — Confirm sample video compatibility before adding descriptive copy.**
+Before adding duration specs, choreography descriptions, or quality promises to any screen, check whether the current sample video can support the claim. If it cannot, the copy must be framed aspirationally, not as a current product specification.
+
+---
+
+### 14.8 Marketing Thinking Summary
+
+Marketing is not primarily asking for more features.
+
+Reading across all 15 feedback items, the underlying request is not "build more." It is:
+
+**Clearer value.** Users need to understand what they will get before they commit. Template descriptions, scenario names, and duration specs are all attempts to make the value more legible before the first token is spent.
+
+**More concrete video outcomes.** Marketing thinks in physical scenarios, not AI capabilities. They want the product to communicate in terms of shot direction, model behavior, garment angles, and duration — not in terms of model parameters or generation mechanics.
+
+**Safer token spend.** Tokens are money. Marketing wants every token spent to feel secure: generated output should persist, errors should be caught before export, and the approval gate should be inviolable.
+
+**Simpler export.** The campaign-level export, the active/passive folder toggle, and the product-first entry all reflect a single belief: users operate in campaign units, not video units. Every step that forces video-level configuration is a friction point that should not exist.
+
+**Stronger demo story.** The product must be demonstrable in under 10 minutes with a clear, linear story. Everything that creates confusion, hesitation, or the need for explanation is a demo risk. Marketing is building for the moment when a decision-maker first sees the product.
+
+**Textile-specific confidence.** Generic AI video tools exist. Optifeed's differentiator is sector relevance. Every request for multi-angle visibility, multi-image input, pause moments, and detailed scenario templates is marketing saying: "make this feel like it was built for textile merchants, not repurposed from a general-purpose tool."
+
+The product team's job is to honor these intentions while protecting the prototype from scope creep, false promises, and unnecessary complexity. The translation rules in 14.7 are the bridge between what marketing asks for and what the product should actually build.
