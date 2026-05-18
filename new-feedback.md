@@ -1400,3 +1400,507 @@ Reading across all 15 feedback items, the underlying request is not "build more.
 **Textile-specific confidence.** Generic AI video tools exist. Optifeed's differentiator is sector relevance. Every request for multi-angle visibility, multi-image input, pause moments, and detailed scenario templates is marketing saying: "make this feel like it was built for textile merchants, not repurposed from a general-purpose tool."
 
 The product team's job is to honor these intentions while protecting the prototype from scope creep, false promises, and unnecessary complexity. The translation rules in 14.7 are the bridge between what marketing asks for and what the product should actually build.
+
+---
+
+## 15. MFA2 — Prototype Compatibility Analysis
+
+---
+
+### 15.1 Compatibility Verdict
+
+**Compatible with communication gaps.**
+
+The current OptiVideo prototype is structurally well-aligned with marketing's mental model. The core flow — product-first entry, template selection, token-confirmed generation, progressive review, campaign-level export — matches every major workflow expectation marketing expressed. 7 of 15 feedback items are already fully addressed in the prototype.
+
+The remaining gaps are almost entirely communication and messaging gaps, not flow or architecture gaps. The prototype does the right things in most cases; it does not say what it is doing, or why it is safe, or what the user can expect. Marketing's feedback is primarily asking the product to become more legible, not more capable.
+
+Three items represent genuine product scope questions that require backend to fully resolve (multi-image input, true persistence, real file download). These are real product gaps but should not be addressed by frontend simulation.
+
+Two items require deeper assessment before any recommendation: hover video preview (Item 5) and template content fitness for the textile sector (Items 1, 2, 6).
+
+The prototype is demo-ready and should not be destabilized in the name of alignment. The risk is not that the prototype is wrong — it is that it is not communicating well enough what it already does right.
+
+---
+
+### 15.2 Current Prototype Strengths
+
+**Strength 1 — Product-first catalog entry**
+
+Prototype behavior: The entry point for video creation is `SelectStep`, which renders the full product catalog immediately. No folder creation form precedes it. Users can search, filter by category and brand, and select products before any campaign concept is named.
+
+Related feedback: Item 7
+Marketing goal it supports: E-commerce merchants think in terms of their product inventory. Starting with products removes cognitive friction and matches the mental model of a user who has a specific set of items they want to promote.
+Why it matters for demo: The demo story starts with a recognizable action ("here are your products, pick what you want") rather than an abstract setup step. This makes the first 30 seconds of a demo immediately compelling.
+
+---
+
+**Strength 2 — Template count within the 3-5 textile MVP range**
+
+Prototype behavior: Four template definitions exist in `src/data/templates.ts`: "Vitrine bakan kadın," "Paris'te yürüyen kadın," "Bahçe buluşması," and "Product spotlight." Two are explicitly fashion-focused, one is outdoor/lifestyle, and one is product-neutral.
+
+Related feedback: Item 6
+Marketing goal it supports: A small, focused template library signals purpose-built product design rather than a generic AI video utility.
+Why it matters for demo: Four choices are easy to scan and compare. A larger library would require filtering or scrolling and would dilute the demo's pace.
+
+Note: Count is aligned. Content fitness is not fully aligned — "Bahçe buluşması" targets home/outdoor rather than textile, and "Product spotlight" has no sector targeting. This is a content gap, not a count gap, addressed in 15.4.
+
+---
+
+**Strength 3 — Approve-before-export gate**
+
+Prototype behavior: The "Dışa aktar" button in `GenerateReviewStep` is disabled when `approvedCount === 0`. Export cannot proceed without at least one explicit approval. The generate-review step provides per-video approve, reject, edit, and preview actions. An "Approve all" confirm dialog requires deliberate confirmation.
+
+Related feedback: Item 10
+Marketing goal it supports: Users take explicit ownership of content before it goes to channels. This creates accountability and protects both user and platform from errors reaching live campaigns.
+Why it matters for demo: The gate is visible and functional. During a demo, the reviewer can show that clicking "Dışa aktar" is impossible before approval, then demonstrate a single approval unlocking it. The story is clear.
+
+---
+
+**Strength 4 — Campaign-level channel export**
+
+Prototype behavior: `ExportStep` presents channel toggles (Meta, Google, TikTok) once for all approved videos. The header states "{approvedCount} video onaylandı" before channel selection. There is no per-video channel assignment in the flow.
+
+Related feedback: Item 11
+Marketing goal it supports: Merchants think in campaign terms. Selecting export channels once for the whole batch matches how campaign managers operate and removes per-item cognitive overhead.
+Why it matters for demo: The export step reads as a single decision moment: "here are your N approved videos, where should they go?" This is clean and fast to demo.
+
+---
+
+**Strength 5 — Progressive generate-review flow**
+
+Prototype behavior: `GenerateReviewStep` uses staggered `setTimeout` calls to transition each video from "generating" to "pending_review" independently. The first video becomes reviewable while subsequent ones are still generating. Approve, reject, preview, and edit actions are all available per video from the moment it transitions.
+
+Related feedback: Item 13
+Marketing goal it supports: Generation wait time is the highest dropout risk in AI products. Progressive reveal keeps users engaged and creates a sense of momentum and responsiveness.
+Why it matters for demo: A demo showing videos appearing one by one — and the reviewer immediately acting on the first while others load — is significantly more compelling than a frozen progress bar. The product feels alive.
+
+---
+
+**Strength 6 — AI Studio sidebar grouping**
+
+Prototype behavior: `AppShell.tsx` groups "AI Video" and "Dynamic Creative" under an "AI Studio" section heading. Both tools are sidebar peers at the same visual level, separated from non-AI navigation items by the section label.
+
+Related feedback: Item 12
+Marketing goal it supports: Optifeed positions itself as an AI creative platform, not a collection of utilities. The sidebar makes this visible at every screen.
+Why it matters for demo: Any demo starting from the sidebar immediately shows the AI Studio concept. It frames the product before a single feature is touched.
+
+---
+
+**Strength 7 — Campaign/folder active-passive toggle**
+
+Prototype behavior: `FolderCard` includes a status indicator that toggles between "Yayında" (active) and "Taslak" (draft) states on click. The library has tabs for all status types including `setup_in_progress` ("Üretim sürüyor") and archived.
+
+Related feedback: Item 14
+Marketing goal it supports: Feature parity with Dynamic Creative's management pattern creates a consistent management experience across both AI tools.
+Why it matters for demo: A demo showing that campaigns in both AI Video and Dynamic Creative can be activated or deactivated the same way makes Optifeed feel like a mature, consistent platform.
+
+---
+
+**Strength 8 — Token cost confirmed before generation**
+
+Prototype behavior: `ConfirmStep` displays three summary cards (product count, estimated time, estimated tokens) and a full balance breakdown (current balance / this generation / estimated remaining). Generation cannot start if balance is insufficient. The "Üretimi başlat" button is disabled when `!hasEnoughBalance`.
+
+Related feedback: Items 9, 10
+Marketing goal it supports: Token spend creates an implicit contract. Showing the exact cost before commitment makes the exchange transparent and prevents surprise after the fact.
+Why it matters for demo: The confirm step is the clearest trust moment in the entire flow. It communicates: "this is exactly what you are about to spend, and here is what will happen."
+
+---
+
+**Strength 9 — ZIP download already present in ExportStep**
+
+Prototype behavior: `ExportStep` renders a "ZIP indir" button that fires `toast("İndirme başladı.")` when clicked. The approvedCount is shown beneath the ZIP label. The button is available regardless of channel selection and has its own visual card with dashed border styling.
+
+Related feedback: Item 15
+Marketing goal it supports: Users should feel that generated content belongs to them and can be taken out of the platform.
+Why it matters for demo: The ZIP option already exists at the right location. The demo story is mostly there: "you can also just download all approved videos as a ZIP." The current limitation is that it fires a toast rather than a real download — but the affordance exists.
+
+---
+
+### 15.3 Invisible Strengths
+
+These are capabilities the prototype already has that users and marketing are unlikely to notice during a demo or first use. Leaving them invisible represents a missed communication opportunity.
+
+---
+
+**Invisible strength 1 — AI Video generates scene layer only, no text overlays**
+
+What exists today: The prototype generates only a visual video (sample MP4). No price text, brand name, or campaign copy appears in the video. This is technically correct behavior — the boundary between AI Video (scene) and Dynamic Creative (text layers) already exists.
+
+Why marketing/user may not notice it: There is no statement anywhere in the flow that says "AI generates the visual scene only" or "text overlays are added in Dynamic Creative." The boundary is implicit and invisible.
+
+Related feedback: Item 4
+Risk if left invisible: Users who expect a finished ad with price and branding will generate videos, see no text overlay, and interpret this as a product failure rather than correct behavior. The complaint will be "the video is missing the price" — when the answer is "Dynamic Creative is the next step."
+
+---
+
+**Invisible strength 2 — Pending-review videos are visible and actionable during the session**
+
+What exists today: All generated videos — including ones in "pending_review" status — remain visible in `GenerateReviewStep` throughout the session. Users can return to previously reviewed items, undo approvals, preview any video, and act on later-generated ones without losing earlier ones.
+
+Why marketing/user may not notice it: There is no "your videos are saved" message. No status label says "inceleme bekliyor" in a persistent way. Users who navigate away from the screen and return mid-session see the state correctly, but nothing communicates this safety explicitly.
+
+Related feedback: Item 9
+Risk if left invisible: Users may feel their progress is fragile and avoid navigating away. More seriously, if they do navigate away during a demo or real session and state resets (since state is in-memory), they will believe the platform lost their work.
+
+---
+
+**Invisible strength 3 — Progressive reveal prevents frozen wait states**
+
+What exists today: Videos appear one at a time via staggered timeouts. The first video can be reviewed within seconds of starting generation. The loading shimmer for subsequent videos is visual feedback that work is in progress.
+
+Why marketing/user may not notice it: Users who have never seen an alternative (a full-batch frozen loader) will not appreciate that this is a deliberate design choice. They may simply experience it as "fast" without understanding the progressive architecture behind it.
+
+Related feedback: Item 13
+Risk if left invisible: Low — this is experienced, not just communicated. But it is worth naming in demo scripts so this strength becomes a selling point: "notice that you can start reviewing while the rest are still generating."
+
+---
+
+**Invisible strength 4 — TemplateCard info popover contains rich scenario detail**
+
+What exists today: Every `TemplateCard` has a small Info icon (ⓘ) that opens a popover showing `whenToUse`, a "Güçlü yanları" (strengths) list, and a "Dikkat" (warning) section. This content is richer than the visible description and provides real guidance on when each template is appropriate.
+
+Why marketing/user may not notice it: The Info icon is small (h-4 w-4), low contrast (text-primary/60), and carries no label. Users scanning template cards for the first time are unlikely to discover it. The primary description shown on the card face is short and does not hint at the deeper content available.
+
+Related feedback: Items 1, 5
+Risk if left invisible: The richer content exists but serves no purpose if it is not discovered. Marketing's request for "detailed template scripts" may already have a partial answer in the popover — the question is whether the content is surfaced effectively enough, or whether it needs to move.
+
+---
+
+**Invisible strength 5 — Library "Üretim sürüyor" status and pendingCounts**
+
+What exists today: `LibraryStep` has a `setup_in_progress` tab labeled "Üretim sürüyor." The `pendingCounts` prop allows each folder to display how many videos are awaiting review. This is the mechanism that would communicate "you have generated videos waiting for your review."
+
+Why marketing/user may not notice it: In demo scenarios, folders typically appear in "active" or "draft" status. The `setup_in_progress` state is triggered by a specific flow branch. The tab exists but may not be easily reached in a standard demo run. The relationship between this tab and "generated but unapproved videos" is not made explicit in the UI.
+
+Related feedback: Item 9
+Risk if left invisible: Marketing believes this state does not exist ("videos should not disappear"). In fact, a persistence-signaling state exists — it is just not surfaced prominently enough to change that perception.
+
+---
+
+**Invisible strength 6 — Export header frames the action at campaign level**
+
+What exists today: `ExportStep` opens with the heading "{approvedCount} video onaylandı" — stating the batch size before channel selection. The export action applies to all approved videos in the session, not to individual videos.
+
+Why marketing/user may not notice it: The heading is correct and clear, but it does not explicitly say "all approved videos in this campaign will be sent together." A user could still wonder whether each channel toggle applies differently per video.
+
+Related feedback: Item 11
+Risk if left invisible: Users may not fully trust that campaign-level export is what is happening. Adding a one-line clarification ("bu üretimdeki tüm onaylı videolar gönderilecek") would remove any ambiguity.
+
+---
+
+### 15.4 Communication Gaps
+
+These are cases where the prototype behavior is mostly correct but the copy, hierarchy, or messaging is insufficient to communicate the value or build the expected trust.
+
+---
+
+**Gap 1 — Template descriptions do not communicate script-level scenario**
+
+Current issue: The visible description on each TemplateCard face is a single short sentence. "Vitrine bakan kadın" reads: "Şehir vitrininde ürünle etkileşen gerçekçi lifestyle sahnesi." This describes the vibe but not the video: no mention of model motion, shot direction, duration, or output behavior. The richer content in the info popover (`whenToUse`, `strengths`) is hidden behind a small icon.
+
+Related feedback: Items 1, 2, 3
+Type: Copy, UI hierarchy
+Severity: High
+Why it matters: Template selection is the primary moment where users decide whether to commit tokens. If they cannot predict what the video will show from the card face, they are making a token commitment based on a vibe, not a scenario. This is the gap marketing is feeling most acutely.
+
+---
+
+**Gap 2 — No expected output duration anywhere in the flow**
+
+Current issue: Duration ("8-10 saniye") appears nowhere in the UI — not on template cards, not in the confirm step, not in the generate-review step, not in the video preview modal. The sample video has an unstated length that users will only discover by watching it.
+
+Related feedback: Item 3
+Type: Copy, microcopy
+Severity: Medium
+Why it matters: Marketing and channel teams need to know output duration for creative planning and channel requirements (Meta minimum 3s, TikTok 5-60s, etc.). A missing duration spec creates post-generation questions that should have been answered at template selection.
+
+Note: This gap can only be safely filled if the actual sample video duration is verified to fall within the stated range. If the sample video is not 8-10 seconds, stating the spec creates a credibility gap.
+
+---
+
+**Gap 3 — AI Video / Dynamic Creative product boundary is never communicated**
+
+Current issue: Nowhere in the template selection, confirm, generate-review, or export screens does the UI state that AI Video generates only the visual scene layer, and that text overlays (price, brand, copy) are added through Dynamic Creative. The boundary exists technically; it is entirely invisible to users.
+
+Related feedback: Item 4
+Type: Copy, microcopy
+Severity: High
+Why it matters: Users who expect a complete ad creative will interpret the absence of text as a bug, not a feature. Competitors may include text by default. Without this boundary statement, the product appears incomplete rather than intentionally scoped.
+
+---
+
+**Gap 4 — Product image readiness is not visible as a quality signal**
+
+Current issue: The Product data model includes `additionalImageCount`. The advanced filter panel allows filtering by this field. But nowhere on a ProductCard or in the Confirm step does the UI communicate that a product with 0 additional images may produce lower quality output.
+
+Related feedback: Item 8
+Type: UI hierarchy, microcopy
+Severity: Medium
+Why it matters: Marketing understands that single-image input leads to hallucinated details in textile videos. If the prototype can signal which products have strong image data and which do not, users can make informed selections — and the platform demonstrates awareness of this quality factor.
+
+---
+
+**Gap 5 — No "videos are saved" or "inceleme bekliyor" signal**
+
+Current issue: The generate-review step shows all videos including pending ones, but nothing communicates that they are safe, saved, or persistently available for review. There is no "kayıt edildi" indicator, no "geri dönebilirsiniz" prompt, and no library-level "X video inceleme bekliyor" message.
+
+Related feedback: Item 9
+Type: Copy, state labels, microcopy
+Severity: High
+Why it matters: Marketing explicitly worries that users will feel their token-spent output is fragile. If the UI never says "these are saved," users will not feel the safety that marketing wants to provide — even if, within a session, the state is actually preserved.
+
+---
+
+**Gap 6 — Template content is partially off-sector for textile**
+
+Current issue: Two of four templates have non-textile sector targeting. "Bahçe buluşması" lists `recommendedSectors: ["home", "food", "sports"]`. "Product spotlight" has `recommendedSectors: []`. Neither template communicates textile/fashion relevance.
+
+Related feedback: Items 1, 6
+Type: Copy, data
+Severity: Medium
+Why it matters: Marketing asked for 3-5 textile-focused templates. The count is right; the sector focus is partially wrong. A fashion merchant browsing the template screen sees two templates that clearly speak to their category ("Vitrine bakan kadın," "Paris'te yürüyen kadın") and two that do not. The "Önerilen" badge logic in TemplateCard uses `isRecommended` — if this is wired to sector matching, "Bahçe buluşması" should not show as recommended for textile products.
+
+---
+
+**Gap 7 — Rich TemplateCard info content is discoverable only by clicking a small icon**
+
+Current issue: The Info popover in TemplateCard contains `whenToUse`, strengths, and a warning. This content is the closest thing the prototype has to "detailed template scenarios." But the trigger is an h-4 w-4 icon with `text-primary/60` coloring — low contrast, no label, no hover tooltip hint. Users who don't explore are unlikely to find it.
+
+Related feedback: Items 1, 5
+Type: UI hierarchy
+Severity: Medium
+Why it matters: The content that marketing is asking for may already exist — it is just not at the right hierarchy level. Moving some of this content to the card face (even a single additional line of scenario copy) would address the gap without requiring new content creation.
+
+---
+
+### 15.5 Real Product Gaps vs Prototype Communication Gaps
+
+| # | Feedback item | Real product gap? | Prototype communication gap? | Frontend-only fix? | Before demo? | Notes |
+|---|---|---|---|---|---|---|
+| 1 | Detailed template scripts | Yes — AI must generate matching scenario | Yes — card descriptions are short | Yes, for copy enrichment | Yes | Enrich descriptions; do not promise AI choreography |
+| 2 | Pause moments and multiple angles | Yes — AI/backend controls video output | Yes — template copy can describe the scenario | Partial — copy only | No | Copy description without matching sample video creates credibility risk |
+| 3 | 8-10 second duration | Yes — AI controls output duration | Yes — no duration shown anywhere | Yes, if sample video length matches | Maybe | Verify sample video length before adding copy |
+| 4 | No price/brand overlay by AI | No — behavior already correct | Yes — boundary never stated in UI | Yes — one sentence of copy | Yes | Lowest risk item; purely messaging |
+| 5 | Template hover preview | Yes — no preview video assets exist | No — hover behavior is missing, not miscommunicated | No — requires video assets and component work | No | Risky; defer until assets and scope are defined |
+| 6 | 3-5 textile templates | Partial — 2 of 4 templates are not textile-focused | Partial — sector mismatch not flagged to user | Yes — data and copy update | Yes | Template content update is data-only, no component change needed |
+| 7 | Product-first entry | No | No | N/A | N/A | Already aligned and visible; no gap |
+| 8 | Multi-image input | Yes — backend required for real multi-image processing | Yes — additionalImageCount not surfaced as quality signal | Yes — readiness indicator is frontend-only | Yes | Frontend signal is meaningful even without backend processing |
+| 9 | Video persistence | Yes — backend required for real persistence | Yes — no "saved" messaging exists | Partial — copy/labels can imply persistence | Yes | Copy changes only; acknowledge demo navigation risk |
+| 10 | Approve before export | No | No | N/A | N/A | Already aligned and visible; no gap |
+| 11 | Campaign-level export | No | No | N/A | N/A | Already aligned and visible; minor clarifying copy is optional |
+| 12 | AI Studio sidebar | No | No | N/A | N/A | Already aligned and visible; no gap |
+| 13 | Progressive generation | No | No | N/A | N/A | Already aligned and visible; no gap |
+| 14 | Active/passive toggle | No | Partial — visual consistency with DC not verified | Maybe — styling only if inconsistent | No | Needs visual comparison with Dynamic Creative toggle pattern |
+| 15 | Bulk download | Partial — ZIP button exists but fires toast only | Partial — button exists, affordance is unclear | Partial — toast copy can be improved | Maybe | ZIP affordance exists; improve copy before adding real download |
+
+---
+
+### 15.6 Risky Requests
+
+These are marketing feedback items that could actively damage demo credibility if implemented literally, without accounting for current prototype constraints.
+
+---
+
+**Risky request 1 — Detailed scenario scripts when sample video does not match**
+
+Request: Add cinematic scenario descriptions to template cards ("model walking from distance, pausing, turning 180 degrees, showing product from front and back, 8-10 seconds").
+
+Why it is risky: The sample video is a static MP4 that cannot be changed. If the description says "model turns 180 degrees to show back of garment" but the video shows no such turn, a demo observer will notice the mismatch immediately. The description makes the gap more visible, not less.
+
+What could go wrong in demo: A reviewer reads the template description, selects the template, watches the generated video preview in the modal, and asks: "where is the 180-degree turn?" There is no answer. Trust in the template system drops.
+
+Safer interpretation: Enrich descriptions with atmosphere and outcome language ("zarif şehir sahnesinde, ürün ön plana çıkarılır") rather than specific choreography promises ("model 180 derece döner"). If choreography copy is needed, it must be framed as the production-ready behavior, not the prototype demo behavior.
+
+---
+
+**Risky request 2 — Stating 8-10 second duration without verifying sample video length**
+
+Request: Add "8-10 saniye" to template cards or the confirm step.
+
+Why it is risky: The current sample video (`SAMPLE_VIDEO` from `src/data/tokens.ts`) has a specific duration that may not be 8-10 seconds. If the stated spec and the visible video disagree, the mismatch is immediately visible when the user plays a preview.
+
+What could go wrong in demo: "It says 8-10 seconds but this video looks like 5 seconds." Or conversely, "this says 8-10 seconds but the video I'm watching is clearly 15 seconds."
+
+Safer interpretation: Verify the actual duration of the sample video first. If it falls within 8-10 seconds, the copy is safe to add. If it does not, the duration spec must wait for a matching sample asset.
+
+---
+
+**Risky request 3 — Hover video previews without quality preview assets**
+
+Request: Add animated or video preview that plays when users hover over a template card.
+
+Why it is risky: There are no preview video assets for templates in the current prototype. Using the same generic sample video for all four template cards as hover preview would be misleading — all four templates would show identical footage, which contradicts the point of showing what each template produces.
+
+What could go wrong in demo: A demo participant hovers over "Vitrine bakan kadın" and "Paris'te yürüyen kadın" and sees the same video. They immediately understand that the previews are not real. Trust in the template system breaks.
+
+Safer interpretation: Defer hover preview entirely until scenario-specific video assets are available. In the interim, the static `previewImage` (Unsplash photo) and the info popover content are safer representations of each template's mood.
+
+---
+
+**Risky request 4 — Multi-image AI input claims without backend**
+
+Request: Communicate that AI uses "all available product photos from the feed" for generation.
+
+Why it is risky: The prototype does not process multiple images. If the UI says "AI uses all your product photos for more accurate generation," a technically aware demo observer may ask to verify this or may expect better quality from products with many images — which the prototype cannot deliver.
+
+What could go wrong in demo: "It says multi-image input, but I notice all videos look the same regardless of how many photos the product has."
+
+Safer interpretation: Use image readiness as a user-facing quality signal ("3 ek görsel: yüksek kalite tahmini") without claiming the AI backend uses them in this prototype. Frame multi-image support as a planned production capability communicated in the UI, not simulated.
+
+---
+
+**Risky request 5 — Persistence claims without backend state**
+
+Request: Communicate that generated videos are "saved" and "will not disappear."
+
+Why it is risky: `Videos.tsx` state lives in `useState`. If a user navigates away from the generate-review step and returns, the session state resets. Any persistence message in the UI will be contradicted by observed behavior during a demo navigation.
+
+What could go wrong in demo: The demo shows "videolar kayıt edildi" on the generate-review screen. The presenter navigates to the library to show the folder. When they navigate back, the videos are gone. The persistence message created an expectation the prototype cannot honor.
+
+Safer interpretation: Use persistence language in the library (folder shows "Üretim sürüyor" status) rather than in the generate-review screen. This frames persistence at the folder level, which is where users would look for saved work — and the library tab behavior is more resilient to in-session navigation.
+
+---
+
+**Risky request 6 — Bulk download without real downloadable assets**
+
+Request: A simple bulk download button for all videos.
+
+Why it is risky: The ZIP download in `ExportStep` currently fires `toast("İndirme başladı.")`. No file is actually downloaded. If the button is labeled confidently as "ZIP indir" and appears to initiate a download, users who wait for a file to appear in their downloads folder will be confused or frustrated.
+
+What could go wrong in demo: "I clicked ZIP indir but nothing downloaded. Is this feature broken?" The current toast without a file arrival looks like a bug, not a demo limitation.
+
+Safer interpretation: Add "yakında" (coming soon) or a demo-mode label to the ZIP button, or update the toast copy to make the prototype status explicit: "Bu özellik yakında aktif olacak." The affordance should communicate honestly rather than silently fail.
+
+---
+
+### 15.7 Compatibility by Screen
+
+---
+
+**Catalog (SelectStep)**
+
+Current compatibility: Strong
+What marketing expectation it supports: Product-first entry, filtering by category/brand/ID, clear product selection, selection count tracking, limit management.
+What is missing or unclear: `additionalImageCount` is not visible on ProductCard as a quality signal. Users who select products with 0 additional images have no indication that output quality may be lower.
+Needs MFA3 issue analysis: Yes — specifically for the image readiness signal and how it should appear on ProductCard or in the selection toolbar.
+
+---
+
+**Campaign setup**
+
+Current compatibility: Medium
+What marketing expectation it supports: Campaign naming happens before generation (campaignContext.name flows through ConfirmStep). The folder/campaign is implicitly created at the end of the flow.
+What is missing or unclear: There is no dedicated "name your campaign" step visible to users before they start selecting products. The campaign name appears in ConfirmStep as a subtle muted line, not as a committed campaign framing. Users may not feel they are "creating a campaign" until after generation — which is conceptually later than marketing intends.
+Needs MFA3 issue analysis: Yes — the campaign naming moment and its visibility in the flow should be evaluated.
+
+---
+
+**Template selection**
+
+Current compatibility: Medium
+What marketing expectation it supports: 4 scenario-based templates, sector-tagged, with an info popover for detail. Count is within the 3-5 range.
+What is missing or unclear: Descriptions are atmospheric rather than scenario-specific. Duration is absent. Choreography is not described. Two templates ("Bahçe buluşması," "Product spotlight") are not textile-focused. The info popover content is richer but hidden. No hover preview.
+Needs MFA3 issue analysis: Yes — this screen has the highest concentration of communication gaps and is the most critical moment for pre-commitment confidence.
+
+---
+
+**Confirm**
+
+Current compatibility: Strong
+What marketing expectation it supports: Full token cost transparency before commitment. Balance breakdown (current / this generation / estimated remaining). Insufficient balance warning with "Token al" call to action. Template name shown with edit shortcut. Product count, estimated time, and token count in summary cards.
+What is missing or unclear: No AI Video / Dynamic Creative boundary sentence. No output duration spec. No image readiness summary for the selected products. Template description is shown only as the label name, not the scenario.
+Needs MFA3 issue analysis: Yes — minor additions (boundary note, duration) should be evaluated for placement without cluttering the existing layout.
+
+---
+
+**Generate-review**
+
+Current compatibility: Strong
+What marketing expectation it supports: Progressive reveal (videos appear one by one), per-video approve/reject/edit/preview actions, approve-all confirm dialog, progress bar with video count, export gate enforced in sticky footer.
+What is missing or unclear: No "videos are saved" or "inceleme bekliyor" signal. Token spent note (already added in UXR4) is present below the progress bar. The heading communicates completion state but not persistence safety.
+Needs MFA3 issue analysis: Yes — specifically for the persistence signal copy and where it should appear without cluttering the header or progress area.
+
+---
+
+**Video preview modal**
+
+Current compatibility: Medium
+What marketing expectation it supports: Full video playback in modal, product name and brand shown, template label shown, approve/reject/edit actions available from within the modal.
+What is missing or unclear: No duration display. No multi-angle or quality indication. The modal is functional but does not reinforce any output specification.
+Needs MFA3 issue analysis: Minor — duration display is the most relevant addition to evaluate.
+
+---
+
+**Edit prompt**
+
+Current compatibility: Medium
+What marketing expectation it supports: Guided prompt editing via `GuidedPromptFields`. Users can customize the prompt before re-generation without starting over.
+What is missing or unclear: The relationship between the edit prompt step and the template scenario is not clearly framed. Users editing a prompt may not know what the template expects or how their changes will affect the output scenario.
+Needs MFA3 issue analysis: Yes — the edit prompt step needs evaluation for how it communicates its relationship to the original template scenario.
+
+---
+
+**Export**
+
+Current compatibility: Strong
+What marketing expectation it supports: Campaign-level export (all approved videos together), channel toggles for Meta/Google/TikTok, ZIP download affordance, skip option with "taslak olarak kaydet" framing, approved count in header.
+What is missing or unclear: ZIP download fires a toast but does not download a file — the affordance is misleading in its current state. No explicit "all approved videos in this campaign" sentence to confirm campaign-level scope.
+Needs MFA3 issue analysis: Yes — specifically for the ZIP button state and the campaign-level scope clarification.
+
+---
+
+**Success**
+
+Current compatibility: Strong
+What marketing expectation it supports: Summary cards showing video count, selected channel, and token spent (added in D1). Clear completion framing. Path to library.
+What is missing or unclear: Minor — success screen is well-aligned. No significant gaps.
+Needs MFA3 issue analysis: No.
+
+---
+
+**Library (LibraryStep)**
+
+Current compatibility: Medium
+What marketing expectation it supports: Campaign/folder management with status tabs (all, active, draft, setup_in_progress, archived). Active/passive toggle on FolderCard. Search and sort. Folder product thumbnail strip. PendingCounts prop for pending review count per folder.
+What is missing or unclear: The relationship between "Üretim sürüyor" status and "you have generated videos waiting for your review" is not communicated. The `pendingCounts` prop exists but is not prominently shown in the library if it is wired to a visible indicator. The library does not invite users back to review ("5 video incelemenizi bekliyor").
+Needs MFA3 issue analysis: Yes — the "pending review" visibility and the library-to-generate-review re-entry path should be evaluated.
+
+---
+
+**Sidebar**
+
+Current compatibility: Strong
+What marketing expectation it supports: AI Studio section groups AI Video and Dynamic Creative as sibling tools. Navigation to both. "AI Video" label replaces generic "Video." "Kampanyalarım" is correctly indented as a sub-item of AI Video. Dynamic Creative is correctly at the same level as AI Video.
+What is missing or unclear: None — sidebar is fully aligned with marketing's IA expectations.
+Needs MFA3 issue analysis: No.
+
+---
+
+### 15.8 MFA2 Summary
+
+**What is already strong**
+
+The prototype's core flow architecture matches marketing's mental model with high fidelity. Product-first entry, campaign-level export, approval gating, progressive generation reveal, AI Studio sidebar, and token confirmation before commitment are all implemented correctly and visibly. These are not in question. 7 of 15 feedback items require no further work.
+
+**What is invisible**
+
+The prototype already does several things that marketing is asking for — but does not say so. The AI Video / Dynamic Creative scene boundary is technically enforced but never communicated. The generate-review step preserves pending videos within the session but never says "saved." The library has a `setup_in_progress` status that surfaces the right state, but does not actively invite users back to review. The TemplateCard info popover contains rich scenario content hidden behind a low-contrast icon. These invisible strengths are the lowest-risk opportunity to improve perceived alignment without changing any behavior.
+
+**What is risky**
+
+Six items carry implementation risk if executed literally: detailed scenario scripts that don't match the sample video, duration specs that don't match the sample video length, hover preview using non-scenario-specific assets, multi-image AI claims without backend, persistence copy that breaks during demo navigation, and the ZIP button that fires a toast without downloading anything. Each of these risks should be explicitly evaluated before any implementation is approved.
+
+**What needs deeper UI/UX/userflow issue mapping in MFA3**
+
+Six screens require MFA3 attention:
+- Template selection — highest concentration of communication gaps; most critical pre-commitment screen
+- Catalog — image readiness signal placement on ProductCard
+- Confirm — AI/DC boundary note and duration spec placement
+- Generate-review — persistence signal copy placement
+- Export — ZIP button state and scope clarification
+- Library — pending review visibility and re-entry path
+
+**What should not be touched before more definition**
+
+Hover preview (Item 5), multi-image AI claims (Item 8), real video persistence (Item 9), and bulk ZIP download (Item 15) should not be implemented in any frontend form until the following questions are answered: What assets exist? What can the prototype safely promise? What happens when a demo user performs a navigation that breaks the stated behavior? These require answers before implementation, not after.
