@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CheckCircle, ChevronRight, Plus, Search, Video, Zap } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { FolderCard } from "@/components/videos/FolderCard";
 import { type VideoFolder, type FolderStatus } from "@/data/folders";
@@ -48,6 +49,12 @@ export function LibraryStep({
   onRenameFolder,
   onArchiveFolder,
 }: LibraryStepProps) {
+  const [isLoading, setIsLoading] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 300);
+    return () => clearTimeout(timer);
+  }, []);
+
   const [activeTab, setActiveTab] = useState<TabValue>("all");
   const [sortBy, setSortBy] = useState<SortValue>("updatedAt");
   const [query, setQuery] = useState("");
@@ -203,44 +210,69 @@ export function LibraryStep({
             </div>
 
             {/* Campaign grid */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {filtered.map((folder) => (
-                <FolderCard
-                  key={folder.id}
-                  folder={folder}
-                  onOpen={() => onOpenFolder(folder.id)}
-                  onToggleStatus={(e) => { e.stopPropagation(); onToggleStatus(folder.id); }}
-                  pendingCount={pendingCounts[folder.id] ?? 0}
-                  productImages={productImagesMap[folder.id]}
-                  onResume={() => onResumeFolder(folder.id)}
-                  onDelete={() => onDeleteFolder(folder.id)}
-                  onRename={(newName) => onRenameFolder(folder.id, newName)}
-                  onArchive={() => onArchiveFolder(folder.id)}
-                />
-              ))}
+            {isLoading ? (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <CampaignCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {filtered.map((folder) => (
+                    <FolderCard
+                      key={folder.id}
+                      folder={folder}
+                      onOpen={() => onOpenFolder(folder.id)}
+                      onToggleStatus={(e) => { e.stopPropagation(); onToggleStatus(folder.id); }}
+                      pendingCount={pendingCounts[folder.id] ?? 0}
+                      productImages={productImagesMap[folder.id]}
+                      onResume={() => onResumeFolder(folder.id)}
+                      onDelete={() => onDeleteFolder(folder.id)}
+                      onRename={(newName) => onRenameFolder(folder.id, newName)}
+                      onArchive={() => onArchiveFolder(folder.id)}
+                    />
+                  ))}
 
-              {/* Dashed new campaign card */}
-              <button
-                type="button"
-                onClick={onNewCampaign}
-                className={cn(
-                  "flex min-h-[180px] flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border",
-                  "text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary",
+                  {/* Dashed new campaign card */}
+                  <button
+                    type="button"
+                    onClick={onNewCampaign}
+                    className={cn(
+                      "flex min-h-[180px] flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border",
+                      "text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary",
+                    )}
+                  >
+                    <Plus className="h-8 w-8 opacity-50" />
+                    <span className="text-sm font-medium">Yeni kampanya</span>
+                  </button>
+                </div>
+
+                {filtered.length === 0 && (
+                  <p className="mt-8 text-center text-sm text-muted-foreground">
+                    Bu filtreyle eşleşen kampanya bulunamadı.
+                  </p>
                 )}
-              >
-                <Plus className="h-8 w-8 opacity-50" />
-                <span className="text-sm font-medium">Yeni kampanya</span>
-              </button>
-            </div>
-
-            {/* Empty filtered state */}
-            {filtered.length === 0 && (
-              <p className="mt-8 text-center text-sm text-muted-foreground">
-                Bu filtreyle eşleşen kampanya bulunamadı.
-              </p>
+              </>
             )}
           </>
         )}
+      </div>
+    </div>
+  );
+}
+
+function CampaignCardSkeleton() {
+  return (
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <Skeleton className="h-28 w-full rounded-none" />
+      <div className="space-y-2 p-3">
+        <Skeleton className="h-4 w-3/4" />
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-5 w-16 rounded-full" />
+          <Skeleton className="h-5 w-20 rounded-full" />
+        </div>
+        <Skeleton className="h-3 w-1/2" />
       </div>
     </div>
   );

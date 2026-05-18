@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { type Product } from "@/data/products";
 import { TEMPLATES } from "@/data/templates";
 import { SECTORS, THEMES, PRODUCT_TYPES } from "@/data/taxonomy";
@@ -20,6 +21,12 @@ export function TemplateSelectionStep({
   onContinue,
   onBack,
 }: TemplateSelectionStepProps) {
+  const [isLoading, setIsLoading] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 300);
+    return () => clearTimeout(timer);
+  }, []);
+
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateId | null>(null);
   const [templateNote, setTemplateNote] = useState("");
 
@@ -66,17 +73,25 @@ export function TemplateSelectionStep({
       </div>
 
       {/* 2×2 Template grid */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {TEMPLATES.map((t) => (
-          <TemplateCard
-            key={t.id}
-            template={t}
-            selected={selectedTemplate === t.id}
-            isRecommended={isRecommended(t)}
-            onSelect={() => setSelectedTemplate(t.id)}
-          />
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <TemplateCardSkeleton key={i} />
+          ))}
+        </div>
+      ) : (
+        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {TEMPLATES.map((t) => (
+            <TemplateCard
+              key={t.id}
+              template={t}
+              selected={selectedTemplate === t.id}
+              isRecommended={isRecommended(t)}
+              onSelect={() => setSelectedTemplate(t.id)}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Ek detay textarea */}
       <div className="mb-4">
@@ -131,6 +146,19 @@ export function TemplateSelectionStep({
             </Button>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function TemplateCardSkeleton() {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-border bg-card">
+      <Skeleton className="aspect-video w-full rounded-none" />
+      <div className="space-y-2 p-3">
+        <Skeleton className="h-4 w-2/3" />
+        <Skeleton className="h-3 w-full" />
+        <Skeleton className="h-3 w-4/5" />
       </div>
     </div>
   );

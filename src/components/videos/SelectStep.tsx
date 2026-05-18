@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FolderOpen, LayoutGrid, List, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { PRODUCTS } from "@/data/products";
 import { PRODUCT_SELECTION_LIMIT } from "@/data/tokens";
@@ -17,6 +18,12 @@ interface Props {
 }
 
 export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalance, onGoToLibrary }: Props) {
+  const [isLoading, setIsLoading] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 300);
+    return () => clearTimeout(timer);
+  }, []);
+
   const [query, setQuery] = useState("");
   const [view, setView] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState<"recent" | "name" | "brand" | "status">("recent");
@@ -221,37 +228,45 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
         )}
 
         {/* Product list/grid */}
-        <div
-          className={cn(
-            view === "grid"
-              ? "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-              : "overflow-hidden rounded-xl border border-border bg-card divide-y divide-border",
-          )}
-        >
-          {view === "list" && products.length > 0 && (
-            <div className="hidden grid-cols-[minmax(320px,1.7fr)_minmax(420px,1fr)] items-center gap-6 bg-muted/40 px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:grid">
-              <p>Ürün</p>
-              <p>Detaylar</p>
-            </div>
-          )}
-
-          {products.map((p) => (
-            <ProductCard
-              key={p.id}
-              product={p}
-              selected={selectedIds.includes(p.id)}
-              onToggle={toggle}
-              view={view}
-              disabled={atLimit && !selectedIds.includes(p.id)}
-            />
-          ))}
-        </div>
-
-        {/* Empty search state */}
-        {products.length === 0 && (
-          <div className="rounded-xl border border-dashed bg-card p-12 text-center text-sm text-muted-foreground">
-            Aramanızla eşleşen ürün bulunamadı.
+        {isLoading ? (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <ProductCardSkeleton key={i} />
+            ))}
           </div>
+        ) : (
+          <>
+            <div
+              className={cn(
+                view === "grid"
+                  ? "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                  : "overflow-hidden rounded-xl border border-border bg-card divide-y divide-border",
+              )}
+            >
+              {view === "list" && products.length > 0 && (
+                <div className="hidden grid-cols-[minmax(320px,1.7fr)_minmax(420px,1fr)] items-center gap-6 bg-muted/40 px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:grid">
+                  <p>Ürün</p>
+                  <p>Detaylar</p>
+                </div>
+              )}
+              {products.map((p) => (
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  selected={selectedIds.includes(p.id)}
+                  onToggle={toggle}
+                  view={view}
+                  disabled={atLimit && !selectedIds.includes(p.id)}
+                />
+              ))}
+            </div>
+
+            {products.length === 0 && (
+              <div className="rounded-xl border border-dashed bg-card p-12 text-center text-sm text-muted-foreground">
+                Aramanızla eşleşen ürün bulunamadı.
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -261,6 +276,19 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
         tokenBalance={tokenBalance}
         onContinue={onContinue}
       />
+    </div>
+  );
+}
+
+function ProductCardSkeleton() {
+  return (
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <Skeleton className="h-36 w-full rounded-none" />
+      <div className="space-y-2 p-3">
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-3 w-1/2" />
+        <Skeleton className="h-3 w-1/3" />
+      </div>
     </div>
   );
 }
