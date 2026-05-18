@@ -5,8 +5,6 @@ import { StepIndicator } from "@/components/videos/StepIndicator";
 import { LibraryStep } from "@/components/videos/LibraryStep";
 import { SelectStep } from "@/components/videos/SelectStep";
 import { TemplateSelectionStep } from "@/components/videos/TemplateSelectionStep";
-import { GenerationProgressStep } from "@/components/videos/GenerationProgressStep";
-import { ReviewStep } from "@/components/videos/ReviewStep";
 import { GenerateReviewStep } from "@/components/videos/GenerateReviewStep";
 import { EditPromptStep } from "@/components/videos/EditPromptStep";
 import { ExportStep } from "@/components/videos/ExportStep";
@@ -28,8 +26,6 @@ type Stage =
   | "template"
   | "confirm"
   | "generate-review"
-  | "progress"
-  | "review"
   | "edit-prompt"
   | "export"
   | "success";
@@ -40,8 +36,6 @@ const stageToStep: Record<Stage, number> = {
   template: 2,
   confirm: 3,
   "generate-review": 4,
-  progress: 4,
-  review: 4,
   "edit-prompt": 4,
   export: 5,
   success: 5,
@@ -49,16 +43,14 @@ const stageToStep: Record<Stage, number> = {
 
 const getPreviousStage = (current: Stage): Stage | null => {
   switch (current) {
-    case "select":      return "library";
-    case "template":    return "select";
-    case "confirm":     return "template";
+    case "select":          return "library";
+    case "template":        return null;
+    case "confirm":         return null;
     case "generate-review": return null;
-    case "progress":    return null;
-    case "review":      return null;
-    case "edit-prompt": return "generate-review";
-    case "export":      return "generate-review";
-    case "success":     return null;
-    default:            return null;
+    case "edit-prompt":     return null;
+    case "export":          return null;
+    case "success":         return null;
+    default:                return null;
   }
 };
 
@@ -133,6 +125,18 @@ const Videos = () => {
 
   // ─── Handlers ──────────────────────────────────────────────────────────────
 
+  const resetCurrentCampaignState = () => {
+    setSelectedIds([]);
+    setApprovedIds([]);
+    setRejectedIds([]);
+    setVideoJobs([]);
+    setCampaignContext(DEFAULT_CAMPAIGN_CONTEXT);
+    setActiveFolderName("");
+    setActiveFolderId(null);
+    setNotifyOnComplete(false);
+    setEditingProductId(null);
+  };
+
   // Library → Select (or generate-review if pending snapshot exists)
   const handleOpenFolder = (folderId: string) => {
     const folder = folders.find((f) => f.id === folderId);
@@ -148,7 +152,7 @@ const Videos = () => {
     }
   };
 
-  const handleNewCampaign = () => setStage("select");
+  const handleNewCampaign = () => { resetCurrentCampaignState(); setStage("select"); };
 
   // Toggle folder active/draft status (3.1)
   const handleToggleFolderStatus = (id: string) => {
@@ -239,19 +243,6 @@ const Videos = () => {
     setStage("generate-review");
   };
 
-  // Progress → Review (save snapshot for 3.2)
-  const handleProgressComplete = () => {
-    const readyJobs = videoJobs.map((j) => ({ ...j, status: "ready" as const, videoUrl: SAMPLE_VIDEO }));
-    setVideoJobs(readyJobs);
-    if (activeFolderId) {
-      setFolderSnapshots((prev) => ({
-        ...prev,
-        [activeFolderId]: { jobs: readyJobs, productIds: selectedIds },
-      }));
-    }
-    setStage("review");
-  };
-
   // Review actions — mutually exclusive toggle
   const handleApprove = (productId: string) => {
     setApprovedIds((prev) =>
@@ -309,23 +300,15 @@ const Videos = () => {
 
   // Success → Library (start fresh)
   const handleAnother = () => {
-    setSelectedIds([]);
-    setApprovedIds([]);
-    setRejectedIds([]);
-    setVideoJobs([]);
+    resetCurrentCampaignState();
     setGuidedPrompt(DEFAULT_GUIDED_PROMPT);
-    setCampaignContext(DEFAULT_CAMPAIGN_CONTEXT);
-    setNotifyOnComplete(false);
-    setEditingProductId(null);
     setExportedFeeds([]);
-    setActiveFolderName("");
-    setActiveFolderId(null);
     setStage("library");
   };
 
   // ─── Layout helpers ─────────────────────────────────────────────────────────
 
-  const showStepBar = stage !== "library";
+  const showStepBar = stage !== "library" && stage !== "success";
   const previousStage = getPreviousStage(stage);
   const spentTokens = MOCK_TOKEN_BALANCE - tokenBalance;
 
@@ -438,28 +421,6 @@ const Videos = () => {
             onReject={handleReject}
             onEditPrompt={handleOpenEditPrompt}
             onGoToExport={handleGoToExport}
-          />
-        )}
-
-        {/* ── Phase 4: Generation Progress (legacy, unreachable) ────────────── */}
-        {stage === "progress" && (
-          <GenerationProgressStep
-            products={selectedProducts}
-            onComplete={handleProgressComplete}
-          />
-        )}
-
-        {/* ── Phase 5: Review ──────────────────────────────────────────────── */}
-        {stage === "review" && (
-          <ReviewStep
-            products={selectedProducts}
-            videoJobs={videoJobs}
-            approvedIds={approvedIds}
-            rejectedIds={rejectedIds}
-            onApprove={handleApprove}
-            onReject={handleReject}
-            onEditPrompt={handleOpenEditPrompt}
-            onContinue={handleGoToExport}
           />
         )}
 

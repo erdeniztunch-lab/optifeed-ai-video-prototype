@@ -354,15 +354,6 @@ function VideoReviewCard({
               <Check className="h-3.5 w-3.5" strokeWidth={3} />
               Onayla
             </button>
-            {videoUrl && (
-              <button
-                type="button"
-                onClick={onPreview}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition-all hover:border-primary/40 hover:text-primary"
-              >
-                Önizle
-              </button>
-            )}
             <button
               type="button"
               onClick={onEditPrompt}
@@ -399,6 +390,16 @@ function VideoReviewCard({
             className="mt-2 text-xs text-muted-foreground/60 hover:text-muted-foreground"
           >
             Reddi geri al
+          </button>
+        )}
+
+        {!isGenerating && videoUrl && (
+          <button
+            type="button"
+            onClick={onPreview}
+            className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition-all hover:border-primary/40 hover:text-primary"
+          >
+            Önizle
           </button>
         )}
       </div>
