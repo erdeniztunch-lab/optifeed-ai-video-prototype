@@ -155,7 +155,7 @@ export function GenerateReviewStep({
           {!allDone && <Sparkles className="h-5 w-5 text-primary" />}
           <h2 className="text-2xl font-semibold text-foreground">
             {allDone
-              ? "Videolar hazır — inceleme tamamlanınca gönderebilirsiniz"
+              ? "Videolar hazır. İnceleme tamamlanınca gönderebilirsiniz."
               : "Videolar üretiliyor..."}
           </h2>
         </div>

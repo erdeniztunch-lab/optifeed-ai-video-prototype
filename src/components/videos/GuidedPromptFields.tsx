@@ -68,14 +68,14 @@ export function GuidedPromptFields({ value, onChange }: GuidedPromptFieldsProps)
 
       {/* Custom theme free-text — collapsed by default */}
       {showNote || value.themeCustom ? (
-        <Field label="Serbest tema notu" hint="İsteğe bağlı — özel ifadeler, malzeme detayı, kampanya arka planı">
+        <Field label="Serbest tema notu" hint="İsteğe bağlı. Özel ifadeler, malzeme detayı, kampanya arka planı">
           <textarea
             autoFocus={showNote && !value.themeCustom}
             value={value.themeCustom}
             onChange={(e) => set("themeCustom", e.target.value)}
             maxLength={100}
             rows={2}
-            placeholder="Örn. süet, tokalı, babet — Dubai koleksiyonu için dinamik arka plan"
+            placeholder="Örn. süet, tokalı, babet; Dubai koleksiyonu için dinamik arka plan"
             className={cn(
               "w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground",
               "placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20",

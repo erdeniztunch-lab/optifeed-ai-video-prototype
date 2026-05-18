@@ -127,7 +127,7 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
           <button
             type="button"
             onClick={onGoToLibrary}
-            className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground"
+            className="flex shrink-0 items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
           >
             <FolderOpen className="h-3.5 w-3.5" />
             Kütüphane
