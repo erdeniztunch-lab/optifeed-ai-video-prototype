@@ -1,5 +1,24 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Check } from "lucide-react";
+import { Check, PartyPopper } from "lucide-react";
+
+const FIRST_CAMPAIGN_KEY = "has_completed_first_campaign";
+
+function readFirstCampaign(): boolean {
+  try {
+    return localStorage.getItem(FIRST_CAMPAIGN_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+function writeFirstCampaign() {
+  try {
+    localStorage.setItem(FIRST_CAMPAIGN_KEY, "true");
+  } catch {
+    // incognito / storage blocked — fail silently
+  }
+}
 
 interface Props {
   count: number;
@@ -9,6 +28,12 @@ interface Props {
 }
 
 export function SuccessStep({ count, exportedFeeds, onAnother, onViewProducts }: Props) {
+  const [isFirst] = useState(() => {
+    const first = !readFirstCampaign();
+    writeFirstCampaign();
+    return first;
+  });
+
   const channelText =
     exportedFeeds.length === 0
       ? "Taslak olarak kaydedildi"
@@ -33,6 +58,15 @@ export function SuccessStep({ count, exportedFeeds, onAnother, onViewProducts }:
           </p>
           <p>{channelText}</p>
         </div>
+
+        {isFirst && (
+          <div className="mt-5 flex items-start gap-2 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-left">
+            <PartyPopper className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+            <p className="text-sm text-foreground">
+              Bu senin ilk video kampanyan! Library&apos;den her zaman tekrar gözden geçirebilirsin.
+            </p>
+          </div>
+        )}
 
         <div className="mt-8 flex flex-col gap-2">
           <Button size="lg" onClick={onAnother}>
