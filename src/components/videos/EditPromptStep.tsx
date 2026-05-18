@@ -7,13 +7,39 @@ import { TOKEN_COST_PER_VIDEO } from "@/data/tokens";
 import { SECTOR_OPTIONS, THEME_OPTIONS, BACKGROUND_OPTIONS } from "@/data/guidedPromptOptions";
 import { type GuidedPrompt, type TemplateId } from "@/types/video-flow";
 
-const EXAMPLE_PROMPTS = [
-  "Süet, tokalı, babet — zarif ve minimal sunum",
-  "Siyah arka plan, dramatik aydınlatma, premium his",
-  "Lifestyle sahnesi, doğal ışık, soft renk paleti",
-  "Ürün dönerek gösterilsin, beyaz fon, temiz ve sade",
-  "Yaz teması, canlı renkler, enerjik tempo",
-  "Açık hava sahnesi, outdoor vibe, aktif kullanım",
+const PRESET_CATEGORIES = [
+  {
+    label: "Görsel stil",
+    presets: [
+      "Daha premium göster",
+      "Daha sade ve temiz yap",
+      "Daha enerjik bir stil dene",
+    ],
+  },
+  {
+    label: "Hareket",
+    presets: [
+      "Kamera hareketini yavaşlat",
+      "Ürüne daha yakın plan yap",
+      "Geçişleri daha yumuşak yap",
+    ],
+  },
+  {
+    label: "Arka plan",
+    presets: [
+      "Arka planı daha aydınlık yap",
+      "Daha minimal bir ortam kullan",
+      "Daha şehirli bir atmosfer oluştur",
+    ],
+  },
+  {
+    label: "Ürün odağı",
+    presets: [
+      "Ürünü daha belirgin göster",
+      "Ürün detaylarını daha fazla vurgula",
+      "Model yerine ürüne odaklan",
+    ],
+  },
 ];
 
 interface EditPromptStepProps {
@@ -41,10 +67,13 @@ export function EditPromptStep({
 
   const insufficient = tokenBalance < TOKEN_COST_PER_VIDEO;
 
-  const handleChipClick = (chip: string) => {
+  const handlePresetClick = (preset: string) => {
     setPromptText((prev) => {
-      if (prev.trim()) return `${prev.trim()}, ${chip.toLowerCase()}`;
-      return chip;
+      if (prev.toLowerCase().includes(preset.toLowerCase())) return prev;
+      const trimmed = prev.trim();
+      const next = trimmed ? `${trimmed}\n${preset}` : preset;
+      if (next.length > 200) return prev;
+      return next;
     });
   };
 
@@ -118,8 +147,46 @@ export function EditPromptStep({
         </div>
       </div>
 
+      {/* Preset categories */}
+      <div className="mb-5">
+        <p className="mb-3 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          <Sparkles className="h-3.5 w-3.5" />
+          Hazır düzenleme önerileri
+        </p>
+        <div className="flex flex-col gap-4">
+          {PRESET_CATEGORIES.map((cat) => (
+            <div key={cat.label}>
+              <p className="mb-1.5 text-[11px] font-medium text-muted-foreground/70">{cat.label}</p>
+              <div className="flex flex-wrap gap-1.5">
+                {cat.presets.map((preset) => {
+                  const isActive = promptText.toLowerCase().includes(preset.toLowerCase());
+                  return (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => handlePresetClick(preset)}
+                      className={cn(
+                        "rounded-full border px-3 py-1.5 text-xs font-medium transition-all",
+                        isActive
+                          ? "border-primary/50 bg-primary/10 text-primary"
+                          : "border-border bg-card text-muted-foreground hover:border-primary/30 hover:text-foreground",
+                      )}
+                    >
+                      {preset}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Free text area */}
-      <div className="mb-4">
+      <div className="mb-8">
+        <p className="mb-1.5 text-xs text-muted-foreground">
+          Kendi isteğinizi yazabilir veya hazır önerilerden birkaçını seçebilirsiniz.
+        </p>
         <textarea
           value={promptText}
           onChange={(e) => setPromptText(e.target.value)}
@@ -131,26 +198,6 @@ export function EditPromptStep({
         <p className="mt-1 text-right text-xs text-muted-foreground/60">
           {promptText.length} / 200
         </p>
-      </div>
-
-      {/* Example prompt chips */}
-      <div className="mb-8">
-        <p className="mb-2.5 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-          <Sparkles className="h-3.5 w-3.5" />
-          Örnek promptlar — eklemek için tıklayın
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {EXAMPLE_PROMPTS.map((chip) => (
-            <button
-              key={chip}
-              type="button"
-              onClick={() => handleChipClick(chip)}
-              className="rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground transition-all hover:border-primary/40 hover:text-foreground"
-            >
-              {chip}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* Cost confirmation */}
