@@ -58,39 +58,39 @@ export const TEMPLATES: TemplateDefinition[] = [
   },
   {
     id: "bahce-bulusmasi",
-    label: "Bahçe buluşması",
-    description: "Doğal açık hava ortamında samimi ürün kullanımı ve sosyal sahne.",
-    helperText: "Ev, bahçe ve outdoor ürünleri için",
+    label: "Günlük moda sahnesi",
+    description: "Günlük yaşam ortamında ürünü doğal şekilde sergileyen moda sahnesi.",
+    helperText: "Casual ve günlük moda kampanyaları için",
     previewImage:
       "https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=800&h=600&q=80",
     templateNote: "",
-    recommendedSectors: ["home", "food", "sports"],
+    recommendedSectors: ["fashion", "beauty"],
     details: {
       whenToUse:
-        "Ev, bahçe, outdoor ve sosyal kullanımı ön plana çıkarmak istediğinizde. Yaz ve doğa temalı kampanyalar.",
+        "Günlük ve casual moda ürünlerini doğal yaşam ortamında sergilemek istediğinizde. Açık hava temalı ve yaz koleksiyonu kampanyaları için uygundur.",
       strengths: [
-        "Sıcak ve samimi atmosfer",
-        "Grup kullanımı ve sosyal bağlamı güçlü gösterir",
-        "Ev ve yaşam kategorisi için ideal",
+        "Doğal ve sıcak atmosfer",
+        "Günlük yaşam bağlamında ürün görünürlüğü",
+        "Casual ve lifestyle moda kampanyaları için ideal",
       ],
-      avoid: "Teknoloji veya iş dünyasına yönelik ürünlerde bağlam uyumsuz kalır.",
+      avoid: "Lüks veya premium görsel dil gerektiren kampanyalar için uygun değil.",
     },
   },
   {
     id: "product-spotlight",
-    label: "Product spotlight",
-    description: "Ürün odaklı, performans kampanyaları için temiz format.",
-    helperText: "İndirim olmadığında en iyi tercih",
+    label: "Ürün odak sahnesi",
+    description: "Ürünü ön plana çıkaran sade ve temiz moda sunum sahnesi.",
+    helperText: "Ürün detayını ön plana çıkaran kampanyalar için",
     previewImage:
       "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&h=600&q=80",
     templateNote: "",
-    recommendedSectors: [],
+    recommendedSectors: ["fashion", "beauty", "jewelry"],
     details: {
       whenToUse:
-        "Ürünü ön plana çıkarmak istediğinizde. İndirim veya acil mesaj olmayan kampanyalarda idealdir.",
+        "Tekstil ve moda ürününü sade ve dikkat çekici şekilde sergilemek istediğinizde. Katalog ve retargeting kampanyalarında güçlü.",
       strengths: [
         "Ürün detayını net ve sade gösterir",
-        "Katalog ve retargeting kampanyaları için güçlü",
+        "Tekstil ve moda için katalog ve retargeting kampanyalarında güçlü",
         "Dikkat dağıtmayan temiz kompozisyon",
       ],
       avoid: "Fiyat odaklı veya aciliyet içeren kampanyalarda yetersiz kalır.",

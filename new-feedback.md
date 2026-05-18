@@ -3450,7 +3450,420 @@ The lowest-risk, highest-value candidates share a profile: pure copy or pure dat
 
 ---
 
-## 18. MFX0 — Implementation Plan: Communication Safety Fixes
+## 19. MFX1 — Decision Plan: Template Copy and Textile Alignment
+
+### 19.1 Purpose
+
+MFX0 fixed communication safety gaps: it made the AI/DC product boundary visible, corrected the ZIP toast, and echoed the template description in the Confirm step. These were pure copy changes touching no data.
+
+MFX1 is the next evaluation layer. It asks whether the template data itself — the labels and descriptions that users read at the highest-stakes pre-commitment screen in the flow — should be updated to better align with marketing's textile-focused positioning.
+
+This decision is more sensitive than MFX0 because template copy appears in two places simultaneously: on the TemplateCard face (template selection screen) and in the ConfirmStep (via the description echo added in MFX0, line 119 of ConfirmStep.tsx). Any copy change will propagate to both locations. Richer copy that is unsupported by the sample video creates a visible credibility gap at the moment the user previews generated output.
+
+MFX1 does not change the TemplateSelectionStep component, does not add hover preview, does not touch routing or state logic, and does not add duration or choreography promises. The only permitted changes are to `src/data/templates.ts` — the label, description, helperText, previewImage URL, recommendedSectors, and details fields for up to four templates.
+
+**The central question for MFX1 is:** Can the template copy be made more textile-relevant and more output-predictive without creating a mismatch between what the copy promises and what the static sample video actually shows?
+
+---
+
+### 19.2 Problems MFX1 May Address
+
+**Problem 1 — Template descriptions are atmospheric, not output-oriented**
+
+The current descriptions describe mood or vibe, not what the video will show. "Şehir vitrininde ürünle etkileşen gerçekçi lifestyle sahnesi" tells the user the atmosphere; it does not tell them whether the garment will be visible, how the model moves, or what a reviewer will see when approving the video. Marketing explicitly asked for descriptions that function as scenario previews, not taglines.
+
+MFX1 opportunity: Enrich descriptions to include one output-oriented phrase — what the viewer will see — without specifying exact choreography the sample video cannot demonstrate.
+
+---
+
+**Problem 2 — Two of four templates are off-sector for textile**
+
+"Bahçe buluşması" lists `recommendedSectors: ["home", "food", "sports"]`. "Product spotlight" lists `recommendedSectors: []`. A textile merchant browsing the template screen sees two templates clearly built for their category (vitrine, Paris) and two that do not signal textile relevance. The textile-first positioning marketing requested requires all four templates to feel compatible with fashion and clothing campaigns.
+
+MFX1 opportunity: Update sector tags, labels, and descriptions for both off-sector templates so the entire grid communicates textile relevance.
+
+---
+
+**Problem 3 — Marketing wants concrete, script-like scenario names**
+
+Marketing described desired template names as creative and evocative — "mağaza yazan kız" — that communicate a physical scenario before the user opens any detail. The current "Bahçe buluşması" and "Product spotlight" do not communicate a textile scenario to a fashion merchant. "Product spotlight" is in English, which is an additional inconsistency in an otherwise Turkish UI.
+
+MFX1 opportunity: Evaluate whether label updates for the two off-sector templates create clearer textile scenario framing. Any rename must use the same previewImage (or a compatible Unsplash replacement) and cannot introduce copy that the sample video cannot support.
+
+---
+
+**Problem 4 — The prototype must not promise exact choreography, location, or duration**
+
+Marketing asked for pause moments, 180-degree turns, specific durations, multi-angle coverage, and Bağdat Caddesi-level location specificity. None of these can be added to template copy because the sample video (`SAMPLE_VIDEO`) is a fixed generic MP4 that cannot demonstrate any of these behaviors. Adding such copy would create a foreseeable mismatch during demo.
+
+MFX1 constraint: This is a hard boundary. Any copy that could be read as a choreography or location promise is prohibited regardless of which option is chosen.
+
+---
+
+**Problem 5 — Template selection is the highest pre-commitment confidence screen**
+
+Every decision made on the template selection screen — including which template to select — determines what the user generates with their tokens. A user who selects a template they do not fully understand may generate unsuitable output and lose token value. The template card description is the primary information source at this moment. It must be accurate and predictive, not aspirational or vague.
+
+MFX1 opportunity: Each template description, after any update, must allow a user to form a reasonable mental picture of what their generated video will show. It must not create expectations the sample video cannot meet.
+
+---
+
+### 19.3 Current Template Audit
+
+Source file: `src/data/templates.ts` (read-only for this audit)
+
+---
+
+#### Template 1 — vitrine-bakan-kadin
+
+| Field | Value |
+|-------|-------|
+| ID | `vitrine-bakan-kadin` |
+| Label | "Vitrine bakan kadın" |
+| Description | "Şehir vitrininde ürünle etkileşen gerçekçi lifestyle sahnesi." |
+| helperText | "Mağaza deneyimi hissi yaratan kampanyalar için" |
+| recommendedSectors | `["fashion", "beauty", "jewelry"]` |
+| previewImage | Unsplash `1483985988355-763728e1935b` — woman in a clothing store environment |
+
+**Sector fit:** Textile — correctly tagged for fashion/beauty/jewelry. The label and scenario are clearly textile-relevant.
+
+**Description assessment:** Atmospheric but not output-specific. "Vitrininde etkileşen" implies the model is near or looking at a shop window. It does not specify whether the garment is visible, whether there is any model motion, or what the reviewer will see when watching the video. This is a mild copy gap, not a structural problem.
+
+**PreviewImage fit:** High. The Unsplash image shows a woman in a clothing retail environment. It matches the scenario label.
+
+**Demo credibility risk:** Low. The label and description do not make specific choreography promises. The previewImage is appropriate. The sample video (generic lifestyle) is consistent with "lifestyle sahnesi" framing.
+
+**Recommendation:** Stay as-is, or receive a minimal description polish. No label change needed. No sector change needed. The description could gain one output-oriented phrase (e.g., noting that the garment is the visual focal point) without overpromising.
+
+---
+
+#### Template 2 — paris-yuruyen-kadin
+
+| Field | Value |
+|-------|-------|
+| ID | `paris-yuruyen-kadin` |
+| Label | "Paris'te yürüyen kadın" |
+| Description | "Premium şehir atmosferinde ürünü taşıyan model ile zarif sunum." |
+| helperText | "Lüks ve lifestyle markalar için ideal" |
+| recommendedSectors | `["fashion", "beauty", "jewelry"]` |
+| previewImage | Unsplash `1502602898657-3e91760cbb34` — Paris street scene |
+
+**Sector fit:** Textile — correctly tagged for fashion/beauty/jewelry. Clearly appropriate for a fashion merchant.
+
+**Description assessment:** "Premium şehir atmosferinde ürünü taşıyan model" — atmospheric, non-specific. Does not promise exact location, choreography, or duration. Safe from a copy standpoint.
+
+**PreviewImage fit:** Medium-high. The Unsplash image shows a Paris street scene. It visually matches the label. However, it shows a location, not a garment — which means it is atmosphere-setting rather than output-representative. This is pre-existing and not worsened by MFX1.
+
+**Pre-existing credibility note:** The label "Paris'te yürüyen kadın" already implies a Paris location that the sample video does not demonstrate. This is a pre-existing credibility risk established before MFX0. MFX1 should not worsen it. Adding more Paris-specific detail (e.g., naming streets or landmarks) would be prohibited. The current description is already appropriately vague about location.
+
+**Demo credibility risk:** Medium (pre-existing). The "Paris" label implies a location. The sample video is not filmed in Paris. This risk exists whether or not MFX1 is implemented. MFX1 must not add any further location specificity.
+
+**Recommendation:** Stay as-is. The sector and label are appropriate. The description does not make dangerous promises. A minimal copy polish (replacing "zarif sunum" with something more output-oriented) is acceptable but not required.
+
+---
+
+#### Template 3 — bahce-bulusmasi
+
+| Field | Value |
+|-------|-------|
+| ID | `bahce-bulusmasi` |
+| Label | "Bahçe buluşması" |
+| Description | "Doğal açık hava ortamında samimi ürün kullanımı ve sosyal sahne." |
+| helperText | "Ev, bahçe ve outdoor ürünleri için" |
+| recommendedSectors | `["home", "food", "sports"]` |
+| previewImage | Unsplash `1525351484163-7529414344d8` — outdoor social gathering scene |
+
+**Sector fit:** Not textile. `recommendedSectors` explicitly targets home, food, and sports. The label, helperText, and description all describe an outdoor social gathering context — not a fashion or clothing context. A textile merchant browsing the template grid will find this template irrelevant to their campaign.
+
+**Description assessment:** The description is accurate for what it promises — a natural outdoor scene, social context, lifestyle — but it is not a textile scenario. The word "ürün kullanımı" is generic enough to technically apply to anything, but the framing around "bahçe" and "sosyal sahne" points toward food, home, or outdoor lifestyle categories.
+
+**PreviewImage fit:** For its current scenario: Medium. The Unsplash image shows an outdoor social gathering. It fits "bahçe buluşması" but does not show clothing as the visual focal point. If the template is renamed and repositioned for textile, this image would need to be evaluated — an outdoor social scene with visible clothing could work for a "casual outdoor fashion" scenario, but the current image does not obviously feature a clothing product.
+
+**Demo credibility risk:** Low for current content (the description matches the scenario). Medium if repositioned for textile without updating the previewImage — the outdoor gathering image would look inconsistent with a textile description.
+
+**Recommendation:** This template requires a decision. Three sub-options exist:
+
+- **Sub-option B1:** Rename and redescribe as a casual outdoor/lifestyle textile scene (e.g., "Dışarıda vakit geçiren model" or a similar phrase). Keep the current previewImage if the outdoor social scene can plausibly represent a model wearing clothing in a natural setting. Update `recommendedSectors` to include `"fashion"`. Update `helperText` to reflect textile use. This is the lowest-effort path.
+
+- **Sub-option B2:** Rename and redescribe, and update `previewImage` to an Unsplash image that shows a model wearing clothing outdoors. Still a data-only change. Increases the number of changed fields but produces a more visually coherent template card.
+
+- **Sub-option Defer:** Leave this template as-is for now, accept that it targets a different sector, and flag it for a future decision. This accepts the TS-02 issue as unresolved and limits MFX1 to only "product-spotlight".
+
+---
+
+#### Template 4 — product-spotlight
+
+| Field | Value |
+|-------|-------|
+| ID | `product-spotlight` |
+| Label | "Product spotlight" |
+| Description | "Ürün odaklı, performans kampanyaları için temiz format." |
+| helperText | "İndirim olmadığında en iyi tercih" |
+| recommendedSectors | `[]` |
+| previewImage | Unsplash `1512436991641-6745cdb1723f` — clothing rack/garment display |
+
+**Sector fit:** Generic — `recommendedSectors` is empty. The template is positioned as a neutral, format-agnostic option. However, the previewImage shows a clothing rack or garment display, which is actually well-suited for textile use. There is a mismatch between the empty sector tags and the visually textile-appropriate previewImage.
+
+**Description assessment:** "Ürün odaklı, performans kampanyaları için temiz format" — accurate and appropriately generic. Does not promise choreography or location. Safe from a copy standpoint.
+
+**Label assessment:** "Product spotlight" is in English. This is the only English label in an otherwise Turkish UI. It creates a minor inconsistency in a product where all other labels are Turkish. Renaming to Turkish (e.g., "Ürün odak sahnesi" or "Ürün showcase") is a low-risk option.
+
+**PreviewImage fit:** High for textile. The Unsplash image appears to show garments or a clothing display. This is actually the most texturally accurate previewImage in the entire template set for a textile "detail shot" style template.
+
+**Demo credibility risk:** Low. The description makes no specific visual promises. The previewImage supports a clothing/garment context. Updating sector tags to include `"fashion"` and making the description slightly more textile-explicit would be low-risk.
+
+**Recommendation:** This is the easiest MFX1 candidate. Adding `"fashion"` to `recommendedSectors`, translating the label to Turkish, and making the description slightly more textile-oriented are all low-risk data changes. The previewImage already supports textile use.
+
+---
+
+#### Audit Summary Table
+
+| Template | Sector fit | PreviewImage fit for textile | Demo credibility risk | MFX1 recommendation |
+|----------|-----------|------------------------------|----------------------|---------------------|
+| vitrine-bakan-kadin | Textile | High | Low | Stay or minimal polish |
+| paris-yuruyen-kadin | Textile | Medium (pre-existing Paris risk) | Medium (pre-existing) | Stay as-is |
+| bahce-bulusmasi | Not textile | Low-Medium | Medium if repositioned | Requires decision (B1, B2, or Defer) |
+| product-spotlight | Generic | High | Low | Easy update: Turkish label, sector tag, minor description |
+
+---
+
+### 19.4 Decision Options
+
+---
+
+#### Option A — Minimal copy polish
+
+**Description:**
+Make only the smallest defensible improvements to the two on-sector templates (vitrine, Paris). Leave both off-sector templates (bahce, product-spotlight) unchanged. No label renames. No sector changes. No previewImage updates.
+
+Concretely, this means only: adding one output-oriented phrase to "vitrine-bakan-kadin" and/or "paris-yuruyen-kadin" descriptions. For example, clarifying that the garment is the visual focal point in the scene.
+
+**Pros:**
+- Lowest possible regression risk
+- No previewImage changes
+- No sector tag changes
+- No label changes
+- Every field that changes is a pure string update
+- Cannot break any component behavior since the data schema is unchanged
+
+**Cons:**
+- Does not address TS-02 (off-sector templates)
+- "Bahçe buluşması" and "Product spotlight" remain non-textile in positioning
+- Marketing's request for textile-first template library remains unresolved
+- MFX0's template description echo in ConfirmStep will echo descriptions that may still feel generic
+
+**Risk level:** Very low.
+
+**Verdict:** Safe but incomplete. Acceptable if the decision is to defer textile alignment entirely.
+
+---
+
+#### Option B — Textile alignment without heavy scenario promises
+
+**Description:**
+Update all four templates so the entire grid communicates textile relevance. The two on-sector templates (vitrine, Paris) receive minimal polish. The two off-sector templates (bahce, product-spotlight) receive more substantial updates: label, description, helperText, and recommendedSectors changes. PreviewImage updates are permitted where the current image creates a credibility mismatch with a renamed textile scenario.
+
+Option B has two sub-options, differing only on how to handle "bahce-bulusmasi":
+
+**Option B1 (lean):** Rename "Bahçe buluşması" to a casual outdoor textile scenario (e.g., "Açık havada model") and update its description and sector tags. Keep the current previewImage if the outdoor scene can plausibly represent a model in clothing. No image URL change needed.
+
+**Option B2 (thorough):** Same as B1, but also update the previewImage URL for "bahce-bulusmasi" to a clothing-in-outdoor-context Unsplash image. Ensures the card face is visually coherent with the new scenario.
+
+**What "Product spotlight" becomes:** Translate label to Turkish (e.g., "Ürün odak sahnesi"), add `"fashion"` to `recommendedSectors`, and update description to be slightly more textile-explicit. Keep existing previewImage (already fits).
+
+**Pros:**
+- All four templates feel textile-relevant
+- Marketing's textile-first positioning request is addressed
+- Descriptions remain concise and non-overpromising
+- No component changes
+- No new states
+- No flow changes
+- Existing ConfirmStep echo still works (template descriptions are still short, not multi-paragraph)
+- PreviewImages can be updated as Unsplash URL strings (data-only)
+
+**Cons:**
+- Requires content decisions for two templates (what exactly to call "bahce-bulusmasi" replacement, what description to use)
+- Slightly more fields changing than Option A
+- PreviewImage URL changes in B2 require sourcing appropriate Unsplash IDs
+- The "bahce-bulusmasi" ID will remain even if the label changes — this is an internal identifier, not user-visible, so it is acceptable
+
+**Risk level:** Low. All changes remain in `templates.ts`. No component logic is affected.
+
+**Verdict:** This is the recommended path if the content decisions are clear and the copy stays within the prohibited boundaries.
+
+---
+
+#### Option C — Full script-style descriptions
+
+**Description:**
+Rewrite each template with richer, multi-sentence scenario descriptions that describe model behavior, scene setting, shot direction, and garment angles — matching marketing's literal feedback from Items 1, 2, and 3.
+
+For example: "Model alışveriş caddesinde ürünü giyerek ilerliyor. Vitrin önünde duraksıyor, giysiyi ön ve arka açıdan gösteriyor. Kısa bir duraklamayla kıyafet detayları ve kumaş görünümü net biçimde ortaya çıkıyor."
+
+**Pros:**
+- Closest to what marketing literally asked for
+- Creates the strongest sense of a concrete, predictable scenario
+- Most compelling demo copy if assets match
+
+**Cons:**
+- The sample video is a fixed generic MP4. It does not show a model stopping at a shop window, turning 180 degrees, or showing the garment from front and back. This description would immediately contradict the generated video preview.
+- Specific behaviors ("duraksıyor", "ön ve arka açıdan") that the video does not demonstrate would be visible to any demo observer who watches the output.
+- Richer copy on the template card face makes the TemplateCard heavier — visual balance of the 2×2 grid would shift.
+- The Confirm screen description echo would also display this longer copy, making the Confirm step more text-heavy.
+- The risk of creating a credibility gap is high enough to actively damage demo confidence.
+
+**Risk level:** High.
+
+**Verdict:** Do not implement Option C at this time. The sample video cannot support scenario-specific choreography promises. If scenario-specific preview video assets are produced for each template in the future, Option C can be revisited.
+
+---
+
+### 19.5 Recommendation
+
+**Recommended: Option B1 as the primary path, with Option A as a fallback.**
+
+**Why Option B1 over B2:**
+The previewImage for "bahce-bulusmasi" (`photo-1525351484163-7529414344d8`) shows an outdoor social scene that could plausibly represent a model in casual fashion clothing — if the label and description frame it as a lifestyle/outdoor fashion scenario rather than a home-and-garden context. Updating the image URL (B2) is a valid improvement but adds a sourcing dependency (finding the right Unsplash image) and slightly expands scope. B1 is implementable with only text field changes.
+
+If, after reviewing the previewImage, it is judged too visually mismatched for a textile scenario (e.g., food or garden items are prominently featured rather than people and clothing), then B2 becomes necessary.
+
+**Why not Option C:**
+The sample video is the hard constraint. Option C's value depends entirely on having video assets that match its promises. Until those assets exist, the richer descriptions damage credibility rather than building it. Every sentence added about "turning" or "pausing" becomes a question mark when the generated video shows none of that.
+
+**Why not Option A only:**
+Option A leaves two of four templates in the off-sector state that marketing explicitly flagged. The textile-first positioning is one of marketing's highest-stated priorities (Item 6, Items 1 and 6 together in TS-02). Doing nothing about "bahce-bulusmasi" and "product-spotlight" means the template selection screen still signals mixed-sector intent to a textile merchant. Given that the fix is a data-only change, the risk-to-value ratio favors doing it.
+
+**Condition for recommendation:** Option B1 is appropriate only if the descriptions for the updated templates stay within the copy safety rules in Section 19.6. The update must not introduce any choreography promises, location promises, duration claims, or multi-image claims. If safe, concise textile-compatible descriptions cannot be written for the two off-sector templates, revert to Option A.
+
+---
+
+### 19.6 Copy Safety Rules for MFX1
+
+These rules are absolute. Any copy that violates them must not be included in MFX1, regardless of which option is chosen.
+
+1. **No em dash.** The character "—" must not appear in any user-facing string in `templates.ts`. Use a period, comma, or colon instead.
+
+2. **No "8-10 saniye" or any duration claim.** Duration copy is blocked until the sample video duration is measured and confirmed to fall within the stated range.
+
+3. **No location specificity beyond what the label already states.** The "Paris'te yürüyen kadın" label already implies Paris — do not add further Paris references to the description. Do not add "Bağdat Caddesi" or any other named street, neighborhood, or city to any description.
+
+4. **No "180 derece," "ön ve arka açı," "duraklamalı," or any specific choreography claim.** These behaviors must be demonstrated by the sample video before they can be stated in copy.
+
+5. **No "model duraksıyor," "kameraya döner," or any specific motion direction.** Same rule — motion copy must be observable in the output.
+
+6. **No multi-image AI claim.** Do not add "ürünün tüm görselleri kullanılır" or any wording that implies the AI backend processes multiple product images.
+
+7. **No real AI generation claim.** Do not add "gerçek zamanlı üretim," "yapay zeka sahneyi öğreniyor," or any copy that implies live model training.
+
+8. **No raw prompt text.** Template descriptions are user-facing scenario summaries, not AI prompt text. Do not expose prompt-style syntax.
+
+9. **No multi-paragraph descriptions.** Each template description must remain a single sentence of 15 words or fewer, or at most two short sentences totaling under 25 words. The MFX0 ConfirmStep echo renders the full description in a compact muted line — long descriptions would overflow this layout.
+
+10. **Keep template count at exactly 4.** Do not add new templates. Do not remove templates.
+
+11. **Do not redesign TemplateSelectionStep.tsx.** The component is untouched by MFX1.
+
+12. **Do not add hover preview.** No video autoplay, no animated GIFs, no video element added to TemplateCard.
+
+13. **Do not change flow or state logic.** `recommendedSectors` changes may affect which templates show the "Önerilen" badge — this is expected and acceptable, not a state logic change.
+
+14. **Template IDs must remain stable.** `vitrine-bakan-kadin`, `paris-yuruyen-kadin`, `bahce-bulusmasi`, `product-spotlight` are used as `TemplateId` type values elsewhere in the codebase. Renaming IDs would require changes in `src/types/video-flow.ts` and potentially in `Videos.tsx`. This is out of scope for MFX1.
+
+---
+
+### 19.7 Proposed MFX1 Scope if Approved
+
+If Option B1 is approved, MFX1 is a single-file change to `src/data/templates.ts` only.
+
+**Permitted changes:**
+
+| Template | Fields that may change | Fields that must stay stable |
+|----------|------------------------|------------------------------|
+| vitrine-bakan-kadin | `description` (light polish only) | `id`, `label`, `previewImage`, `recommendedSectors` |
+| paris-yuruyen-kadin | `description` (light polish or no change) | `id`, `label`, `previewImage`, `recommendedSectors` |
+| bahce-bulusmasi | `label`, `description`, `helperText`, `recommendedSectors`, `details.*`, optionally `previewImage` (B2 only) | `id` |
+| product-spotlight | `label` (Turkish rename), `description` (minor), `recommendedSectors` (add `"fashion"`) | `id`, `previewImage` |
+
+**Not permitted in MFX1:**
+
+- New component files
+- New screen or step
+- Hover preview or any video element
+- Duration copy (`8-10 saniye` or any range)
+- Specific choreography copy
+- Multi-image AI claim
+- Backend or API changes
+- Real AI generation
+- Large component rewrite
+- Template ID changes
+
+**Downstream effects to verify:**
+
+The `isRecommended` logic in `TemplateSelectionStep.tsx` checks `tpl.recommendedSectors.includes(campaignContext.sector)`. If `"fashion"` is added to `product-spotlight.recommendedSectors` and `bahce-bulusmasi.recommendedSectors`, and if a user enters the flow with `sector === "fashion"`, more templates will show the "Önerilen" badge. This is expected and correct behavior — it is not a regression. No component change is needed to support this.
+
+The MFX0 description echo in `ConfirmStep.tsx` (line 119) renders `templateDef.description`. Any description update in MFX1 will automatically appear in the Confirm step. This is the intended behavior, established by MFX0. Descriptions must be appropriate for both the template card and the Confirm step context.
+
+---
+
+### 19.8 Acceptance Criteria for a Future MFX1 Implementation
+
+**Sector alignment**
+- [ ] All 4 templates have `recommendedSectors` that includes `"fashion"` or `"clothing"`
+- [ ] No template description frames a non-textile context as the primary use case
+
+**Copy safety**
+- [ ] No em dash character in any changed field
+- [ ] No duration claim in any changed field
+- [ ] No location name beyond what the label already contains
+- [ ] No specific choreography claim (turning, pausing, angle)
+- [ ] No multi-image AI claim
+- [ ] Each description is 15 words or fewer (or two sentences totaling under 25 words)
+
+**Structural stability**
+- [ ] Template IDs unchanged: `vitrine-bakan-kadin`, `paris-yuruyen-kadin`, `bahce-bulusmasi`, `product-spotlight`
+- [ ] Template count remains exactly 4
+- [ ] `TemplateSelectionStep.tsx` not modified
+- [ ] `ConfirmStep.tsx` not modified (description echo already in place from MFX0)
+- [ ] `Videos.tsx` not modified
+- [ ] No new component files
+
+**Rendering verification**
+- [ ] TemplateCard grid layout unchanged after description updates (no overflow, no text truncation issues)
+- [ ] ConfirmStep description echo renders new descriptions without layout shift
+- [ ] "Önerilen" badge appears on updated templates for `fashion` sector campaigns (expected behavior)
+- [ ] PreviewImage renders correctly for any updated template (no broken image URLs)
+
+**Build and lint**
+- [ ] `npm run build` passes with 0 errors
+- [ ] `npm run lint` introduces 0 new issues beyond the established baseline of 11
+
+---
+
+### 19.9 MFX1 Decision Summary
+
+**Recommended option:** Option B1
+
+**Why:**
+Seven of fifteen feedback items are already aligned. MFX0 closed the highest-severity communication gaps. The remaining structural gap is that two of four templates target non-textile sectors, weakening the textile-first product positioning that marketing considers central to the MVP. Option B1 addresses this with a data-only change to `templates.ts` — the smallest scope that actually resolves the issue.
+
+Option A is too conservative for the effort involved: the change is minimal but leaves the most visible product positioning gap unaddressed. Option C carries too much credibility risk given the fixed sample video. Option B1 sits at the right point: meaningful alignment improvement, minimal risk, no component changes.
+
+**What should be implemented if approved:**
+1. "Product spotlight" — translate label to Turkish, add `"fashion"` to `recommendedSectors`, minor description update. Low risk, pre-existing previewImage already fits.
+2. "Bahçe buluşması" — rename label, update description, update helperText, update `recommendedSectors` to include `"fashion"`. Evaluate whether current previewImage is visually compatible with a casual outdoor textile scenario. If compatible, no image change needed (B1). If not, identify an appropriate Unsplash replacement (B2).
+3. "Vitrine bakan kadın" and "Paris'te yürüyen kadın" — stay as-is or receive description-only light polish. No label or sector changes.
+
+**What should stay deferred:**
+- Duration copy (TS-03 / SOL-12) — blocked on sample video duration measurement
+- Hover preview (TS-06 / SOL-13) — blocked on scenario-specific video assets
+- Choreography language in descriptions — blocked on sample video capability
+- Specific location names (Bağdat Caddesi, etc.) — blocked on asset support
+
+**Is MFX1 worth doing before a demo?**
+
+Yes, with one qualification. If the demo is for a textile/fashion merchant or involves a reviewer who understands the textile sector, seeing "Bahçe buluşması (Ev, bahçe ve outdoor ürünleri için)" in the template grid will immediately communicate that the product is not built specifically for textile. This undermines the central marketing claim. The fix is one data file with a few string changes. The cost of the fix is low; the cost of leaving it in during a textile demo is high.
+
+If the demo is for a general audience or internal team only, the urgency is lower. But given that MFX0 is already complete and the next step is clearly the template data, MFX1 is worth doing promptly. — Implementation Plan: Communication Safety Fixes
 
 ### 18.1 Scope
 
