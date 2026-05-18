@@ -18,6 +18,7 @@ import { MOCK_TOKEN_BALANCE, TOKEN_COST_PER_VIDEO, SAMPLE_VIDEO } from "@/data/t
 import { type GuidedPrompt, DEFAULT_GUIDED_PROMPT, type VideoJob, type TemplateId, type CampaignContext, DEFAULT_CAMPAIGN_CONTEXT } from "@/types/video-flow";
 import { ArrowLeft } from "lucide-react";
 import { CampaignNameModal } from "@/components/videos/CampaignNameModal";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 // ─── Stage machine ────────────────────────────────────────────────────────────
 
@@ -54,7 +55,7 @@ const getPreviousStage = (current: Stage): Stage | null => {
     case "generate-review": return null;
     case "progress":    return null;
     case "review":      return null;
-    case "edit-prompt": return "review";
+    case "edit-prompt": return "generate-review";
     case "export":      return "generate-review";
     case "success":     return null;
     default:            return null;
@@ -109,6 +110,9 @@ const Videos = () => {
 
   // ── Notification preference (set at ConfirmStep) ───────────────────────────
   const [notifyOnComplete, setNotifyOnComplete] = useState(false);
+
+  // ── Exit confirmation dialog ────────────────────────────────────────────────
+  const [exitConfirmOpen, setExitConfirmOpen] = useState(false);
 
   // ── Campaign context (design.md v2 fields — populated by CampaignSetupModal in Phase 1) ──
   const [campaignContext, setCampaignContext] = useState<CampaignContext>(DEFAULT_CAMPAIGN_CONTEXT);
@@ -354,11 +358,8 @@ const Videos = () => {
               </div>
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => {
-                    if (window.confirm("İlerlemeniz kaybolacak. Çıkmak istediğinize emin misiniz?")) {
-                      setStage("library");
-                    }
-                  }}
+                  type="button"
+                  onClick={() => setExitConfirmOpen(true)}
                   className="text-sm font-medium text-muted-foreground hover:text-foreground"
                 >
                   Çıkış
@@ -494,6 +495,16 @@ const Videos = () => {
           />
         )}
 
+        {/* ── Exit confirmation ─────────────────────────────────────────────── */}
+        <ConfirmDialog
+          open={exitConfirmOpen}
+          title="Akıştan çıkılsın mı?"
+          description="İlerlemeniz kaybolacak. Devam etmek istediğinizden emin misiniz?"
+          confirmLabel="Çıkış yap"
+          cancelLabel="Vazgeç"
+          onConfirm={() => { setExitConfirmOpen(false); setStage("library"); }}
+          onCancel={() => setExitConfirmOpen(false)}
+        />
       </div>
     </AppShell>
   );

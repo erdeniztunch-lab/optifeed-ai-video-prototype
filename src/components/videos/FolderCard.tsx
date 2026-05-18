@@ -4,6 +4,9 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { type VideoFolder } from "@/data/folders";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface FolderCardProps {
   folder: VideoFolder;
@@ -30,6 +33,8 @@ export function FolderCard({
 }: FolderCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [renameValue, setRenameValue] = useState("");
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -57,30 +62,56 @@ export function FolderCard({
 
   const handleRenameClick = (e: React.MouseEvent) => {
     closeAndRun(e, () => {
-      const newName = window.prompt("Yeni kampanya adı:", folder.name);
-      if (newName && newName.trim() && newName.trim() !== folder.name) {
-        onRename?.(newName.trim());
-      }
+      setRenameValue(folder.name);
+      setRenameOpen(true);
     });
+  };
+
+  const handleRenameSave = () => {
+    const trimmed = renameValue.trim();
+    if (trimmed && trimmed !== folder.name) {
+      onRename?.(trimmed);
+    }
+    setRenameOpen(false);
   };
 
   const handleDeleteClick = (e: React.MouseEvent) => {
     closeAndRun(e, () => setDeleteOpen(true));
   };
 
-  // ── Shared confirm dialog ─────────────────────────────────────────────────────
+  // ── Shared dialogs ────────────────────────────────────────────────────────────
 
   const confirmDialog = (
-    <ConfirmDialog
-      open={deleteOpen}
-      title="Kampanyayı sil"
-      description={`"${folder.name}" kalıcı olarak silinecek. Bu işlem geri alınamaz.`}
-      confirmLabel="Sil"
-      cancelLabel="İptal"
-      confirmVariant="destructive"
-      onConfirm={() => { onDelete?.(); setDeleteOpen(false); }}
-      onCancel={() => setDeleteOpen(false)}
-    />
+    <>
+      <ConfirmDialog
+        open={deleteOpen}
+        title="Kampanyayı sil"
+        description={`"${folder.name}" kalıcı olarak silinecek. Bu işlem geri alınamaz.`}
+        confirmLabel="Sil"
+        cancelLabel="İptal"
+        confirmVariant="destructive"
+        onConfirm={() => { onDelete?.(); setDeleteOpen(false); }}
+        onCancel={() => setDeleteOpen(false)}
+      />
+      <Dialog open={renameOpen} onOpenChange={(o) => !o && setRenameOpen(false)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Kampanyayı yeniden adlandır</DialogTitle>
+          </DialogHeader>
+          <Input
+            autoFocus
+            value={renameValue}
+            onChange={(e) => setRenameValue(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && renameValue.trim() && handleRenameSave()}
+            placeholder="Kampanya adı"
+          />
+          <DialogFooter className="mt-2">
+            <Button variant="outline" onClick={() => setRenameOpen(false)}>Vazgeç</Button>
+            <Button disabled={!renameValue.trim()} onClick={handleRenameSave}>Kaydet</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 
   // ── setup_in_progress variant ─────────────────────────────────────────────────
