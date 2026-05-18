@@ -958,13 +958,7 @@ type FolderStatus = "active" | "draft" | "archived" | "setup_in_progress"
 // GenerateReviewStep'te: tüm üretim bitince new Notification(...)
 ```
 
-#### 8f — Klavye Kısayolları (G-21)
-```tsx
-// useKeyboardShortcuts hook: A (approve), R (reject), E (edit), Space (play/pause)
-// GenerateReviewStep'te aktif, modal açıkken devre dışı
-```
-
-#### 8g — Accessibility Pass (G-25)
+#### 8f — Accessibility Pass (G-25)
 ```tsx
 // Focus ring: 2px solid #7F77DD tüm interactive element'lerde
 // aria-label, aria-busy, role="alert" toast'larda

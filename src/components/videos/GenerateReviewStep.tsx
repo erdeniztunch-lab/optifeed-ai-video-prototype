@@ -8,6 +8,7 @@ import { type Product } from "@/data/products";
 import { TEMPLATES } from "@/data/templates";
 import { DEMO_VIDEO_GENERATION_DELAY_MS, SAMPLE_VIDEO } from "@/data/tokens";
 import { type TemplateId } from "@/types/video-flow";
+import { VideoPlayerModal } from "./VideoPlayerModal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -132,6 +133,7 @@ export function GenerateReviewStep({
   }, [allDone, notifyOnComplete]);
 
   const [approveAllOpen, setApproveAllOpen] = useState(false);
+  const [previewProductId, setPreviewProductId] = useState<string | null>(null);
 
   const handleApproveAll = () => {
     if (pendingReviewIds.length === 0) return;
@@ -212,6 +214,7 @@ export function GenerateReviewStep({
               onApprove={() => onApprove(record.productId)}
               onReject={() => onReject(record.productId)}
               onEditPrompt={() => onEditPrompt(record.productId)}
+              onPreview={() => setPreviewProductId(record.productId)}
             />
           );
         })}
@@ -246,6 +249,31 @@ export function GenerateReviewStep({
         onConfirm={handleApproveAllConfirm}
         onCancel={() => setApproveAllOpen(false)}
       />
+
+      {/* Video preview modal */}
+      {(() => {
+        const previewRecord = previewProductId
+          ? videoRecords.find((r) => r.productId === previewProductId)
+          : null;
+        const previewProduct = previewProductId
+          ? products.find((p) => p.id === previewProductId)
+          : null;
+        if (!previewRecord || !previewProduct) return null;
+        const previewStatus = getDisplayStatus(previewRecord);
+        return (
+          <VideoPlayerModal
+            open={previewProductId !== null}
+            onOpenChange={(o) => { if (!o) setPreviewProductId(null); }}
+            product={previewProduct}
+            videoUrl={previewRecord.videoUrl}
+            status={previewStatus}
+            templateLabel={templateDef?.label}
+            onApprove={() => onApprove(previewProduct.id)}
+            onReject={() => onReject(previewProduct.id)}
+            onEdit={() => onEditPrompt(previewProduct.id)}
+          />
+        );
+      })()}
     </div>
   );
 }
@@ -259,6 +287,7 @@ interface VideoReviewCardProps {
   onApprove: () => void;
   onReject: () => void;
   onEditPrompt: () => void;
+  onPreview: () => void;
 }
 
 function VideoReviewCard({
@@ -268,6 +297,7 @@ function VideoReviewCard({
   onApprove,
   onReject,
   onEditPrompt,
+  onPreview,
 }: VideoReviewCardProps) {
   const isGenerating = status === "generating";
   const isPendingReview = status === "pending_review";
@@ -318,14 +348,13 @@ function VideoReviewCard({
               Onayla
             </button>
             {videoUrl && (
-              <a
-                href={videoUrl}
-                target="_blank"
-                rel="noreferrer"
+              <button
+                type="button"
+                onClick={onPreview}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition-all hover:border-primary/40 hover:text-primary"
               >
                 Önizle
-              </a>
+              </button>
             )}
             <button
               type="button"
