@@ -6,7 +6,7 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { cn } from "@/lib/utils";
 import { type Product } from "@/data/products";
 import { TEMPLATES } from "@/data/templates";
-import { DEMO_VIDEO_GENERATION_DELAY_MS, SAMPLE_VIDEO } from "@/data/tokens";
+import { DEMO_VIDEO_GENERATION_DELAY_MS, SAMPLE_VIDEO, TOKEN_COST_PER_VIDEO } from "@/data/tokens";
 import { type TemplateId } from "@/types/video-flow";
 import { VideoPlayerModal } from "./VideoPlayerModal";
 
@@ -205,6 +205,9 @@ export function GenerateReviewStep({
             }}
           />
         </div>
+        <p className="mt-1.5 text-right text-xs text-muted-foreground/60">
+          {totalCount * TOKEN_COST_PER_VIDEO} token harcandı
+        </p>
       </div>
 
       {/* Video cards */}

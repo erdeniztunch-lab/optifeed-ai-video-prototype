@@ -15,6 +15,7 @@ import { FOLDERS, type VideoFolder } from "@/data/folders";
 import { MOCK_TOKEN_BALANCE, TOKEN_COST_PER_VIDEO } from "@/data/tokens";
 import { type GuidedPrompt, DEFAULT_GUIDED_PROMPT, type VideoJob, type TemplateId, type CampaignContext, DEFAULT_CAMPAIGN_CONTEXT } from "@/types/video-flow";
 import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
 import { CampaignNameModal } from "@/components/videos/CampaignNameModal";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
@@ -233,13 +234,15 @@ const Videos = () => {
     setStage("confirm");
   };
 
-  // Confirm → Progress
+  // Confirm → Generate-review
   const handleConfirmGenerate = (notify: boolean) => {
+    const cost = selectedIds.length * TOKEN_COST_PER_VIDEO;
     setNotifyOnComplete(notify);
-    setTokenBalance((b) => b - selectedIds.length * TOKEN_COST_PER_VIDEO);
+    setTokenBalance((b) => b - cost);
     setVideoJobs(
       selectedIds.map((id) => ({ productId: id, status: "pending", videoUrl: null })),
     );
+    toast(`-${cost} token harcandı`);
     setStage("generate-review");
   };
 
