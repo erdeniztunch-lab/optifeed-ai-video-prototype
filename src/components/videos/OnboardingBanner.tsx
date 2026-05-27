@@ -39,7 +39,7 @@ export function OnboardingBanner() {
             Ürünlerinden saniyeler içinde video reklam üret.
           </p>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            Önce ürün seç, sonra şablona karar ver.
+            Önce ürün seçin, sonra şablona karar verin.
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <button

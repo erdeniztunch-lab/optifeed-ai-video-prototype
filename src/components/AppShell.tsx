@@ -11,12 +11,14 @@ import {
   BarChart3,
   Megaphone,
   Monitor,
+  Plus,
   Settings,
   type LucideIcon,
 } from "lucide-react";
 
 type NavItem =
   | { label: string; icon: LucideIcon; to: string; badge?: string; indent?: boolean }
+  | { label: string; icon: LucideIcon; isGroup: true; badge?: string }
   | { sectionHeader: string };
 
 const navItems: NavItem[] = [
@@ -24,9 +26,10 @@ const navItems: NavItem[] = [
   { label: "Feed Sources", icon: Database,        to: "/feed-sources" },
   { label: "Exports",      icon: Upload,          to: "/exports" },
   { sectionHeader: "AI Studio" },
-  { label: "AI Video",          icon: Video,          to: "/videos",              badge: "New" },
-  { label: "Kampanyalarım",     icon: FolderOpen,     to: "/videos?view=library", indent: true },
-  { label: "Dynamic Creative", icon: LayoutTemplate, to: "/templates" },
+  { label: "AI Video",            icon: Video,          isGroup: true,              badge: "New" },
+  { label: "Yeni video oluştur",  icon: Plus,           to: "/videos",              indent: true },
+  { label: "Kütüphane",           icon: FolderOpen,     to: "/videos?view=library", indent: true },
+  { label: "Dynamic Creative",    icon: LayoutTemplate, to: "/templates",           badge: "Yakında" },
   { label: "GA4 Analytics", icon: BarChart3,  to: "/analytics" },
   { label: "Meta Ads",      icon: Megaphone,  to: "/meta-ads" },
 ];
@@ -74,6 +77,21 @@ export function AppShell({
               >
                 {item.sectionHeader}
               </p>
+            ) : "isGroup" in item ? (
+              <div
+                key={item.label}
+                className="flex cursor-default items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground/70"
+              >
+                <span className="flex items-center gap-3">
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </span>
+                {item.badge && (
+                  <span className="rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary-foreground/90">
+                    {item.badge}
+                  </span>
+                )}
+              </div>
             ) : (
               <NavLink
                 key={item.to}
