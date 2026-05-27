@@ -242,7 +242,7 @@ const Videos = () => {
     setVideoJobs(
       selectedIds.map((id) => ({ productId: id, status: "pending", videoUrl: null })),
     );
-    toast(`-${cost} token harcandı`);
+    toast(`-${cost} token harcandı`, { position: "top-center" });
     setStage("generate-review");
   };
 
