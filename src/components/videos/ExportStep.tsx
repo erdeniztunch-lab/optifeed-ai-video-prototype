@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Archive, ArrowLeft, Check, Loader2, Send } from "lucide-react";
+import { ArrowLeft, Check, Download, Loader2, Send } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -75,22 +75,32 @@ export function ExportStep({ approvedCount, onComplete, onSkip, onBack }: Export
         ))}
       </div>
 
-      {/* ZIP download card */}
+      {/* Secondary download affordance */}
+      <div className="mb-3 flex items-center gap-3">
+        <div className="h-px flex-1 bg-border" />
+        <p className="text-xs font-medium text-muted-foreground">Sadece indirmek için</p>
+        <div className="h-px flex-1 bg-border" />
+      </div>
+
       <button
         type="button"
         onClick={handleZipDownload}
-        className="mb-8 w-full rounded-2xl border border-dashed border-border bg-card px-5 py-4 text-left transition-colors hover:border-foreground/30 hover:bg-muted/30"
+        className="mb-8 flex w-full items-center justify-between gap-4 rounded-lg border border-border/70 bg-muted/30 px-4 py-3 text-left transition-colors hover:border-primary/30 hover:bg-muted/50"
       >
-        <div className="flex items-center gap-3">
-          <Archive className="h-5 w-5 shrink-0 text-muted-foreground" />
-          <div>
-            <p className="font-semibold text-foreground">ZIP indir</p>
-            <p className="text-xs text-muted-foreground">{approvedCount} video</p>
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background text-muted-foreground">
+            <Download className="h-4 w-4" />
+          </span>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-foreground">ZIP indir</p>
+            <p className="text-xs text-muted-foreground">
+              {approvedCount} video, kanal seçmeden demo indirme akışı
+            </p>
           </div>
         </div>
-        <p className="mt-2 text-xs text-muted-foreground/70">
-          Kanal seçmeden sadece indirmek istiyorsanız "Atla"yı kullanın.
-        </p>
+        <span className="shrink-0 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground">
+          ZIP indir
+        </span>
       </button>
 
       {/* Sticky footer */}
