@@ -58,12 +58,259 @@ const getPreviousStage = (current: Stage): Stage | null => {
 // Per-folder snapshot for draft video access (3.2)
 type FolderSnapshot = { jobs: VideoJob[]; productIds: string[] };
 
+type RecoverableVideoFlowState = {
+  version: 1;
+  savedAt: string;
+  stage: Stage;
+  folders: VideoFolder[];
+  selectedIds: string[];
+  template: TemplateId;
+  guidedPrompt: GuidedPrompt;
+  tokenBalance: number;
+  videoJobs: VideoJob[];
+  approvedIds: string[];
+  rejectedIds: string[];
+  editingProductId: string | null;
+  exportedFeeds: string[];
+  notifyOnComplete: boolean;
+  campaignContext: CampaignContext;
+  activeFolderName: string;
+  activeFolderId: string | null;
+  folderSnapshots: Record<string, FolderSnapshot>;
+};
+
+const RECOVERY_STORAGE_KEY = "optivideo_flow_session_v1";
+const STAGES: Stage[] = [
+  "library",
+  "select",
+  "template",
+  "confirm",
+  "generate-review",
+  "edit-prompt",
+  "export",
+  "success",
+];
+const TEMPLATE_IDS: TemplateId[] = [
+  "vitrine-bakan-kadin",
+  "paris-yuruyen-kadin",
+  "bahce-bulusmasi",
+  "product-spotlight",
+];
+const PRODUCT_IDS = new Set(PRODUCTS.map((product) => product.id));
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+const isStage = (value: unknown): value is Stage =>
+  typeof value === "string" && STAGES.includes(value as Stage);
+
+const isTemplateId = (value: unknown): value is TemplateId =>
+  typeof value === "string" && TEMPLATE_IDS.includes(value as TemplateId);
+
+const sanitizeProductIds = (value: unknown): string[] => {
+  if (!Array.isArray(value)) return [];
+  return Array.from(
+    new Set(value.filter((id): id is string => typeof id === "string" && PRODUCT_IDS.has(id))),
+  );
+};
+
+const sanitizeString = (value: unknown, fallback = ""): string =>
+  typeof value === "string" ? value : fallback;
+
+const sanitizeNullableString = (value: unknown): string | null =>
+  typeof value === "string" ? value : null;
+
+const sanitizeBoolean = (value: unknown): boolean => value === true;
+
+const sanitizeTokenBalance = (value: unknown): number =>
+  typeof value === "number" && Number.isFinite(value) && value >= 0
+    ? value
+    : MOCK_TOKEN_BALANCE;
+
+const sanitizeCampaignContext = (value: unknown): CampaignContext => {
+  if (!isRecord(value)) return DEFAULT_CAMPAIGN_CONTEXT;
+  return {
+    name: sanitizeString(value.name),
+    sector: sanitizeString(value.sector),
+    theme: sanitizeString(value.theme),
+    themeCustom: sanitizeString(value.themeCustom),
+    productType: sanitizeString(value.productType),
+    templateNote: sanitizeString(value.templateNote),
+  };
+};
+
+const sanitizeGuidedPrompt = (value: unknown): GuidedPrompt => {
+  if (!isRecord(value)) return DEFAULT_GUIDED_PROMPT;
+  return {
+    sector: sanitizeString(value.sector),
+    theme: sanitizeString(value.theme),
+    themeCustom: sanitizeString(value.themeCustom),
+    background: sanitizeString(value.background),
+    productType: sanitizeString(value.productType),
+  };
+};
+
+const sanitizeFolders = (value: unknown): VideoFolder[] => {
+  if (!Array.isArray(value)) return FOLDERS;
+  const folders = value
+    .filter(isRecord)
+    .map((folder) => ({
+      id: sanitizeString(folder.id),
+      name: sanitizeString(folder.name),
+      createdAt: sanitizeString(folder.createdAt),
+      updatedAt: sanitizeString(folder.updatedAt),
+      videoCount:
+        typeof folder.videoCount === "number" && Number.isFinite(folder.videoCount)
+          ? folder.videoCount
+          : 0,
+      status:
+        folder.status === "active" ||
+        folder.status === "draft" ||
+        folder.status === "archived" ||
+        folder.status === "setup_in_progress"
+          ? folder.status
+          : "draft",
+      productIds: sanitizeProductIds(folder.productIds),
+    }))
+    .filter((folder) => folder.id && folder.name);
+  return folders.length > 0 ? folders : FOLDERS;
+};
+
+const sanitizeVideoJobs = (value: unknown): VideoJob[] => {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter(isRecord)
+    .map((job) => ({
+      productId: sanitizeString(job.productId),
+      status:
+        job.status === "pending" ||
+        job.status === "ready" ||
+        job.status === "generating" ||
+        job.status === "pending_review" ||
+        job.status === "approved" ||
+        job.status === "rejected" ||
+        job.status === "failed" ||
+        job.status === "draft" ||
+        job.status === "live"
+          ? job.status
+          : "pending",
+      videoUrl: typeof job.videoUrl === "string" ? job.videoUrl : null,
+    }))
+    .filter((job) => PRODUCT_IDS.has(job.productId));
+};
+
+const sanitizeFolderSnapshots = (value: unknown): Record<string, FolderSnapshot> => {
+  if (!isRecord(value)) return {};
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([, snapshot]) => isRecord(snapshot))
+      .map(([folderId, snapshot]) => [
+        folderId,
+        {
+          jobs: sanitizeVideoJobs(snapshot.jobs),
+          productIds: sanitizeProductIds(snapshot.productIds),
+        },
+      ])
+      .filter(([, snapshot]) => snapshot.jobs.length > 0 || snapshot.productIds.length > 0),
+  );
+};
+
+const getSafeStage = (
+  stage: Stage,
+  selectedIds: string[],
+  approvedIds: string[],
+  exportedFeeds: string[],
+  editingProductId: string | null,
+): Stage => {
+  if (stage === "library" || stage === "select") return stage;
+  if (selectedIds.length === 0) return "select";
+  if (stage === "edit-prompt") {
+    return editingProductId && selectedIds.includes(editingProductId)
+      ? "edit-prompt"
+      : "generate-review";
+  }
+  if (stage === "export" && approvedIds.length === 0) return "generate-review";
+  if (stage === "success" && approvedIds.length === 0 && exportedFeeds.length === 0) {
+    return "library";
+  }
+  return stage;
+};
+
+const loadRecoverableState = (): RecoverableVideoFlowState | null => {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const raw = window.sessionStorage.getItem(RECOVERY_STORAGE_KEY);
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw);
+    if (!isRecord(parsed) || parsed.version !== 1 || !isStage(parsed.stage)) {
+      window.sessionStorage.removeItem(RECOVERY_STORAGE_KEY);
+      return null;
+    }
+
+    const selectedIds = sanitizeProductIds(parsed.selectedIds);
+    const approvedIds = sanitizeProductIds(parsed.approvedIds).filter((id) =>
+      selectedIds.includes(id),
+    );
+    const rejectedIds = sanitizeProductIds(parsed.rejectedIds).filter(
+      (id) => selectedIds.includes(id) && !approvedIds.includes(id),
+    );
+    const exportedFeeds = Array.isArray(parsed.exportedFeeds)
+      ? parsed.exportedFeeds.filter((feed): feed is string => typeof feed === "string")
+      : [];
+    const editingProductId = sanitizeNullableString(parsed.editingProductId);
+    const safeEditingProductId =
+      editingProductId && selectedIds.includes(editingProductId) ? editingProductId : null;
+    const stage = getSafeStage(
+      parsed.stage,
+      selectedIds,
+      approvedIds,
+      exportedFeeds,
+      safeEditingProductId,
+    );
+
+    return {
+      version: 1,
+      savedAt: sanitizeString(parsed.savedAt, new Date().toISOString()),
+      stage,
+      folders: sanitizeFolders(parsed.folders),
+      selectedIds,
+      template: isTemplateId(parsed.template) ? parsed.template : "product-spotlight",
+      guidedPrompt: sanitizeGuidedPrompt(parsed.guidedPrompt),
+      tokenBalance: sanitizeTokenBalance(parsed.tokenBalance),
+      videoJobs: sanitizeVideoJobs(parsed.videoJobs),
+      approvedIds,
+      rejectedIds,
+      editingProductId: stage === "edit-prompt" ? safeEditingProductId : null,
+      exportedFeeds,
+      notifyOnComplete: sanitizeBoolean(parsed.notifyOnComplete),
+      campaignContext: sanitizeCampaignContext(parsed.campaignContext),
+      activeFolderName: sanitizeString(parsed.activeFolderName),
+      activeFolderId: sanitizeNullableString(parsed.activeFolderId),
+      folderSnapshots: sanitizeFolderSnapshots(parsed.folderSnapshots),
+    };
+  } catch {
+    window.sessionStorage.removeItem(RECOVERY_STORAGE_KEY);
+    return null;
+  }
+};
+
+const saveRecoverableState = (state: RecoverableVideoFlowState) => {
+  if (typeof window === "undefined") return;
+  window.sessionStorage.setItem(RECOVERY_STORAGE_KEY, JSON.stringify(state));
+};
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 const Videos = () => {
   // ── Routing ────────────────────────────────────────────────────────────────
   const [searchParams] = useSearchParams();
-  const [stage, setStage] = useState<Stage>("select");
+  const recoveredState = useMemo(() => loadRecoverableState(), []);
+  const initialStage = searchParams.get("view") === "library"
+    ? "library"
+    : recoveredState?.stage ?? "select";
+  const [stage, setStage] = useState<Stage>(initialStage);
   const [showCampaignModal, setShowCampaignModal] = useState(false);
 
   useEffect(() => {
@@ -73,10 +320,10 @@ const Videos = () => {
   }, [searchParams]);
 
   // ── Library / folder state ─────────────────────────────────────────────────
-  const [folders, setFolders] = useState<VideoFolder[]>(FOLDERS);
+  const [folders, setFolders] = useState<VideoFolder[]>(recoveredState?.folders ?? FOLDERS);
 
   // ── Product selection ──────────────────────────────────────────────────────
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>(recoveredState?.selectedIds ?? []);
 
   const selectedProducts = useMemo(
     () => PRODUCTS.filter((p) => selectedIds.includes(p.id)),
@@ -84,38 +331,50 @@ const Videos = () => {
   );
 
   // ── Template + guided prompt ───────────────────────────────────────────────
-  const [template, setTemplate] = useState<TemplateId>("product-spotlight");
-  const [guidedPrompt, setGuidedPrompt] = useState<GuidedPrompt>(DEFAULT_GUIDED_PROMPT);
+  const [template, setTemplate] = useState<TemplateId>(recoveredState?.template ?? "product-spotlight");
+  const [guidedPrompt, setGuidedPrompt] = useState<GuidedPrompt>(
+    recoveredState?.guidedPrompt ?? DEFAULT_GUIDED_PROMPT,
+  );
 
   // ── Token balance ──────────────────────────────────────────────────────────
-  const [tokenBalance, setTokenBalance] = useState(MOCK_TOKEN_BALANCE);
+  const [tokenBalance, setTokenBalance] = useState(recoveredState?.tokenBalance ?? MOCK_TOKEN_BALANCE);
 
   // ── Generation jobs ────────────────────────────────────────────────────────
-  const [videoJobs, setVideoJobs] = useState<VideoJob[]>([]);
+  const [videoJobs, setVideoJobs] = useState<VideoJob[]>(recoveredState?.videoJobs ?? []);
 
   // ── Review state ───────────────────────────────────────────────────────────
-  const [approvedIds, setApprovedIds] = useState<string[]>([]);
-  const [rejectedIds, setRejectedIds] = useState<string[]>([]);
-  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+  const [approvedIds, setApprovedIds] = useState<string[]>(recoveredState?.approvedIds ?? []);
+  const [rejectedIds, setRejectedIds] = useState<string[]>(recoveredState?.rejectedIds ?? []);
+  const [editingProductId, setEditingProductId] = useState<string | null>(
+    recoveredState?.editingProductId ?? null,
+  );
 
   // ── Export state ───────────────────────────────────────────────────────────
-  const [exportedFeeds, setExportedFeeds] = useState<string[]>([]);
+  const [exportedFeeds, setExportedFeeds] = useState<string[]>(recoveredState?.exportedFeeds ?? []);
 
   // ── Notification preference (set at ConfirmStep) ───────────────────────────
-  const [notifyOnComplete, setNotifyOnComplete] = useState(false);
+  const [notifyOnComplete, setNotifyOnComplete] = useState(recoveredState?.notifyOnComplete ?? false);
 
   // ── Exit confirmation dialog ────────────────────────────────────────────────
   const [exitConfirmOpen, setExitConfirmOpen] = useState(false);
 
   // ── Campaign context (design.md v2 fields — populated by CampaignSetupModal in Phase 1) ──
-  const [campaignContext, setCampaignContext] = useState<CampaignContext>(DEFAULT_CAMPAIGN_CONTEXT);
+  const [campaignContext, setCampaignContext] = useState<CampaignContext>(
+    recoveredState?.campaignContext ?? DEFAULT_CAMPAIGN_CONTEXT,
+  );
 
   // ── Active campaign context ────────────────────────────────────────────────
-  const [activeFolderName, setActiveFolderName] = useState<string>("");
-  const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
+  const [activeFolderName, setActiveFolderName] = useState<string>(
+    recoveredState?.activeFolderName ?? "",
+  );
+  const [activeFolderId, setActiveFolderId] = useState<string | null>(
+    recoveredState?.activeFolderId ?? null,
+  );
 
   // ── Per-folder draft video snapshots (3.2) ─────────────────────────────────
-  const [folderSnapshots, setFolderSnapshots] = useState<Record<string, FolderSnapshot>>({});
+  const [folderSnapshots, setFolderSnapshots] = useState<Record<string, FolderSnapshot>>(
+    recoveredState?.folderSnapshots ?? {},
+  );
 
   const pendingCounts = useMemo(
     () => Object.fromEntries(
@@ -125,6 +384,46 @@ const Videos = () => {
   );
 
   // ─── Handlers ──────────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    saveRecoverableState({
+      version: 1,
+      savedAt: new Date().toISOString(),
+      stage,
+      folders,
+      selectedIds,
+      template,
+      guidedPrompt,
+      tokenBalance,
+      videoJobs,
+      approvedIds,
+      rejectedIds,
+      editingProductId,
+      exportedFeeds,
+      notifyOnComplete,
+      campaignContext,
+      activeFolderName,
+      activeFolderId,
+      folderSnapshots,
+    });
+  }, [
+    stage,
+    folders,
+    selectedIds,
+    template,
+    guidedPrompt,
+    tokenBalance,
+    videoJobs,
+    approvedIds,
+    rejectedIds,
+    editingProductId,
+    exportedFeeds,
+    notifyOnComplete,
+    campaignContext,
+    activeFolderName,
+    activeFolderId,
+    folderSnapshots,
+  ]);
 
   const resetCurrentCampaignState = () => {
     setSelectedIds([]);
