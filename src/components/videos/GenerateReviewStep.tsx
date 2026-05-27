@@ -64,6 +64,11 @@ export function GenerateReviewStep({
 
   const timeoutRefs = useRef<number[]>([]);
   const notificationSentRef = useRef(false);
+  const approvedIdsRef = useRef(approvedIds);
+
+  useEffect(() => {
+    approvedIdsRef.current = approvedIds;
+  }, [approvedIds]);
 
   // Generation: transition each undecided video to pending_review, staggered.
   // Intentionally runs once on mount — products/approvedIds/rejectedIds are
@@ -143,6 +148,28 @@ export function GenerateReviewStep({
   const handleApproveAllConfirm = () => {
     pendingReviewIds.forEach((id) => onApprove(id));
     setApproveAllOpen(false);
+  };
+
+  const handleApproveToggle = (productId: string) => {
+    const wasApproved = approvedIds.includes(productId);
+    approvedIdsRef.current = wasApproved
+      ? approvedIdsRef.current.filter((id) => id !== productId)
+      : Array.from(new Set([...approvedIdsRef.current, productId]));
+    onApprove(productId);
+
+    if (!wasApproved) {
+      toast("Video onaylandı.", {
+        action: {
+          label: "Onayı geri al",
+          onClick: () => {
+            if (approvedIdsRef.current.includes(productId)) {
+              approvedIdsRef.current = approvedIdsRef.current.filter((id) => id !== productId);
+              onApprove(productId);
+            }
+          },
+        },
+      });
+    }
   };
 
   const templateDef = TEMPLATES.find((t) => t.id === selectedTemplate);
@@ -225,7 +252,7 @@ export function GenerateReviewStep({
               product={product}
               status={status}
               videoUrl={record.videoUrl}
-              onApprove={() => onApprove(record.productId)}
+              onApprove={() => handleApproveToggle(record.productId)}
               onReject={() => onReject(record.productId)}
               onEditPrompt={() => onEditPrompt(record.productId)}
               onPreview={() => setPreviewProductId(record.productId)}
@@ -282,7 +309,7 @@ export function GenerateReviewStep({
             videoUrl={previewRecord.videoUrl}
             status={previewStatus}
             templateLabel={templateDef?.label}
-            onApprove={() => onApprove(previewProduct.id)}
+            onApprove={() => handleApproveToggle(previewProduct.id)}
             onReject={() => onReject(previewProduct.id)}
             onEdit={() => onEditPrompt(previewProduct.id)}
           />
