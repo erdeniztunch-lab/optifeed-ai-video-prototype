@@ -1,6 +1,7 @@
 import { useEffect, useState, ReactNode } from "react";
-import { NavLink } from "@/components/NavLink";
+import { Link, useLocation } from "react-router-dom";
 import { TokenBadge } from "@/components/videos/TokenBadge";
+import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   Database,
@@ -29,7 +30,7 @@ const navItems: NavItem[] = [
   { label: "AI Video",            icon: Video,          isGroup: true,              badge: "New" },
   { label: "Yeni video oluştur",  icon: Plus,           to: "/videos",              indent: true },
   { label: "Kütüphane",           icon: FolderOpen,     to: "/videos?view=library", indent: true },
-  { label: "Dynamic Creative",    icon: LayoutTemplate, to: "/templates",           badge: "Yakında" },
+  { label: "Dynamic Creative",    icon: LayoutTemplate, to: "/templates" },
   { label: "GA4 Analytics", icon: BarChart3,  to: "/analytics" },
   { label: "Meta Ads",      icon: Megaphone,  to: "/meta-ads" },
 ];
@@ -56,6 +57,20 @@ export function AppShell({
   spentTokens?: number;
 }) {
   const isTooNarrow = useIsTooNarrow();
+  const location = useLocation();
+
+  const isNavItemActive = (to: string) => {
+    const [pathname, search = ""] = to.split("?");
+    if (pathname === "/videos") {
+      const navView = new URLSearchParams(search).get("view");
+      const currentView = new URLSearchParams(location.search).get("view");
+      if (navView === "library") {
+        return location.pathname === "/videos" && currentView === "library";
+      }
+      return location.pathname === "/videos" && currentView !== "library";
+    }
+    return location.pathname === pathname;
+  };
 
   return (
     <div className="min-h-screen w-full bg-background">
@@ -93,11 +108,14 @@ export function AppShell({
                 )}
               </div>
             ) : (
-              <NavLink
+              <Link
                 key={item.to}
                 to={item.to}
-                className={`group flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-white transition-colors${item.indent ? " pl-7 text-xs" : ""}`}
-                activeClassName="bg-sidebar-accent text-white"
+                className={cn(
+                  "group flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-white",
+                  item.indent && "pl-7 text-xs",
+                  isNavItemActive(item.to) && "bg-sidebar-accent text-white",
+                )}
               >
                 <span className="flex items-center gap-3">
                   <item.icon className="h-4 w-4" />
@@ -108,7 +126,7 @@ export function AppShell({
                     {item.badge}
                   </span>
                 )}
-              </NavLink>
+              </Link>
             ),
           )}
         </nav>

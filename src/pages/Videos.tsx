@@ -15,7 +15,6 @@ import { FOLDERS, type VideoFolder } from "@/data/folders";
 import { MOCK_TOKEN_BALANCE, TOKEN_COST_PER_VIDEO } from "@/data/tokens";
 import { type GuidedPrompt, DEFAULT_GUIDED_PROMPT, type VideoJob, type TemplateId, type CampaignContext, DEFAULT_CAMPAIGN_CONTEXT } from "@/types/video-flow";
 import { ArrowLeft } from "lucide-react";
-import { toast } from "sonner";
 import { CampaignNameModal } from "@/components/videos/CampaignNameModal";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
@@ -57,6 +56,7 @@ const getPreviousStage = (current: Stage): Stage | null => {
 
 // Per-folder snapshot for draft video access (3.2)
 type FolderSnapshot = { jobs: VideoJob[]; productIds: string[] };
+type TokenNotice = { amount: number; id: number };
 
 type RecoverableVideoFlowState = {
   version: 1;
@@ -354,6 +354,7 @@ const Videos = () => {
 
   // ── Notification preference (set at ConfirmStep) ───────────────────────────
   const [notifyOnComplete, setNotifyOnComplete] = useState(recoveredState?.notifyOnComplete ?? false);
+  const [tokenNotice, setTokenNotice] = useState<TokenNotice | null>(null);
 
   // ── Exit confirmation dialog ────────────────────────────────────────────────
   const [exitConfirmOpen, setExitConfirmOpen] = useState(false);
@@ -541,7 +542,7 @@ const Videos = () => {
     setVideoJobs(
       selectedIds.map((id) => ({ productId: id, status: "pending", videoUrl: null })),
     );
-    toast(`-${cost} token harcandı`, { position: "top-center" });
+    setTokenNotice({ amount: cost, id: Date.now() });
     setStage("generate-review");
   };
 
@@ -719,6 +720,7 @@ const Videos = () => {
             approvedIds={approvedIds}
             rejectedIds={rejectedIds}
             notifyOnComplete={notifyOnComplete}
+            tokenNotice={tokenNotice}
             onApprove={handleApprove}
             onReject={handleReject}
             onEditPrompt={handleOpenEditPrompt}

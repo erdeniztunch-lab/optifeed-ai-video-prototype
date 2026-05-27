@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Check, Loader2, Pencil, Send, Sparkles, X } from "lucide-react";
+import { Check, Loader2, Pencil, PlayCircle, Send, Sparkles, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -29,6 +29,7 @@ interface GenerateReviewStepProps {
   approvedIds: string[];
   rejectedIds: string[];
   notifyOnComplete: boolean;
+  tokenNotice?: { amount: number; id: number } | null;
   onApprove: (productId: string) => void;
   onReject: (productId: string) => void;
   onEditPrompt: (productId: string) => void;
@@ -43,6 +44,7 @@ export function GenerateReviewStep({
   approvedIds,
   rejectedIds,
   notifyOnComplete,
+  tokenNotice,
   onApprove,
   onReject,
   onEditPrompt,
@@ -64,11 +66,7 @@ export function GenerateReviewStep({
 
   const timeoutRefs = useRef<number[]>([]);
   const notificationSentRef = useRef(false);
-  const approvedIdsRef = useRef(approvedIds);
-
-  useEffect(() => {
-    approvedIdsRef.current = approvedIds;
-  }, [approvedIds]);
+  const [activeTokenNotice, setActiveTokenNotice] = useState(tokenNotice ?? null);
 
   // Generation: transition each undecided video to pending_review, staggered.
   // Intentionally runs once on mount — products/approvedIds/rejectedIds are
@@ -137,6 +135,13 @@ export function GenerateReviewStep({
     }
   }, [allDone, notifyOnComplete]);
 
+  useEffect(() => {
+    if (!tokenNotice) return;
+    setActiveTokenNotice(tokenNotice);
+    const timer = window.setTimeout(() => setActiveTokenNotice(null), 4200);
+    return () => window.clearTimeout(timer);
+  }, [tokenNotice]);
+
   const [approveAllOpen, setApproveAllOpen] = useState(false);
   const [previewProductId, setPreviewProductId] = useState<string | null>(null);
 
@@ -151,25 +156,7 @@ export function GenerateReviewStep({
   };
 
   const handleApproveToggle = (productId: string) => {
-    const wasApproved = approvedIds.includes(productId);
-    approvedIdsRef.current = wasApproved
-      ? approvedIdsRef.current.filter((id) => id !== productId)
-      : Array.from(new Set([...approvedIdsRef.current, productId]));
     onApprove(productId);
-
-    if (!wasApproved) {
-      toast("Video onaylandı.", {
-        action: {
-          label: "Onayı geri al",
-          onClick: () => {
-            if (approvedIdsRef.current.includes(productId)) {
-              approvedIdsRef.current = approvedIdsRef.current.filter((id) => id !== productId);
-              onApprove(productId);
-            }
-          },
-        },
-      });
-    }
   };
 
   const templateDef = TEMPLATES.find((t) => t.id === selectedTemplate);
@@ -260,6 +247,14 @@ export function GenerateReviewStep({
           );
         })}
       </div>
+
+      {activeTokenNotice && (
+        <div className="pointer-events-none fixed inset-x-0 bottom-24 z-50 flex justify-center px-6 md:left-64">
+          <div className="rounded-full border border-primary/20 bg-card px-4 py-2 text-sm font-semibold text-foreground shadow-lg">
+            -{activeTokenNotice.amount} token harcandı
+          </div>
+        </div>
+      )}
 
       {/* Sticky footer */}
       <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-card/95 backdrop-blur md:left-64">
@@ -451,8 +446,11 @@ function VideoReviewCard({
 
       {/* Right: inline video or shimmer */}
       {(isPendingReview || isApproved || isRejected) && videoUrl ? (
-        <div
-          className="h-20 w-28 shrink-0 overflow-hidden rounded-xl bg-black"
+        <button
+          type="button"
+          onClick={onPreview}
+          aria-label={`${product.name} videosunu önizle`}
+          className="group relative h-20 w-28 shrink-0 overflow-hidden rounded-xl bg-black focus:outline-none focus:ring-2 focus:ring-primary"
         >
           <video
             src={videoUrl}
@@ -462,7 +460,12 @@ function VideoReviewCard({
             autoPlay
             className="h-full w-full object-cover"
           />
-        </div>
+          <span className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-background/90 text-foreground shadow-sm">
+              <PlayCircle className="h-4 w-4" />
+            </span>
+          </span>
+        </button>
       ) : isGenerating ? (
         <div className="h-20 w-28 shrink-0 animate-pulse rounded-xl bg-primary/10" />
       ) : null}

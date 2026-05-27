@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, Check, Download, Loader2, Send } from "lucide-react";
+import { ArrowLeft, Download, Loader2, Send } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -50,29 +50,18 @@ export function ExportStep({ approvedCount, onComplete, onSkip, onBack }: Export
     <div className="mx-auto max-w-7xl px-6 py-8 pb-32 md:px-10">
       <section className="rounded-2xl border border-border bg-card p-6 shadow-sm md:p-8">
         {/* Header */}
-        <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
+        <header className="mb-10 flex flex-wrap items-start justify-between gap-4">
           <div>
-            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-success/15">
-              <Check className="h-6 w-6 text-success" strokeWidth={2.5} />
-            </div>
-            <h2 className="text-2xl font-semibold text-foreground">
-              {approvedCount} video onaylandı
-            </h2>
+            <h2 className="text-2xl font-semibold text-foreground">Kanallara gönder</h2>
             <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-              Videoları reklam kanallarınıza gönderin veya demo modunda ZIP indirme
-              akışını deneyin.
+              Onaylanan videoları bağlı katalog kanallarına aktarın veya demo modunda ZIP
+              indirme akışını deneyin.
             </p>
           </div>
+          <span className="rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary">
+            {approvedCount} video onaylandı
+          </span>
         </header>
-
-        <div className="mb-4 flex items-center justify-between gap-4">
-          <div>
-            <h3 className="text-lg font-semibold text-foreground">Kanallara gönder</h3>
-            <p className="mt-0.5 text-sm text-muted-foreground">
-              Onaylanan videoları bağlı katalog kanallarına aktarın.
-            </p>
-          </div>
-        </div>
 
         {/* Channel toggle cards */}
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
