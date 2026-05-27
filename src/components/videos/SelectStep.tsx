@@ -12,7 +12,7 @@ import { EmptyState } from "./EmptyState";
 import { AdvancedFilterPanel, type AdvFilters } from "./AdvancedFilterPanel";
 
 const DEFAULT_ADV_FILTERS: AdvFilters = {
-  imageMin: 0,
+  imageReadiness: "",
   statusFilter: "",
   hasHistory: false,
   category: "",
@@ -51,7 +51,7 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
     [],
   );
 
-  const advActiveCount = (advFilters.imageMin > 0 ? 1 : 0)
+  const advActiveCount = (advFilters.imageReadiness !== "" ? 1 : 0)
     + (advFilters.statusFilter !== "" ? 1 : 0)
     + (advFilters.hasHistory ? 1 : 0)
     + (advFilters.category !== "" ? 1 : 0)
@@ -69,13 +69,18 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
         );
     if (advFilters.category) filtered = filtered.filter((p) => p.category === advFilters.category);
     if (advFilters.brand) filtered = filtered.filter((p) => p.brand === advFilters.brand);
-    if (advFilters.imageMin > 0) filtered = filtered.filter((p) => p.additionalImageCount >= advFilters.imageMin);
+    if (advFilters.imageReadiness === "has-extra") filtered = filtered.filter((p) => p.additionalImageCount > 0);
+    else if (advFilters.imageReadiness === "no-extra") filtered = filtered.filter((p) => p.additionalImageCount === 0);
     if (advFilters.statusFilter) filtered = filtered.filter((p) => p.status === advFilters.statusFilter);
     if (advFilters.hasHistory) filtered = filtered.filter((p) => p.videoHistory && p.videoHistory.length > 0);
     switch (advFilters.sortBy) {
       case "name": return filtered.sort((a, b) => a.name.localeCompare(b.name, "tr"));
-      case "brand": return filtered.sort((a, b) => a.brand.localeCompare(b.brand, "tr"));
-      case "status": return filtered.sort((a, b) => a.status.localeCompare(b.status));
+      case "suitable": return filtered.sort((a, b) => b.additionalImageCount - a.additionalImageCount);
+      case "no-video-yet": return filtered.sort((a, b) => {
+        const aHas = a.videoHistory.length > 0 ? 1 : 0;
+        const bHas = b.videoHistory.length > 0 ? 1 : 0;
+        return aHas - bHas;
+      });
       default: return filtered;
     }
   }, [query, advFilters]);
@@ -228,7 +233,7 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
               <Input
                 aria-label="Ürün ara"
-                placeholder="İsim, ID veya grup ile ara..."
+                placeholder="Ürün adı, ID veya grup ara"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="pl-9 bg-card"

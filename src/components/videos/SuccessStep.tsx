@@ -93,13 +93,6 @@ export function SuccessStep({ count, exportedFeeds, onAnother, onViewProducts }:
           <Button size="lg" variant="outline" onClick={onViewProducts}>
             Kampanyalarıma git
           </Button>
-          <button
-            type="button"
-            onClick={onViewProducts}
-            className="mt-1 text-sm font-medium text-muted-foreground hover:text-foreground"
-          >
-            Kütüphaneye dön
-          </button>
         </div>
       </div>
     </div>

@@ -1,12 +1,12 @@
 import { cn } from "@/lib/utils";
 
 export interface AdvFilters {
-  imageMin: 0 | 1 | 2 | 3;
+  imageReadiness: "" | "has-extra" | "no-extra";
   statusFilter: "" | "no-video" | "ready";
   hasHistory: boolean;
   category: string;
   brand: string;
-  sortBy: "recent" | "name" | "brand" | "status";
+  sortBy: "recent" | "name" | "suitable" | "no-video-yet";
 }
 
 
@@ -19,11 +19,10 @@ interface Props {
   brandOptions: string[];
 }
 
-const IMAGE_OPTIONS: { label: string; value: AdvFilters["imageMin"] }[] = [
-  { label: "Tümü", value: 0 },
-  { label: "1+", value: 1 },
-  { label: "2+", value: 2 },
-  { label: "3+", value: 3 },
+const IMAGE_OPTIONS: { label: string; value: AdvFilters["imageReadiness"] }[] = [
+  { label: "Tümü", value: "" },
+  { label: "Ek görsel var", value: "has-extra" },
+  { label: "Ek görsel yok", value: "no-extra" },
 ];
 
 const STATUS_OPTIONS: { label: string; value: AdvFilters["statusFilter"] }[] = [
@@ -34,9 +33,9 @@ const STATUS_OPTIONS: { label: string; value: AdvFilters["statusFilter"] }[] = [
 
 const SORT_OPTIONS: { label: string; value: AdvFilters["sortBy"] }[] = [
   { label: "Son eklenen", value: "recent" },
+  { label: "Video için uygun", value: "suitable" },
+  { label: "Videosu olmayanlar", value: "no-video-yet" },
   { label: "Ürün adı", value: "name" },
-  { label: "Marka", value: "brand" },
-  { label: "Durum", value: "status" },
 ];
 
 export function AdvancedFilterPanel({ filters, onChange, onClear, activeCount, categoryOptions, brandOptions }: Props) {
@@ -79,18 +78,18 @@ export function AdvancedFilterPanel({ filters, onChange, onClear, activeCount, c
           </select>
         </div>
 
-        {/* Ek görsel sayısı */}
+        {/* Görsel hazırlık */}
         <div className="flex flex-col gap-2">
           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Ek görsel sayısı
+            Görsel hazırlık
           </span>
           <div className="flex items-center gap-1.5">
             {IMAGE_OPTIONS.map((opt) => (
               <button
-                key={opt.value}
+                key={opt.label}
                 type="button"
-                aria-pressed={filters.imageMin === opt.value}
-                onClick={() => onChange({ ...filters, imageMin: opt.value })}
+                aria-pressed={filters.imageReadiness === opt.value}
+                onClick={() => onChange({ ...filters, imageReadiness: opt.value })}
                 className={cn(
                   "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
                   filters.imageMin === opt.value
