@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { AppShell } from "@/components/AppShell";
 import { StepIndicator } from "@/components/videos/StepIndicator";
@@ -312,10 +312,17 @@ const Videos = () => {
     : recoveredState?.stage ?? "select";
   const [stage, setStage] = useState<Stage>(initialStage);
   const [showCampaignModal, setShowCampaignModal] = useState(false);
+  const previousViewRef = useRef(searchParams.get("view"));
 
   useEffect(() => {
-    if (searchParams.get("view") === "library") {
+    const currentView = searchParams.get("view");
+    const previousView = previousViewRef.current;
+    previousViewRef.current = currentView;
+
+    if (currentView === "library") {
       setStage("library");
+    } else if (previousView === "library") {
+      setStage("select");
     }
   }, [searchParams]);
 
