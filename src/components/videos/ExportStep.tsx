@@ -47,61 +47,75 @@ export function ExportStep({ approvedCount, onComplete, onSkip, onBack }: Export
   };
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-10 pb-32 md:px-10">
-      {/* Header */}
-      <header className="mb-8">
-        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-success/15">
-          <Check className="h-6 w-6 text-success" strokeWidth={2.5} />
-        </div>
-        <h2 className="text-2xl font-semibold text-foreground">
-          {approvedCount} video onaylandı
-        </h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Videoları reklam kanallarınıza gönderin veya ZIP olarak indirin. Sonra da
-          gönderebilirsiniz.
-        </p>
-      </header>
+    <div className="mx-auto max-w-7xl px-6 py-8 pb-32 md:px-10">
+      <section className="rounded-2xl border border-border bg-card p-6 shadow-sm md:p-8">
+        {/* Header */}
+        <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-success/15">
+              <Check className="h-6 w-6 text-success" strokeWidth={2.5} />
+            </div>
+            <h2 className="text-2xl font-semibold text-foreground">
+              {approvedCount} video onaylandı
+            </h2>
+            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+              Videoları reklam kanallarınıza gönderin veya demo modunda ZIP indirme
+              akışını deneyin.
+            </p>
+          </div>
+        </header>
 
-      {/* Channel toggle cards */}
-      <div className="mb-4 space-y-3">
-        {CHANNELS.map((channel) => (
-          <ChannelToggleCard
-            key={channel.id}
-            channel={channel}
-            selected={selectedChannelIds.includes(channel.id)}
-            onToggle={() => handleToggle(channel.id)}
-            onConnectMock={() => handleConnectMock(channel.name)}
-          />
-        ))}
-      </div>
-
-      {/* Secondary download affordance */}
-      <div className="mb-3 flex items-center gap-3">
-        <div className="h-px flex-1 bg-border" />
-        <p className="text-xs font-medium text-muted-foreground">Sadece indirmek için</p>
-        <div className="h-px flex-1 bg-border" />
-      </div>
-
-      <button
-        type="button"
-        onClick={handleZipDownload}
-        className="mb-8 flex w-full items-center justify-between gap-4 rounded-lg border border-border/70 bg-muted/30 px-4 py-3 text-left transition-colors hover:border-primary/30 hover:bg-muted/50"
-      >
-        <div className="flex min-w-0 items-center gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background text-muted-foreground">
-            <Download className="h-4 w-4" />
-          </span>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-foreground">ZIP indir</p>
-            <p className="text-xs text-muted-foreground">
-              {approvedCount} video, kanal seçmeden demo indirme akışı
+        <div className="mb-4 flex items-center justify-between gap-4">
+          <div>
+            <h3 className="text-lg font-semibold text-foreground">Kanallara gönder</h3>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              Onaylanan videoları bağlı katalog kanallarına aktarın.
             </p>
           </div>
         </div>
-        <span className="shrink-0 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground">
-          ZIP indir
-        </span>
-      </button>
+
+        {/* Channel toggle cards */}
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          {CHANNELS.map((channel) => (
+            <ChannelToggleCard
+              key={channel.id}
+              channel={channel}
+              approvedCount={approvedCount}
+              selected={selectedChannelIds.includes(channel.id)}
+              onToggle={() => handleToggle(channel.id)}
+              onConnectMock={() => handleConnectMock(channel.name)}
+            />
+          ))}
+        </div>
+
+        {/* Secondary download affordance */}
+        <div className="mt-8 border-t border-border pt-5">
+          <p className="mb-3 text-xs font-medium text-muted-foreground">
+            Sadece indirmek için
+          </p>
+
+          <button
+            type="button"
+            onClick={handleZipDownload}
+            className="flex w-full items-center justify-between gap-4 rounded-lg border border-dashed border-border bg-muted/30 px-4 py-3 text-left transition-colors hover:border-primary/30 hover:bg-muted/50"
+          >
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background text-muted-foreground">
+                <Download className="h-4 w-4" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-foreground">ZIP indir</p>
+                <p className="text-xs text-muted-foreground">
+                  {approvedCount} video, kanal seçmeden demo indirme akışı
+                </p>
+              </div>
+            </div>
+            <span className="shrink-0 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground">
+              ZIP indir
+            </span>
+          </button>
+        </div>
+      </section>
 
       {/* Sticky footer */}
       <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-card/95 backdrop-blur md:left-64">
