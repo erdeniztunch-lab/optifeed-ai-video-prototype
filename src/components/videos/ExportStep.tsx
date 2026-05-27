@@ -48,14 +48,14 @@ export function ExportStep({ approvedCount, onComplete, onSkip, onBack }: Export
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-8 pb-32 md:px-10">
-      <section className="rounded-2xl border border-border bg-card p-6 shadow-sm md:p-8">
+      <section className="rounded-[18px] border border-border bg-card p-6 shadow-sm md:p-10">
         {/* Header */}
-        <header className="mb-10 flex flex-wrap items-start justify-between gap-4">
+        <header className="mb-10 flex flex-wrap items-start justify-between gap-5">
           <div>
             <h2 className="text-2xl font-semibold text-foreground">Kanallara gönder</h2>
-            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-              Onaylanan videoları bağlı katalog kanallarına aktarın veya demo modunda ZIP
-              indirme akışını deneyin.
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+              Onaylanan videoları bağlı katalog kanallarına gönderin. Kanal seçmeden devam etmek
+              için alttaki ZIP seçeneğini kullanabilirsiniz.
             </p>
           </div>
           <span className="rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary">
@@ -78,29 +78,29 @@ export function ExportStep({ approvedCount, onComplete, onSkip, onBack }: Export
         </div>
 
         {/* Secondary download affordance */}
-        <div className="mt-8 border-t border-border pt-5">
-          <p className="mb-3 text-xs font-medium text-muted-foreground">
+        <div className="mt-10 border-t border-border pt-5">
+          <p className="mb-3 text-xs font-semibold text-muted-foreground">
             Sadece indirmek için
           </p>
 
           <button
             type="button"
             onClick={handleZipDownload}
-            className="flex w-full items-center justify-between gap-4 rounded-lg border border-dashed border-border bg-muted/30 px-4 py-3 text-left transition-colors hover:border-primary/30 hover:bg-muted/50"
+            className="flex w-full items-center justify-between gap-4 rounded-xl border border-dashed border-border bg-muted/25 px-4 py-3.5 text-left transition-colors hover:border-primary/30 hover:bg-muted/45"
           >
             <div className="flex min-w-0 items-center gap-3">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background text-muted-foreground">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-background text-muted-foreground">
                 <Download className="h-4 w-4" />
               </span>
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-foreground">ZIP indir</p>
                 <p className="text-xs text-muted-foreground">
-                  {approvedCount} video, kanal seçmeden demo indirme akışı
+                  {approvedCount} video için demo indirme akışını simüle eder.
                 </p>
               </div>
             </div>
-            <span className="shrink-0 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground">
-              ZIP indir
+            <span className="shrink-0 rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground">
+              Demo
             </span>
           </button>
         </div>
