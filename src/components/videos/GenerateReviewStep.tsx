@@ -210,6 +210,10 @@ export function GenerateReviewStep({
         </p>
       </div>
 
+      <p className="mb-4 text-xs text-muted-foreground">
+        Üretilen videolar bu oturumda incelemeniz için burada kalır. Onay vermeden hiçbir video kanala gönderilmez.
+      </p>
+
       {/* Video cards */}
       <div className="space-y-3">
         {videoRecords.map((record) => {
@@ -377,13 +381,24 @@ function VideoReviewCard({
         )}
 
         {isApproved && (
-          <button
-            type="button"
-            onClick={onApprove}
-            className="mt-2 text-xs text-muted-foreground/60 hover:text-muted-foreground"
-          >
-            Onayı geri al
-          </button>
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={onApprove}
+              className="text-xs text-muted-foreground/60 hover:text-muted-foreground"
+            >
+              Onayı geri al
+            </button>
+            {videoUrl && (
+              <button
+                type="button"
+                onClick={onPreview}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition-all hover:border-primary/40 hover:text-primary"
+              >
+                Önizle
+              </button>
+            )}
+          </div>
         )}
 
         {isRejected && (
@@ -396,7 +411,7 @@ function VideoReviewCard({
           </button>
         )}
 
-        {!isGenerating && videoUrl && (
+        {!isGenerating && !isApproved && videoUrl && (
           <button
             type="button"
             onClick={onPreview}
