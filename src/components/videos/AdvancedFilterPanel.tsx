@@ -92,7 +92,7 @@ export function AdvancedFilterPanel({ filters, onChange, onClear, activeCount, c
                 onClick={() => onChange({ ...filters, imageReadiness: opt.value })}
                 className={cn(
                   "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-                  filters.imageMin === opt.value
+                  filters.imageReadiness === opt.value
                     ? "border-primary bg-primary/10 text-primary"
                     : "border-border bg-background text-muted-foreground hover:border-foreground/20 hover:text-foreground",
                 )}
