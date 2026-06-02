@@ -31,7 +31,7 @@ export const TEXTILE_TEMPLATES: TextileTemplateDefinition[] = [
   },
   {
     id: "magaza-yazan-kiz",
-    label: "Mağaza Yazan Kız",
+    label: "Mağaza Önünde Kız",
     sceneContext: "Mağaza cephesi önü, marka detay odağı",
     sceneType: "Mağaza",
     previewVideo: "/templates/A_fashionable_young_woman_stan.mp4",
