@@ -4,7 +4,7 @@ export interface TaxonomyOption {
 }
 
 export const SECTORS: TaxonomyOption[] = [
-  { value: "fashion", label: "Moda & Giyim" },
+  { value: "tekstil", label: "Moda & Giyim" },
   { value: "electronics", label: "Elektronik" },
   { value: "home", label: "Ev & Yaşam" },
   { value: "beauty", label: "Güzellik & Kişisel Bakım" },

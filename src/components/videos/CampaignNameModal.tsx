@@ -2,8 +2,10 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Info } from "lucide-react";
 import { SECTORS, THEMES, PRODUCT_TYPES } from "@/data/taxonomy";
 import { type CampaignContext } from "@/types/video-flow";
+import { cn } from "@/lib/utils";
 
 interface CampaignNameModalProps {
   open: boolean;
@@ -86,23 +88,36 @@ export function CampaignNameModal({ open, onConfirm, onCancel }: CampaignNameMod
 
           {/* Sector */}
           <div className="space-y-1.5">
-            <label htmlFor="modal-sector" className="text-sm font-medium text-foreground">
+            <label className="text-sm font-medium text-foreground">
               Sektör <span className="text-destructive" aria-hidden="true">*</span>
             </label>
-            <select
-              id="modal-sector"
-              aria-required="true"
-              value={sector}
-              onChange={(e) => setSector(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
-            >
-              <option value="">Seçin...</option>
+            <div className="flex flex-wrap gap-2">
               {SECTORS.map((s) => (
-                <option key={s.value} value={s.value}>
+                <button
+                  key={s.value}
+                  type="button"
+                  aria-pressed={sector === s.value}
+                  onClick={() => setSector(s.value)}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+                    sector === s.value
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-background text-muted-foreground hover:border-foreground/20 hover:text-foreground",
+                  )}
+                >
                   {s.label}
-                </option>
+                  {s.value === "tekstil" && (
+                    <span
+                      title="Bu prototipte tekstil sektörüne özel şablon mevcuttur"
+                      className="inline-flex items-center gap-0.5 rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-primary"
+                    >
+                      <Info className="h-2.5 w-2.5" />
+                      Prototip
+                    </span>
+                  )}
+                </button>
               ))}
-            </select>
+            </div>
           </div>
 
           {/* Theme */}
