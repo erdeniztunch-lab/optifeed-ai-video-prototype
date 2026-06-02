@@ -17,7 +17,11 @@ export type TemplateId =
   | "vitrine-bakan-kadin"
   | "paris-yuruyen-kadin"
   | "bahce-bulusmasi"
-  | "product-spotlight";
+  | "product-spotlight"
+  | "sokakta-yuruyen-kiz"
+  | "magaza-yazan-kiz"
+  | "plajda-yuruyen-kiz"
+  | "ziplayanKiz";
 
 // ─── Campaign Context ─────────────────────────────────────────────────────────
 
