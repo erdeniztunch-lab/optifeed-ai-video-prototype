@@ -8,6 +8,7 @@ import { SECTORS, THEMES, PRODUCT_TYPES } from "@/data/taxonomy";
 import { type TemplateId, type CampaignContext } from "@/types/video-flow";
 import { TemplateCard } from "./TemplateCard";
 import { EmptyState } from "./EmptyState";
+import { TextileTemplateSelectionStep } from "./TextileTemplateSelectionStep";
 
 interface TemplateSelectionStepProps {
   products: Product[];
@@ -23,13 +24,24 @@ export function TemplateSelectionStep({
   onBack,
 }: TemplateSelectionStepProps) {
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedTemplate, setSelectedTemplate] = useState<TemplateId | null>(null);
+  const [templateNote, setTemplateNote] = useState("");
+
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 300);
     return () => clearTimeout(timer);
   }, []);
 
-  const [selectedTemplate, setSelectedTemplate] = useState<TemplateId | null>(null);
-  const [templateNote, setTemplateNote] = useState("");
+  if (campaignContext.sector === "tekstil") {
+    return (
+      <TextileTemplateSelectionStep
+        products={products}
+        campaignContext={campaignContext}
+        onContinue={onContinue}
+        onBack={onBack}
+      />
+    );
+  }
 
   const handleContinue = () => {
     if (!selectedTemplate) return;
