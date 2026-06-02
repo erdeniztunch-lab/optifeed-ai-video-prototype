@@ -21,15 +21,7 @@ export function TextileTemplateSelectionStep({
   onBack,
 }: Props) {
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateId | null>(null);
-  const [addBag, setAddBag] = useState(false);
-  const [addGlasses, setAddGlasses] = useState(false);
-
-  const templateNote = [
-    addBag ? "Marka çantası eklendi." : "",
-    addGlasses ? "Aksesuar (gözlük) eklendi." : "",
-  ]
-    .filter(Boolean)
-    .join(" ");
+  const [templateNote, setTemplateNote] = useState("");
 
   const handleContinue = () => {
     if (!selectedTemplate) return;
@@ -92,40 +84,33 @@ export function TextileTemplateSelectionStep({
         ))}
       </div>
 
-      {/* Sahne özelleştir */}
-      <div className="mb-6 rounded-xl border border-border bg-card p-4">
-        <p className="mb-3 text-sm font-medium text-foreground">
-          Sahne özelleştir{" "}
+      {/* Ek detay textarea */}
+      <div className="mb-4">
+        <label htmlFor="template-note" className="mb-1.5 block text-sm font-medium text-foreground">
+          Ek detay{" "}
           <span className="ml-1 text-xs font-normal text-muted-foreground">(opsiyonel)</span>
+        </label>
+        <textarea
+          id="template-note"
+          value={templateNote}
+          onChange={(e) => setTemplateNote(e.target.value)}
+          placeholder="Örn. ürün metalik yüzey, gece sahnesi tercih edilsin, 25-35 yaş kadın kitlesine hitap etsin..."
+          rows={3}
+          maxLength={300}
+          className="w-full resize-none rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30"
+        />
+        <p className="mt-1 text-right text-xs text-muted-foreground/60">
+          {templateNote.length} / 300
         </p>
-        <div className="space-y-2.5">
-          <label
-            htmlFor="add-bag"
-            className="flex cursor-pointer items-center gap-2.5 text-sm text-foreground"
-          >
-            <input
-              id="add-bag"
-              type="checkbox"
-              checked={addBag}
-              onChange={(e) => setAddBag(e.target.checked)}
-              className="h-4 w-4 rounded border-border accent-primary"
-            />
-            Marka çantası ekle
-          </label>
-          <label
-            htmlFor="add-glasses"
-            className="flex cursor-pointer items-center gap-2.5 text-sm text-foreground"
-          >
-            <input
-              id="add-glasses"
-              type="checkbox"
-              checked={addGlasses}
-              onChange={(e) => setAddGlasses(e.target.checked)}
-              className="h-4 w-4 rounded border-border accent-primary"
-            />
-            Aksesuar (gözlük) ekle
-          </label>
-        </div>
+      </div>
+
+      {/* Info note */}
+      <div className="mb-6 flex items-start gap-2 rounded-lg bg-muted/40 px-4 py-3">
+        <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
+        <p className="text-xs leading-relaxed text-muted-foreground/70">
+          Videolar 8-10 saniye, 1:1 formatta üretilir. Fiyat/marka bilgisi sonradan Dynamic
+          Creative ile eklenebilir.
+        </p>
       </div>
 
       {/* Sabit alt bar */}
