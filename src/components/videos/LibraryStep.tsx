@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ChevronRight, Plus, Search, Video, Zap } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,20 +11,6 @@ import { PRODUCTS } from "@/data/products";
 
 type TabValue = "all" | FolderStatus;
 type SortValue = "updatedAt" | "createdAt" | "name";
-
-const TAB_LABELS: Record<TabValue, string> = {
-  all: "Tümü",
-  active: "Aktif",
-  draft: "Taslak",
-  setup_in_progress: "Üretim sürüyor",
-  archived: "Arşiv",
-};
-
-const SORT_LABELS: Record<SortValue, string> = {
-  updatedAt: "Son güncelleme",
-  createdAt: "Oluşturma tarihi",
-  name: "İsim",
-};
 
 interface LibraryStepProps {
   folders: VideoFolder[];
@@ -50,6 +37,9 @@ export function LibraryStep({
   onRenameFolder,
   onArchiveFolder,
 }: LibraryStepProps) {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === "tr" ? "tr-TR" : "en-US";
+
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 300);
@@ -59,6 +49,20 @@ export function LibraryStep({
   const [activeTab, setActiveTab] = useState<TabValue>("all");
   const [sortBy, setSortBy] = useState<SortValue>("updatedAt");
   const [query, setQuery] = useState("");
+
+  const TAB_LABELS: Record<TabValue, string> = {
+    all: t("library.tabs.all"),
+    active: t("library.tabs.active"),
+    draft: t("library.tabs.draft"),
+    setup_in_progress: t("library.tabs.setup_in_progress"),
+    archived: t("library.tabs.archived"),
+  };
+
+  const SORT_LABELS: Record<SortValue, string> = {
+    updatedAt: t("library.sort.updatedAt"),
+    createdAt: t("library.sort.createdAt"),
+    name: t("library.sort.name"),
+  };
 
   const productImagesMap = useMemo(() => {
     const map: Record<string, string[]> = {};
@@ -77,11 +81,11 @@ export function LibraryStep({
     let list = activeTab === "all" ? [...folders] : folders.filter((f) => f.status === activeTab);
     if (q) list = list.filter((f) => f.name.toLowerCase().includes(q));
     switch (sortBy) {
-      case "name":      return list.sort((a, b) => a.name.localeCompare(b.name, "tr"));
+      case "name":      return list.sort((a, b) => a.name.localeCompare(b.name, i18n.language));
       case "createdAt": return list.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
       default:          return list.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
     }
-  }, [folders, activeTab, sortBy, query]);
+  }, [folders, activeTab, sortBy, query, i18n.language]);
 
   const isEmpty = folders.length === 0;
 
@@ -90,16 +94,16 @@ export function LibraryStep({
       {/* Top bar */}
       <div className="sticky top-0 z-20 flex items-center justify-between border-b border-border bg-background/90 backdrop-blur px-6 py-3 md:px-10">
         <nav className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <span>Optifeed</span>
+          <span>{t("shell.brand")}</span>
           <ChevronRight className="h-3 w-3" />
-          <span>AI Studio</span>
+          <span>{t("library.breadcrumb.studio")}</span>
           <ChevronRight className="h-3 w-3" />
-          <span className="font-medium text-foreground">Video</span>
+          <span className="font-medium text-foreground">{t("library.breadcrumb.video")}</span>
         </nav>
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-xs font-medium text-foreground">
             <Zap className="h-3 w-3 text-amber-500" />
-            {tokenBalance.toLocaleString("tr-TR")} token
+            {tokenBalance.toLocaleString(locale)} {t("token.unit")}
           </span>
           <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-primary text-xs font-semibold text-white select-none">
             O
@@ -110,29 +114,26 @@ export function LibraryStep({
       {/* Content */}
       <div className="mx-auto w-full max-w-7xl px-6 py-8 md:px-10">
 
-        {/* ── Empty state ─────────────────────────────────────────────────────── */}
         {isEmpty && (
           <EmptyState
             icon={Video}
-            title="Henüz hiç kampanyanız yok"
-            description="Ürünleriniz için yapay zeka destekli video oluşturmaya hemen başlayın."
-            actionLabel="İlk kampanyayı oluştur"
+            title={t("library.empty.title")}
+            description={t("library.empty.subtitle")}
+            actionLabel={t("library.empty.action")}
             onAction={onNewCampaign}
           />
         )}
 
-        {/* ── Filled state ────────────────────────────────────────────────────── */}
         {!isEmpty && (
           <>
-            {/* Page header */}
             <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-              <h1 className="text-2xl font-bold text-foreground">Video campaigns</h1>
+              <h1 className="text-2xl font-bold text-foreground">{t("library.title")}</h1>
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
                   <Input
-                    aria-label="Kampanya ara"
-                    placeholder="Kampanya ara..."
+                    aria-label={t("library.search.placeholder")}
+                    placeholder={t("library.search.placeholder")}
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     className="pl-9 bg-card w-52"
@@ -144,13 +145,13 @@ export function LibraryStep({
                   className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors whitespace-nowrap"
                 >
                   <Plus className="h-4 w-4" />
-                  Yeni kampanya
+                  {t("library.newCampaign")}
                 </button>
               </div>
             </div>
 
             {/* Tab bar */}
-            <div role="tablist" aria-label="Kampanya durumu" className="mb-5 flex gap-0 border-b border-border">
+            <div role="tablist" aria-label={t("library.title")} className="mb-5 flex gap-0 border-b border-border">
               {(Object.keys(TAB_LABELS) as TabValue[]).map((tab) => (
                 <button
                   key={tab}
@@ -225,16 +226,16 @@ export function LibraryStep({
                     )}
                   >
                     <Plus className="h-8 w-8 opacity-50" />
-                    <span className="text-sm font-medium">Yeni kampanya</span>
+                    <span className="text-sm font-medium">{t("library.newCampaignCard")}</span>
                   </button>
                 </div>
 
                 {filtered.length === 0 && (
                   <EmptyState
                     icon={Search}
-                    title="Bu sekmede kampanya yok"
-                    description="Bu filtreyle eşleşen kampanya bulunamadı."
-                    actionLabel="Yeni kampanya oluştur"
+                    title={t("library.tabEmpty.title")}
+                    description={t("library.tabEmpty.desc")}
+                    actionLabel={t("library.tabEmpty.action")}
                     onAction={onNewCampaign}
                   />
                 )}

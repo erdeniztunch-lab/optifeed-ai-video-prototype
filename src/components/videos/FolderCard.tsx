@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AlertTriangle, MoreVertical } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -31,6 +32,9 @@ export function FolderCard({
   onRename,
   onArchive,
 }: FolderCardProps) {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === "tr" ? "tr-TR" : "en-US";
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [renameOpen, setRenameOpen] = useState(false);
@@ -48,7 +52,7 @@ export function FolderCard({
     return () => document.removeEventListener("mousedown", handler);
   }, [menuOpen]);
 
-  const formattedUpdatedAt = new Date(folder.updatedAt).toLocaleDateString("tr-TR", {
+  const formattedUpdatedAt = new Date(folder.updatedAt).toLocaleDateString(locale, {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -79,16 +83,14 @@ export function FolderCard({
     closeAndRun(e, () => setDeleteOpen(true));
   };
 
-  // ── Shared dialogs ────────────────────────────────────────────────────────────
-
   const confirmDialog = (
     <>
       <ConfirmDialog
         open={deleteOpen}
-        title="Kampanyayı sil"
-        description={`"${folder.name}" kalıcı olarak silinecek. Bu işlem geri alınamaz.`}
-        confirmLabel="Sil"
-        cancelLabel="İptal"
+        title={t("library.folder.deleteConfirm.title")}
+        description={t("library.folder.deleteConfirm.desc", { name: folder.name })}
+        confirmLabel={t("library.folder.deleteConfirm.confirm")}
+        cancelLabel={t("library.folder.deleteConfirm.cancel")}
         confirmVariant="destructive"
         onConfirm={() => { onDelete?.(); setDeleteOpen(false); }}
         onCancel={() => setDeleteOpen(false)}
@@ -96,26 +98,29 @@ export function FolderCard({
       <Dialog open={renameOpen} onOpenChange={(o) => !o && setRenameOpen(false)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Kampanyayı yeniden adlandır</DialogTitle>
+            <DialogTitle>{t("library.folder.rename.title")}</DialogTitle>
           </DialogHeader>
           <Input
             autoFocus
             value={renameValue}
             onChange={(e) => setRenameValue(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && renameValue.trim() && handleRenameSave()}
-            placeholder="Kampanya adı"
+            placeholder={t("library.folder.rename.placeholder")}
           />
           <DialogFooter className="mt-2">
-            <Button variant="outline" onClick={() => setRenameOpen(false)}>Vazgeç</Button>
-            <Button disabled={!renameValue.trim()} onClick={handleRenameSave}>Kaydet</Button>
+            <Button variant="outline" onClick={() => setRenameOpen(false)}>
+              {t("library.folder.rename.cancel")}
+            </Button>
+            <Button disabled={!renameValue.trim()} onClick={handleRenameSave}>
+              {t("library.folder.rename.save")}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
   );
 
-  // ── setup_in_progress variant ─────────────────────────────────────────────────
-
+  // setup_in_progress variant
   if (folder.status === "setup_in_progress") {
     return (
       <>
@@ -125,33 +130,31 @@ export function FolderCard({
               {folder.name.charAt(0).toUpperCase()}
             </span>
           </div>
-
           <div className="flex flex-col gap-2 p-3">
             <p className="line-clamp-1 text-sm font-semibold text-foreground leading-snug">
               {folder.name}
             </p>
-
             <div className="flex items-center gap-1.5 text-xs text-amber-600">
               <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-              <span>Kurulum yarım kaldı</span>
+              <span>{t("library.folder.setupIncomplete")}</span>
             </div>
-
-            <p className="text-xs text-muted-foreground">Son güncelleme {formattedUpdatedAt}</p>
-
+            <p className="text-xs text-muted-foreground">
+              {t("library.folder.lastUpdated", { date: formattedUpdatedAt })}
+            </p>
             <div className="mt-1 flex items-center gap-2">
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); onResume?.(); }}
                 className="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
               >
-                Devam et →
+                {t("common.continueArrow")}
               </button>
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); setDeleteOpen(true); }}
                 className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive"
               >
-                Sil
+                {t("library.folder.menu.delete")}
               </button>
             </div>
           </div>
@@ -161,8 +164,7 @@ export function FolderCard({
     );
   }
 
-  // ── Normal card ───────────────────────────────────────────────────────────────
-
+  // Normal card
   const gradientClass =
     folder.status === "active"
       ? "bg-gradient-to-br from-violet-500 to-indigo-600"
@@ -174,149 +176,138 @@ export function FolderCard({
 
   return (
     <>
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={onOpen}
-      onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onOpen()}
-      className={cn(
-        "group flex w-full flex-col rounded-xl border border-border bg-card text-left cursor-pointer transition-all",
-        "hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-      )}
-    >
-      {/* Thumbnail — overflow-hidden here to clip images while letting the kebab escape */}
-      {hasImages ? (
-        <div className="relative flex h-28 items-center justify-center overflow-hidden rounded-t-xl bg-muted/30">
-          <div className="flex items-center">
-            {productImages!.slice(0, 4).map((src, i) => (
-              <div
-                key={i}
-                className="h-20 w-20 overflow-hidden rounded-xl border-2 border-background shadow-sm"
-                style={{ marginLeft: i > 0 ? "-16px" : "0", zIndex: 10 - i }}
-              >
-                <img src={src} alt="" className="h-full w-full object-cover" />
-              </div>
-            ))}
-            {productImages!.length > 4 && (
-              <div
-                className="flex h-20 w-10 items-center justify-center rounded-r-xl border-y-2 border-r-2 border-background bg-muted/80 text-xs font-semibold text-muted-foreground"
-                style={{ marginLeft: "-16px", zIndex: 6 }}
-              >
-                +{productImages!.length - 4}
-              </div>
-            )}
-          </div>
-          {pendingCount > 0 && (
-            <span className="absolute right-2 top-2 rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">
-              {pendingCount} onay bekliyor
-            </span>
-          )}
-        </div>
-      ) : (
-        <div
-          className={cn(
-            "relative flex h-28 items-center justify-center overflow-hidden rounded-t-xl",
-            gradientClass,
-          )}
-        >
-          <span className="select-none text-4xl font-bold text-white/70">
-            {folder.name.charAt(0).toUpperCase()}
-          </span>
-          {pendingCount > 0 && (
-            <span className="absolute right-2 top-2 rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">
-              {pendingCount} onay bekliyor
-            </span>
-          )}
-        </div>
-      )}
-
-      {/* Meta */}
-      <div className="flex flex-col gap-2 p-3">
-        <p className="line-clamp-1 text-sm font-semibold text-foreground leading-snug">
-          {folder.name}
-        </p>
-
-        <div className="flex items-center justify-between gap-2">
-          <span className="inline-flex items-center rounded-full border border-border bg-muted/50 px-2 py-0.5 text-xs text-muted-foreground">
-            {folder.videoCount} video
-          </span>
-
-          <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              aria-pressed={folder.status === "active"}
-              aria-label={
-                folder.status === "active"
-                  ? "Yayında: devre dışı bırakmak için tıklayın"
-                  : folder.status === "archived"
-                    ? "Arşivlendi"
-                    : "Taslak: yayına almak için tıklayın"
-              }
-              onClick={onToggleStatus}
-              className={cn(
-                "shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition-colors",
-                folder.status === "active"
-                  ? "border-success/30 bg-success/10 text-success hover:bg-destructive/10 hover:border-destructive/30 hover:text-destructive"
-                  : folder.status === "archived"
-                    ? "border-border bg-muted text-muted-foreground/60 cursor-default"
-                    : "border-border bg-muted text-muted-foreground hover:bg-success/10 hover:border-success/30 hover:text-success",
-              )}
-              disabled={folder.status === "archived"}
-            >
-              {folder.status === "active"
-                ? "Yayında"
-                : folder.status === "archived"
-                  ? "Arşivlendi"
-                  : "Taslak"}
-            </button>
-
-            {/* Kebab menu */}
-            <div ref={menuRef} className="relative">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setMenuOpen((v) => !v);
-                }}
-                className="flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                aria-label="Daha fazla seçenek"
-              >
-                <MoreVertical className="h-3.5 w-3.5" />
-              </button>
-
-              {menuOpen && (
-                <div className="absolute right-0 top-8 z-50 min-w-[160px] rounded-xl border border-border bg-card p-1 shadow-lg">
-                  <MenuItem
-                    label="Detay"
-                    onClick={(e) => closeAndRun(e, () => toast("Bu özellik yakında"))}
-                  />
-                  <MenuItem label="Yeniden adlandır" onClick={handleRenameClick} />
-                  <MenuItem
-                    label="Dışa aktar"
-                    onClick={(e) => closeAndRun(e, () => toast("Bu özellik yakında"))}
-                  />
-                  <MenuItem
-                    label="Arşivle"
-                    onClick={(e) => closeAndRun(e, () => onArchive?.())}
-                    disabled={folder.status === "archived"}
-                  />
-                  <div className="my-1 h-px bg-border" />
-                  <MenuItem label="Sil" onClick={handleDeleteClick} destructive />
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={onOpen}
+        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onOpen()}
+        className={cn(
+          "group flex w-full flex-col rounded-xl border border-border bg-card text-left cursor-pointer transition-all",
+          "hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+        )}
+      >
+        {hasImages ? (
+          <div className="relative flex h-28 items-center justify-center overflow-hidden rounded-t-xl bg-muted/30">
+            <div className="flex items-center">
+              {productImages!.slice(0, 4).map((src, i) => (
+                <div
+                  key={i}
+                  className="h-20 w-20 overflow-hidden rounded-xl border-2 border-background shadow-sm"
+                  style={{ marginLeft: i > 0 ? "-16px" : "0", zIndex: 10 - i }}
+                >
+                  <img src={src} alt="" className="h-full w-full object-cover" />
+                </div>
+              ))}
+              {productImages!.length > 4 && (
+                <div
+                  className="flex h-20 w-10 items-center justify-center rounded-r-xl border-y-2 border-r-2 border-background bg-muted/80 text-xs font-semibold text-muted-foreground"
+                  style={{ marginLeft: "-16px", zIndex: 6 }}
+                >
+                  +{productImages!.length - 4}
                 </div>
               )}
             </div>
+            {pendingCount > 0 && (
+              <span className="absolute right-2 top-2 rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">
+                {t("library.folder.pendingCount", { count: pendingCount })}
+              </span>
+            )}
           </div>
-        </div>
+        ) : (
+          <div className={cn("relative flex h-28 items-center justify-center overflow-hidden rounded-t-xl", gradientClass)}>
+            <span className="select-none text-4xl font-bold text-white/70">
+              {folder.name.charAt(0).toUpperCase()}
+            </span>
+            {pendingCount > 0 && (
+              <span className="absolute right-2 top-2 rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">
+                {t("library.folder.pendingCount", { count: pendingCount })}
+              </span>
+            )}
+          </div>
+        )}
 
-        <p className="text-xs text-muted-foreground">Son güncelleme {formattedUpdatedAt}</p>
+        <div className="flex flex-col gap-2 p-3">
+          <p className="line-clamp-1 text-sm font-semibold text-foreground leading-snug">
+            {folder.name}
+          </p>
+
+          <div className="flex items-center justify-between gap-2">
+            <span className="inline-flex items-center rounded-full border border-border bg-muted/50 px-2 py-0.5 text-xs text-muted-foreground">
+              {t("library.folder.videos", { count: folder.videoCount })}
+            </span>
+
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                aria-pressed={folder.status === "active"}
+                aria-label={
+                  folder.status === "active"
+                    ? t("library.folder.statusAria.active")
+                    : folder.status === "archived"
+                      ? t("library.folder.statusAria.archived")
+                      : t("library.folder.statusAria.draft")
+                }
+                onClick={onToggleStatus}
+                className={cn(
+                  "shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition-colors",
+                  folder.status === "active"
+                    ? "border-success/30 bg-success/10 text-success hover:bg-destructive/10 hover:border-destructive/30 hover:text-destructive"
+                    : folder.status === "archived"
+                      ? "border-border bg-muted text-muted-foreground/60 cursor-default"
+                      : "border-border bg-muted text-muted-foreground hover:bg-success/10 hover:border-success/30 hover:text-success",
+                )}
+                disabled={folder.status === "archived"}
+              >
+                {folder.status === "active"
+                  ? t("library.folder.statusLabel.active")
+                  : folder.status === "archived"
+                    ? t("library.folder.statusLabel.archived")
+                    : t("library.folder.statusLabel.draft")}
+              </button>
+
+              <div ref={menuRef} className="relative">
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v); }}
+                  className="flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  aria-label={t("library.folder.moreOptions")}
+                >
+                  <MoreVertical className="h-3.5 w-3.5" />
+                </button>
+
+                {menuOpen && (
+                  <div className="absolute right-0 top-8 z-50 min-w-[160px] rounded-xl border border-border bg-card p-1 shadow-lg">
+                    <MenuItem
+                      label={t("library.folder.menu.detail")}
+                      onClick={(e) => closeAndRun(e, () => toast(t("library.folder.comingSoon")))}
+                    />
+                    <MenuItem label={t("library.folder.menu.rename")} onClick={handleRenameClick} />
+                    <MenuItem
+                      label={t("library.folder.menu.export")}
+                      onClick={(e) => closeAndRun(e, () => toast(t("library.folder.comingSoon")))}
+                    />
+                    <MenuItem
+                      label={t("library.folder.menu.archive")}
+                      onClick={(e) => closeAndRun(e, () => onArchive?.())}
+                      disabled={folder.status === "archived"}
+                    />
+                    <div className="my-1 h-px bg-border" />
+                    <MenuItem label={t("library.folder.menu.delete")} onClick={handleDeleteClick} destructive />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <p className="text-xs text-muted-foreground">
+            {t("library.folder.lastUpdated", { date: formattedUpdatedAt })}
+          </p>
+        </div>
       </div>
-    </div>
-    {confirmDialog}
-  </>
+      {confirmDialog}
+    </>
   );
 }
-
-// ── MenuItem ──────────────────────────────────────────────────────────────────
 
 function MenuItem({
   label,
