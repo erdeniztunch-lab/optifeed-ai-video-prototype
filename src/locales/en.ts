@@ -449,11 +449,35 @@ const en = {
     title: {
       generating: "Generating Videos",
       reviewing: "Review",
+      done: "Videos ready. You can send them once you finish reviewing.",
     },
     subtitle: "Videos are generated one by one. You can review each one as it completes.",
     confidence: "Generated videos remain here during this session for your review. No video is sent to any channel without your approval.",
     progress: "{{completed}} / {{total}} complete",
     tokensSpent: "{{count}} tokens spent",
+    approveAll: "Approve all",
+    approveAllDialog: {
+      title: "Approve all",
+      desc: "{{count}} videos waiting for review will be approved. Continue?",
+      confirm: "Approve",
+      cancel: "Cancel",
+    },
+    progressBarLabel: "Video generation progress",
+    statusBadge: {
+      generating: "Generating",
+      pending_review: "Review",
+      approved: "Approved",
+      rejected: "Rejected",
+    },
+    tokenNotice: "-{{amount}} tokens spent",
+    notification: {
+      title: "Videos ready",
+      body: "Video production complete. You can continue reviewing.",
+      toast: "Videos ready.",
+    },
+    templateLabel: "Template: {{name}}",
+    rejectUndo: "Undo rejection",
+    videoPreviewAriaLabel: "Preview video for {{name}}",
     card: {
       generating: "Generating...",
       approve: "Approve",
@@ -475,7 +499,9 @@ const en = {
 
   editPrompt: {
     title: "Edit Prompt",
+    subtitle: "Describe how you want to see the video: style, atmosphere, scene, presentation.",
     regenerate: "Regenerate",
+    regenerating: "Generating...",
     cancel: "Cancel",
     fields: {
       sector: "Sector",
@@ -483,7 +509,51 @@ const en = {
       background: "Background",
       productType: "Product Type",
       note: "Additional note",
+      placeholder: "Select...",
     },
+    guided: {
+      sector: "Sector",
+      productType: "Product type",
+      background: "Visual concept",
+      theme: "Campaign theme",
+      optional: "Optional",
+      themeNote: "Free theme note",
+      themeNoteHint: "Optional. Custom terms, material details, campaign background",
+      themeNotePlaceholder: "e.g. suede, buckled, ballet flat; dynamic background for Dubai collection",
+      addNote: "+ Add custom note",
+      placeholder: "Select...",
+    },
+    presets: {
+      title: "Quick edit suggestions",
+      categories: [
+        { label: "Visual style", items: ["Make it more premium", "Make it simpler and cleaner", "Try a more energetic style"] },
+        { label: "Motion", items: ["Slow down camera movement", "Get closer to the product", "Make transitions smoother"] },
+        { label: "Background", items: ["Make the background brighter", "Use a more minimal setting", "Create a more urban atmosphere"] },
+        { label: "Product focus", items: ["Show the product more prominently", "Highlight product details more", "Focus on the product instead of the model"] },
+      ],
+    },
+    freeText: {
+      label: "Write your own request or choose from the suggestions above.",
+      placeholder: "e.g. White background, product rotates slowly, soft shadows, premium feel...",
+    },
+    cost: {
+      label: "Regeneration cost",
+      balance: "Your balance",
+      unit: "tokens",
+      insufficient: "Insufficient balance. Cannot regenerate.",
+    },
+  },
+
+  videoModal: {
+    titleSr: "{{name}}: Video preview",
+    loadingPreview: "Loading preview...",
+    meta: { category: "Category", template: "Template" },
+    approved: "This video is approved",
+    rejected: "This video was rejected",
+    close: "Close",
+    approve: "Approve",
+    edit: "Edit",
+    reject: "Reject",
   },
 
   export: {

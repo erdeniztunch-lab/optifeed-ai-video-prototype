@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { type GuidedPrompt } from "@/types/video-flow";
 import {
@@ -14,49 +15,28 @@ interface GuidedPromptFieldsProps {
 }
 
 export function GuidedPromptFields({ value, onChange }: GuidedPromptFieldsProps) {
-  const set = (key: keyof GuidedPrompt, val: string) =>
-    onChange({ ...value, [key]: val });
-
+  const { t } = useTranslation();
+  const set = (key: keyof GuidedPrompt, val: string) => onChange({ ...value, [key]: val });
   const [showNote, setShowNote] = useState(false);
+  const optional = t("editPrompt.guided.optional");
+  const placeholder = t("editPrompt.guided.placeholder");
 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 gap-3">
-        {/* Sector */}
-        <Field label="Sektör" hint="İsteğe bağlı">
-          <SelectField
-            value={value.sector}
-            placeholder="Sektör seçin..."
-            options={SECTOR_OPTIONS}
-            onChange={(v) => set("sector", v)}
-          />
+        <Field label={t("editPrompt.guided.sector")} hint={optional}>
+          <SelectField value={value.sector} placeholder={placeholder} options={SECTOR_OPTIONS} onChange={(v) => set("sector", v)} />
         </Field>
-
-        {/* Product type */}
-        <Field label="Ürün tipi" hint="İsteğe bağlı">
-          <SelectField
-            value={value.productType}
-            placeholder="Ürün tipi seçin..."
-            options={PRODUCT_TYPE_OPTIONS}
-            onChange={(v) => set("productType", v)}
-          />
+        <Field label={t("editPrompt.guided.productType")} hint={optional}>
+          <SelectField value={value.productType} placeholder={placeholder} options={PRODUCT_TYPE_OPTIONS} onChange={(v) => set("productType", v)} />
         </Field>
-
-        {/* Background */}
-        <Field label="Görsel konsept" hint="İsteğe bağlı">
-          <SelectField
-            value={value.background}
-            placeholder="Background seçin..."
-            options={BACKGROUND_OPTIONS}
-            onChange={(v) => set("background", v)}
-          />
+        <Field label={t("editPrompt.guided.background")} hint={optional}>
+          <SelectField value={value.background} placeholder={placeholder} options={BACKGROUND_OPTIONS} onChange={(v) => set("background", v)} />
         </Field>
-
-        {/* Theme preset */}
-        <Field label="Kampanya teması" hint="İsteğe bağlı">
+        <Field label={t("editPrompt.guided.theme")} hint={optional}>
           <SelectField
             value={value.theme}
-            placeholder="Tema seçin..."
+            placeholder={placeholder}
             options={THEME_OPTIONS}
             onChange={(v) => {
               set("theme", v);
@@ -66,16 +46,15 @@ export function GuidedPromptFields({ value, onChange }: GuidedPromptFieldsProps)
         </Field>
       </div>
 
-      {/* Custom theme free-text — collapsed by default */}
       {showNote || value.themeCustom ? (
-        <Field label="Serbest tema notu" hint="İsteğe bağlı. Özel ifadeler, malzeme detayı, kampanya arka planı">
+        <Field label={t("editPrompt.guided.themeNote")} hint={t("editPrompt.guided.themeNoteHint")}>
           <textarea
             autoFocus={showNote && !value.themeCustom}
             value={value.themeCustom}
             onChange={(e) => set("themeCustom", e.target.value)}
             maxLength={100}
             rows={2}
-            placeholder="Örn. süet, tokalı, babet; Dubai koleksiyonu için dinamik arka plan"
+            placeholder={t("editPrompt.guided.themeNotePlaceholder")}
             className={cn(
               "w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground",
               "placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20",
@@ -93,22 +72,14 @@ export function GuidedPromptFields({ value, onChange }: GuidedPromptFieldsProps)
           onClick={() => setShowNote(true)}
           className="text-xs text-muted-foreground/60 underline-offset-2 hover:text-muted-foreground hover:underline"
         >
-          + Özel not ekle
+          {t("editPrompt.guided.addNote")}
         </button>
       )}
     </div>
   );
 }
 
-function Field({
-  label,
-  hint,
-  children,
-}: {
-  label: string;
-  hint?: string;
-  children: React.ReactNode;
-}) {
+function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-baseline gap-2">
@@ -120,17 +91,7 @@ function Field({
   );
 }
 
-function SelectField({
-  value,
-  placeholder,
-  options,
-  onChange,
-}: {
-  value: string;
-  placeholder: string;
-  options: string[];
-  onChange: (v: string) => void;
-}) {
+function SelectField({ value, placeholder, options, onChange }: { value: string; placeholder: string; options: string[]; onChange: (v: string) => void }) {
   return (
     <select
       value={value}
@@ -143,9 +104,7 @@ function SelectField({
     >
       <option value="">{placeholder}</option>
       {options.map((opt) => (
-        <option key={opt} value={opt}>
-          {opt}
-        </option>
+        <option key={opt} value={opt}>{opt}</option>
       ))}
     </select>
   );

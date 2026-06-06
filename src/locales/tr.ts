@@ -451,11 +451,35 @@ const tr: Translations = {
     title: {
       generating: "Videolar üretiliyor",
       reviewing: "İnceleme",
+      done: "Videolar hazır. İncelemeyi tamamlayınca gönderebilirsiniz.",
     },
     subtitle: "Videolar sırayla üretilir. Her biri tamamlandıkça inceleyebilirsiniz.",
     confidence: "Üretilen videolar bu oturumda incelemeniz için burada kalır. Onay vermeden hiçbir video kanala gönderilmez.",
     progress: "{{completed}} / {{total}} tamamlandı",
     tokensSpent: "{{count}} token harcandı",
+    approveAll: "Tümünü onayla",
+    approveAllDialog: {
+      title: "Tümünü onayla",
+      desc: "İncelemeyi bekleyen {{count}} video onaylanacak. Devam edilsin mi?",
+      confirm: "Onayla",
+      cancel: "İptal",
+    },
+    progressBarLabel: "Video üretim ilerlemesi",
+    statusBadge: {
+      generating: "Üretiliyor",
+      pending_review: "İncele",
+      approved: "Onaylandı",
+      rejected: "Reddedildi",
+    },
+    tokenNotice: "-{{amount}} token harcandı",
+    notification: {
+      title: "Videolar hazır",
+      body: "Video üretimi tamamlandı. İncelemeye devam edebilirsiniz.",
+      toast: "Videolar hazır.",
+    },
+    templateLabel: "Şablon: {{name}}",
+    rejectUndo: "Reddi geri al",
+    videoPreviewAriaLabel: "{{name}} videosunu önizle",
     card: {
       generating: "Üretiliyor...",
       approve: "Onayla",
@@ -477,15 +501,61 @@ const tr: Translations = {
 
   editPrompt: {
     title: "Prompt Düzenle",
+    subtitle: "Videoyu nasıl görmek istediğinizi açıklayın: stil, atmosfer, sahne, sunum.",
     regenerate: "Yeniden üret",
+    regenerating: "Üretiliyor...",
     cancel: "İptal",
     fields: {
       sector: "Sektör",
       theme: "Tema",
-      background: "Arka plan",
+      background: "Arka Plan",
       productType: "Ürün tipi",
       note: "Ek not",
+      placeholder: "Seçin...",
     },
+    guided: {
+      sector: "Sektör",
+      productType: "Ürün tipi",
+      background: "Görsel konsept",
+      theme: "Kampanya teması",
+      optional: "İsteğe bağlı",
+      themeNote: "Serbest tema notu",
+      themeNoteHint: "İsteğe bağlı. Özel ifadeler, malzeme detayı, kampanya arka planı",
+      themeNotePlaceholder: "Örn. süet, tokalı, babet; Dubai koleksiyonu için dinamik arka plan",
+      addNote: "+ Özel not ekle",
+      placeholder: "Seçin...",
+    },
+    presets: {
+      title: "Hazır düzenleme önerileri",
+      categories: [
+        { label: "Görsel stil", items: ["Daha premium göster", "Daha sade ve temiz yap", "Daha enerjik bir stil dene"] },
+        { label: "Hareket", items: ["Kamera hareketini yavaşlat", "Ürüne daha yakın plan yap", "Geçişleri daha yumuşak yap"] },
+        { label: "Arka plan", items: ["Arka planı daha aydınlık yap", "Daha minimal bir ortam kullan", "Daha şehirli bir atmosfer oluştur"] },
+        { label: "Ürün odağı", items: ["Ürünü daha belirgin göster", "Ürün detaylarını daha fazla vurgula", "Model yerine ürüne odaklan"] },
+      ],
+    },
+    freeText: {
+      label: "Kendi isteğinizi yazabilir veya hazır önerilerden birkaçını seçebilirsiniz.",
+      placeholder: "Örn. Beyaz fon, ürün yavaşça dönsün, yumuşak gölgeler, premium his...",
+    },
+    cost: {
+      label: "Yeniden üretim maliyeti",
+      balance: "Bakiyeniz",
+      unit: "token",
+      insufficient: "Bakiye yetersiz. Yeniden üretim yapılamaz.",
+    },
+  },
+
+  videoModal: {
+    titleSr: "{{name}}: Video önizlemesi",
+    loadingPreview: "Önizleme yükleniyor...",
+    meta: { category: "Kategori", template: "Şablon" },
+    approved: "Bu video onaylandı",
+    rejected: "Bu video reddedildi",
+    close: "Kapat",
+    approve: "Onayla",
+    edit: "Düzenle",
+    reject: "Reddet",
   },
 
   export: {

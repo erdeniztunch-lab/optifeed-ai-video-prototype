@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Loader2, RefreshCw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -6,41 +7,6 @@ import { type Product } from "@/data/products";
 import { TOKEN_COST_PER_VIDEO } from "@/data/tokens";
 import { SECTOR_OPTIONS, THEME_OPTIONS, BACKGROUND_OPTIONS } from "@/data/guidedPromptOptions";
 import { type GuidedPrompt, type TemplateId } from "@/types/video-flow";
-
-const PRESET_CATEGORIES = [
-  {
-    label: "Görsel stil",
-    presets: [
-      "Daha premium göster",
-      "Daha sade ve temiz yap",
-      "Daha enerjik bir stil dene",
-    ],
-  },
-  {
-    label: "Hareket",
-    presets: [
-      "Kamera hareketini yavaşlat",
-      "Ürüne daha yakın plan yap",
-      "Geçişleri daha yumuşak yap",
-    ],
-  },
-  {
-    label: "Arka plan",
-    presets: [
-      "Arka planı daha aydınlık yap",
-      "Daha minimal bir ortam kullan",
-      "Daha şehirli bir atmosfer oluştur",
-    ],
-  },
-  {
-    label: "Ürün odağı",
-    presets: [
-      "Ürünü daha belirgin göster",
-      "Ürün detaylarını daha fazla vurgula",
-      "Model yerine ürüne odaklan",
-    ],
-  },
-];
 
 interface EditPromptStepProps {
   product: Product;
@@ -59,6 +25,10 @@ export function EditPromptStep({
   onRegenerate,
   onCancel,
 }: EditPromptStepProps) {
+  const { t } = useTranslation();
+
+  const presetCategories = t("editPrompt.presets.categories", { returnObjects: true }) as { label: string; items: string[] }[];
+
   const [sector, setSector] = useState(guidedPrompt.sector ?? "");
   const [theme, setTheme] = useState(guidedPrompt.theme ?? "");
   const [background, setBackground] = useState(guidedPrompt.background ?? "");
@@ -88,7 +58,6 @@ export function EditPromptStep({
 
   return (
     <div className="mx-auto max-w-xl px-6 py-10 md:px-10">
-      {/* Product context */}
       <div className="mb-8 flex items-center gap-3">
         <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-muted">
           <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
@@ -99,69 +68,45 @@ export function EditPromptStep({
         </div>
       </div>
 
-      <h2 className="mb-1 text-xl font-semibold text-foreground">Prompt Düzenle</h2>
-      <p className="mb-6 text-sm text-muted-foreground">
-        Videoyu nasıl görmek istediğinizi açıklayın: stil, atmosfer, sahne, sunum.
-      </p>
+      <h2 className="mb-1 text-xl font-semibold text-foreground">{t("editPrompt.title")}</h2>
+      <p className="mb-6 text-sm text-muted-foreground">{t("editPrompt.subtitle")}</p>
 
       {/* Guided dropdowns */}
       <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <div className="flex flex-col gap-1">
-          <label htmlFor="edit-sector" className="text-xs font-medium text-muted-foreground">Sektör</label>
-          <select
-            id="edit-sector"
-            value={sector}
-            onChange={(e) => setSector(e.target.value)}
-            className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-          >
-            <option value="">Seçin...</option>
-            {SECTOR_OPTIONS.map((o) => (
-              <option key={o} value={o}>{o}</option>
-            ))}
-          </select>
-        </div>
-        <div className="flex flex-col gap-1">
-          <label htmlFor="edit-theme" className="text-xs font-medium text-muted-foreground">Tema</label>
-          <select
-            id="edit-theme"
-            value={theme}
-            onChange={(e) => setTheme(e.target.value)}
-            className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-          >
-            <option value="">Seçin...</option>
-            {THEME_OPTIONS.map((o) => (
-              <option key={o} value={o}>{o}</option>
-            ))}
-          </select>
-        </div>
-        <div className="flex flex-col gap-1">
-          <label htmlFor="edit-background" className="text-xs font-medium text-muted-foreground">Arka Plan</label>
-          <select
-            id="edit-background"
-            value={background}
-            onChange={(e) => setBackground(e.target.value)}
-            className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-          >
-            <option value="">Seçin...</option>
-            {BACKGROUND_OPTIONS.map((o) => (
-              <option key={o} value={o}>{o}</option>
-            ))}
-          </select>
-        </div>
+        {[
+          { id: "edit-sector", label: t("editPrompt.fields.sector"), value: sector, onChange: setSector, options: SECTOR_OPTIONS },
+          { id: "edit-theme", label: t("editPrompt.fields.theme"), value: theme, onChange: setTheme, options: THEME_OPTIONS },
+          { id: "edit-background", label: t("editPrompt.fields.background"), value: background, onChange: setBackground, options: BACKGROUND_OPTIONS },
+        ].map(({ id, label, value, onChange, options }) => (
+          <div key={id} className="flex flex-col gap-1">
+            <label htmlFor={id} className="text-xs font-medium text-muted-foreground">{label}</label>
+            <select
+              id={id}
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+            >
+              <option value="">{t("editPrompt.fields.placeholder")}</option>
+              {options.map((o) => (
+                <option key={o} value={o}>{o}</option>
+              ))}
+            </select>
+          </div>
+        ))}
       </div>
 
       {/* Preset categories */}
       <div className="mb-5">
         <p className="mb-3 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           <Sparkles className="h-3.5 w-3.5" />
-          Hazır düzenleme önerileri
+          {t("editPrompt.presets.title")}
         </p>
         <div className="flex flex-col gap-4">
-          {PRESET_CATEGORIES.map((cat) => (
+          {Array.isArray(presetCategories) && presetCategories.map((cat) => (
             <div key={cat.label}>
               <p className="mb-1.5 text-[11px] font-medium text-muted-foreground/70">{cat.label}</p>
               <div className="flex flex-wrap gap-1.5">
-                {cat.presets.map((preset) => {
+                {cat.items.map((preset) => {
                   const isActive = promptText.toLowerCase().includes(preset.toLowerCase());
                   return (
                     <button
@@ -188,76 +133,46 @@ export function EditPromptStep({
       {/* Free text area */}
       <div className="mb-8">
         <label htmlFor="edit-prompt-text" className="mb-1.5 block text-xs text-muted-foreground">
-          Kendi isteğinizi yazabilir veya hazır önerilerden birkaçını seçebilirsiniz.
+          {t("editPrompt.freeText.label")}
         </label>
         <textarea
           id="edit-prompt-text"
           value={promptText}
           onChange={(e) => setPromptText(e.target.value)}
-          placeholder="Örn. Beyaz fon, ürün yavaşça dönsün, yumuşak gölgeler, premium his..."
+          placeholder={t("editPrompt.freeText.placeholder")}
           rows={4}
           maxLength={200}
           className="w-full resize-none rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30"
         />
-        <p className="mt-1 text-right text-xs text-muted-foreground/60">
-          {promptText.length} / 200
-        </p>
+        <p className="mt-1 text-right text-xs text-muted-foreground/60">{promptText.length} / 200</p>
       </div>
 
-      {/* Cost confirmation */}
-      <div
-        className={cn(
-          "mb-6 rounded-xl border p-4",
-          insufficient ? "border-amber-500/25 bg-amber-500/5" : "border-border bg-card",
-        )}
-      >
+      {/* Cost */}
+      <div className={cn("mb-6 rounded-xl border p-4", insufficient ? "border-amber-500/25 bg-amber-500/5" : "border-border bg-card")}>
         <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">Yeniden üretim maliyeti</span>
-          <span className="font-semibold text-foreground">{TOKEN_COST_PER_VIDEO} token</span>
+          <span className="text-muted-foreground">{t("editPrompt.cost.label")}</span>
+          <span className="font-semibold text-foreground">{TOKEN_COST_PER_VIDEO} {t("editPrompt.cost.unit")}</span>
         </div>
         <div className="mt-2 flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">Bakiyeniz</span>
-          <span
-            className={cn(
-              "font-semibold",
-              insufficient ? "text-amber-500" : "text-foreground",
-            )}
-          >
-            {tokenBalance} token
+          <span className="text-muted-foreground">{t("editPrompt.cost.balance")}</span>
+          <span className={cn("font-semibold", insufficient ? "text-amber-500" : "text-foreground")}>
+            {tokenBalance} {t("editPrompt.cost.unit")}
           </span>
         </div>
         {insufficient && (
-          <p className="mt-2 text-xs text-amber-500">
-            Bakiye yetersiz. Yeniden üretim yapılamaz.
-          </p>
+          <p className="mt-2 text-xs text-amber-500">{t("editPrompt.cost.insufficient")}</p>
         )}
       </div>
 
-      {/* Actions */}
       <div className="flex items-center gap-3">
-        <Button
-          variant="outline"
-          onClick={onCancel}
-          disabled={isRegenerating}
-          className="flex-1"
-        >
-          İptal
+        <Button variant="outline" onClick={onCancel} disabled={isRegenerating} className="flex-1">
+          {t("editPrompt.cancel")}
         </Button>
-        <Button
-          onClick={handleRegenerate}
-          disabled={isRegenerating || insufficient}
-          className="flex-1"
-        >
+        <Button onClick={handleRegenerate} disabled={isRegenerating || insufficient} className="flex-1">
           {isRegenerating ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Üretiliyor...
-            </>
+            <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t("editPrompt.regenerating")}</>
           ) : (
-            <>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Yeniden üret
-            </>
+            <><RefreshCw className="mr-2 h-4 w-4" />{t("editPrompt.regenerate")}</>
           )}
         </Button>
       </div>
