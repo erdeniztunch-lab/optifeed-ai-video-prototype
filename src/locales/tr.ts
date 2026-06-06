@@ -1,0 +1,527 @@
+import type { Translations } from "./en";
+
+const tr: Translations = {
+  common: {
+    back: "Geri",
+    continue: "Devam",
+    cancel: "İptal",
+    save: "Kaydet",
+    optional: "opsiyonel",
+    recommended: "Önerilen",
+    edit: "Düzenle",
+    preview: "Önizle",
+    all: "Tümü",
+    loading: "Yükleniyor...",
+    required: "*",
+    continueArrow: "Devam →",
+  },
+
+  nav: {
+    dashboard: "Dashboard",
+    feedSources: "Feed Sources",
+    exports: "Exports",
+    aiStudio: "AI Studio",
+    aiVideo: "AI Video",
+    newVideo: "Yeni video oluştur",
+    library: "Kütüphane",
+    dynamicCreative: "Dynamic Creative",
+    analytics: "GA4 Analytics",
+    metaAds: "Meta Ads",
+    badgeNew: "New",
+    badgeSoon: "Yakında",
+  },
+
+  shell: {
+    brand: "Optifeed",
+    user: {
+      name: "Optifeed Kullanıcısı",
+      email: "demo@optifeed.com",
+    },
+    tooNarrow: {
+      title: "Bu özellik şu an sadece desktop'ta kullanılabilir.",
+      desc: "En az 1280px ekran genişliği gerekiyor.",
+      hint: "Lütfen daha geniş bir ekranla tekrar deneyin.",
+    },
+    lang: "TR",
+  },
+
+  library: {
+    title: "Video Kütüphanesi",
+    newCampaign: "Yeni video oluştur",
+    search: { placeholder: "Kampanya ara..." },
+    sort: {
+      updatedAt: "Son güncelleme",
+      createdAt: "Oluşturma tarihi",
+      name: "İsim",
+    },
+    tabs: {
+      all: "Tümü",
+      active: "Aktif",
+      draft: "Taslak",
+      setup_in_progress: "Üretim sürüyor",
+      archived: "Arşiv",
+    },
+    folder: {
+      videos: "{{count}} video",
+      products: "{{count}} ürün",
+      pendingCount: "{{count}} bekliyor",
+      continue: "Devam et",
+      menu: {
+        rename: "Yeniden adlandır",
+        archive: "Arşivle",
+        delete: "Sil",
+      },
+      status: {
+        active: "Aktif",
+        draft: "Taslak",
+        setup_in_progress: "Üretim sürüyor",
+        archived: "Arşiv",
+      },
+      deleteConfirm: {
+        title: "Kampanya silinsin mi?",
+        desc: "Bu işlem geri alınamaz.",
+        confirm: "Sil",
+        cancel: "İptal",
+      },
+    },
+    empty: {
+      title: "Henüz video kampanyanız yok",
+      subtitle: "Başlamak için ilk kampanyanızı oluşturun.",
+      action: "İlk kampanyanı oluştur",
+    },
+    zap: "Anlık",
+    stats: {
+      videos: "{{count}} video",
+      products: "{{count}} ürün",
+    },
+  },
+
+  token: {
+    unit: "token",
+    balance: "{{balance}} token",
+    viewBalance: "Token bakiyesini görüntüle",
+  },
+
+  wallet: {
+    title: "Token Bakiyesi",
+    currentBalance: "Mevcut Bakiye",
+    spent: {
+      week: "Bu Hafta",
+      month: "Bu Ay",
+      lastAction: "Son İşlem",
+    },
+    topUp: "Token Al",
+    comingSoon: "Yakında",
+  },
+
+  select: {
+    title: "Ürün seçin",
+    subtitle: "Maliyet ve süre tahmini seçiminize göre güncellenir.",
+    libraryBtn: "Kütüphane",
+    selectedCount: "{{count}} seçildi",
+    selectAll: "Tümünü seç (maks. {{limit}})",
+    deselectAll: "Seçimi temizle",
+    advancedFilter: "Gelişmiş filtre",
+    view: { grid: "Kart", list: "Liste" },
+    search: { placeholder: "Ürün adı, ID veya grup ara" },
+    showing: "{{count}} ürün gösteriliyor",
+    limitWarning: "En fazla {{limit}} ürün seçebilirsiniz. Farklı bir ürün seçmek için mevcut seçimi kaldırın.",
+    empty: {
+      filtered: {
+        title: "Sonuç bulunamadı",
+        desc: "Bu kriterlere uygun ürün bulunamadı.",
+        action: "Filtreyi sıfırla",
+      },
+      catalog: {
+        title: "Ürün kataloğu boş",
+        desc: "Henüz ürün eklenmemiş. Kataloğunuzu güncelleyin.",
+      },
+    },
+    headers: { product: "Ürün", details: "Detaylar" },
+  },
+
+  costBar: {
+    videos: "{{count}} video",
+    tokens: "~{{count}} token",
+    time: "~{{minutes}} dk",
+    continueArrow: "Devam →",
+    hint: "Devam etmek için ürün seçin",
+  },
+
+  filters: {
+    category: { label: "Kategori", all: "Tüm kategoriler" },
+    brand: { label: "Marka", all: "Tüm markalar" },
+    imageReadiness: {
+      label: "Görsel hazırlık",
+      all: "Tümü",
+      hasExtra: "Ek görsel var",
+      noExtra: "Ek görsel yok",
+    },
+    status: {
+      label: "Video durumu",
+      all: "Tümü",
+      noVideo: "Videosu yok",
+      ready: "Hazır",
+    },
+    history: {
+      label: "Video geçmişi",
+      toggle: "Daha önce video üretildi",
+    },
+    sort: {
+      label: "Sıralama",
+      recent: "Son eklenen",
+      suitable: "Video için uygun",
+      noVideoYet: "Videosu olmayanlar",
+      name: "Ürün adı",
+    },
+    clear: "Gelişmiş filtreleri sıfırla",
+  },
+
+  onboarding: {
+    title: "Ürünlerinden saniyeler içinde video reklam üret.",
+    subtitle: "Önce ürün seçin, sonra şablona karar verin.",
+    howItWorks: "Nasıl çalışır?",
+    understood: "Anladım, başlayalım",
+    modal: { title: "Nasıl Çalışır?" },
+  },
+
+  modal: {
+    title: "Kampanyanı tanımla",
+    subtitle: "Şablon seçimine geçmeden önce kampanya bilgilerini girin.",
+    name: {
+      label: "Kampanya adı",
+      placeholder: "Örn. Yaz Koleksiyonu 2025",
+      error: "En az 3 karakter girin",
+    },
+    sector: { label: "Sektör", placeholder: "Seçin..." },
+    prototypeBadge: "Prototip",
+    prototypeTooltip: "Bu prototipte tekstil sektörüne özel şablon mevcuttur",
+    theme: {
+      label: "Kampanya teması",
+      placeholder: "Seçin...",
+      customPlaceholder: "Temanızı yazın...",
+    },
+    productType: { label: "Ürün tipi", placeholder: "Seçin..." },
+    cancel: "İptal",
+    confirm: "Şablona geç →",
+  },
+
+  taxonomy: {
+    sectors: {
+      tekstil: "Moda & Giyim",
+      fashion: "Moda & Giyim",
+      electronics: "Elektronik",
+      home: "Ev & Yaşam",
+      beauty: "Güzellik & Kişisel Bakım",
+      sports: "Spor & Outdoor",
+      food: "Gıda & İçecek",
+      jewelry: "Takı & Aksesuar",
+      other: "Diğer",
+    },
+    themes: {
+      lifestyle: "Yaşam Tarzı",
+      minimalist: "Minimalist",
+      vibrant: "Canlı & Renkli",
+      elegant: "Zarif & Lüks",
+      outdoor: "Outdoor & Doğa",
+      urban: "Kentsel & Modern",
+      seasonal: "Sezonluk",
+      other: "Diğer",
+    },
+    productTypes: {
+      apparel: "Kıyafet",
+      footwear: "Ayakkabı",
+      bags: "Çanta & Aksesuar",
+      "home-decor": "Ev Dekor",
+      electronics: "Elektronik",
+      beauty: "Güzellik",
+      food: "Gıda",
+      sports: "Spor Ekipmanı",
+      other: "Diğer",
+    },
+  },
+
+  templateSelect: {
+    title: "Şablon seçin",
+    subtitle: "Ürünlerinize en uygun video senaryosunu seçin.",
+    noteLabel: "Ek detay",
+    notePlaceholder: "Örn. ürün metalik yüzey, gece sahnesi tercih edilsin, 25-35 yaş kadın kitlesine hitap etsin...",
+    infoNote: "Videolar 8-10 saniye, 1:1 formatta üretilir. Fiyat/marka bilgisi sonradan Dynamic Creative ile eklenebilir.",
+    hint: "Devam etmek için bir şablon seçin",
+    empty: {
+      title: "Şablon bulunamadı",
+      desc: "Kullanılabilir video şablonu yok.",
+      action: "Geri dön",
+    },
+  },
+
+  textileSelect: {
+    title: "Sahneyi seçin",
+    subtitle: "Her sahne 8-10 saniye olup kıyafeti farklı açılardan gösterir.",
+    banner: {
+      title: "Bu şablonlar Moda & Giyim sektörüne özel hazırlanmıştır.",
+      desc: "En iyi sonuç için ürününüzün ön, arka ve yan fotoğraflarını yüklediğinizden emin olun.",
+    },
+    noteLabel: "Ek detay",
+    notePlaceholder: "Örn. ürün metalik yüzey, gece sahnesi tercih edilsin, 25-35 yaş kadın kitlesine hitap etsin...",
+    infoNote: "Videolar 8-10 saniye, 1:1 formatta üretilir. Fiyat/marka bilgisi sonradan Dynamic Creative ile eklenebilir.",
+    hint: "Devam etmek için bir sahne seçin",
+  },
+
+  card: {
+    recommended: "Önerilen",
+    infoAriaLabel: "{{name}} hakkında daha fazla bilgi",
+    popover: {
+      whenToUse: "Ne zaman kullanılır",
+      strengths: "Güçlü yanları",
+      avoid: "Dikkat",
+      scenarioFlow: "Senaryo akışı",
+      suitableProducts: "Uygun ürün tipi",
+      accessories: "Aksesuar",
+    },
+    preview: "Önizle",
+    duration: "8-10 sn",
+  },
+
+  templates: {
+    "vitrine-bakan-kadin": {
+      label: "Vitrine bakan kadın",
+      description: "Şehir vitrininde ürünle etkileşen gerçekçi lifestyle sahnesi.",
+      helperText: "Mağaza deneyimi hissi yaratan kampanyalar için",
+      details: {
+        whenToUse: "Ürünü gerçek yaşam bağlamında göstermek istediğinizde. Şehirli, alışveriş odaklı kampanyalarda güçlü.",
+        strengths: [
+          "Ürünü doğal kullanım sahnesinde gösterir",
+          "Alışveriş davranışına yakın atmosfer",
+          "Kadın hedef kitle için yüksek özdeşleşme",
+        ],
+        avoid: "Teknik ürün detayı ön planda tutulması gereken kampanyalar için uygun değil.",
+      },
+    },
+    "paris-yuruyen-kadin": {
+      label: "Paris'te yürüyen kadın",
+      description: "Premium şehir atmosferinde ürünü taşıyan model ile zarif sunum.",
+      helperText: "Lüks ve lifestyle markalar için ideal",
+      details: {
+        whenToUse: "Lüks, premium veya lifestyle markaları konumlandırmak için. Seyahat ve moda kampanyalarında güçlü.",
+        strengths: [
+          "Aspirasyonel ve premium his verir",
+          "Moda ve aksesuar ürünleri için biçilmiş kaftan",
+          "Yüksek kaliteli görsel atmosfer",
+        ],
+        avoid: "Uygun fiyatlı veya gündelik ürünler için mesaj tutarsız kalabilir.",
+      },
+    },
+    "bahce-bulusmasi": {
+      label: "Günlük moda sahnesi",
+      description: "Günlük yaşam ortamında ürünü doğal şekilde sergileyen moda sahnesi.",
+      helperText: "Casual ve günlük moda kampanyaları için",
+      details: {
+        whenToUse: "Günlük ve casual moda ürünlerini doğal yaşam ortamında sergilemek istediğinizde. Açık hava temalı ve yaz koleksiyonu kampanyaları için uygundur.",
+        strengths: [
+          "Doğal ve sıcak atmosfer",
+          "Günlük yaşam bağlamında ürün görünürlüğü",
+          "Casual ve lifestyle moda kampanyaları için ideal",
+        ],
+        avoid: "Lüks veya premium görsel dil gerektiren kampanyalar için uygun değil.",
+      },
+    },
+    "product-spotlight": {
+      label: "Ürün odak sahnesi",
+      description: "Ürünü ön plana çıkaran sade ve temiz moda sunum sahnesi.",
+      helperText: "Ürün detayını ön plana çıkaran kampanyalar için",
+      details: {
+        whenToUse: "Tekstil ve moda ürününü sade ve dikkat çekici şekilde sergilemek istediğinizde. Katalog ve retargeting kampanyalarında güçlü.",
+        strengths: [
+          "Ürün detayını net ve sade gösterir",
+          "Tekstil ve moda için katalog ve retargeting kampanyalarında güçlü",
+          "Dikkat dağıtmayan temiz kompozisyon",
+        ],
+        avoid: "Fiyat odaklı veya aciliyet içeren kampanyalarda yetersiz kalır.",
+      },
+    },
+  },
+
+  textileTemplates: {
+    "sokakta-yuruyen-kiz": {
+      label: "Sokakta Yürüyen Kız",
+      sceneContext: "Alışveriş sokağında yürüyüş, vitrin duraklama anı",
+      sceneType: "Sokak",
+      details: {
+        scenarioFlow: "Manken alışveriş sokağının ucundan yürüyüşe başlar ve kameraya doğru ilerler. Bir vitrin önünde 1-2 saniye durarak kıyafeti ön ve arka açıdan gösterir. Kameraya dönerek bitiş karesini tamamlar.",
+        suitableProducts: ["Elbise", "Üst Giyim", "Dış Giyim", "Takım"],
+        accessories: "Opsiyonel: marka çantası, gözlük",
+      },
+    },
+    "magaza-onunde-kiz": {
+      label: "Mağaza Önünde Kız",
+      sceneContext: "Mağaza cephesi önü, marka detay odağı",
+      sceneType: "Mağaza",
+      details: {
+        scenarioFlow: "Manken marka yazılı bir mağaza cephesi önünden yavaşça geçer. Elindeki küçük çanta kadraja belirginleşir ve kıyafet detayları öne çıkar. Durarak kameraya bakar.",
+        suitableProducts: ["Elbise", "Kombin Set", "Üst Giyim"],
+        accessories: "Marka çantası (zorunlu senaryo unsuru), gözlük",
+      },
+    },
+    "plajda-yuruyen-kiz": {
+      label: "Plajda Yürüyen Kız",
+      sceneContext: "Sahil ortamı, kumaş hareketi ve doğal ışık",
+      sceneType: "Plaj",
+      details: {
+        scenarioFlow: "Manken sahil şeridinde yürür; hafif esinti kumaşı hareket ettirir. Durarak güneşe döner ve kıyafetin akışı ile rengi doğal ışıkta belirginleşir.",
+        suitableProducts: ["Yazlık Elbise", "Pareo", "Plaj Giyim", "Hafif Kumaşlar"],
+        accessories: "Opsiyonel: gözlük, şapka",
+      },
+    },
+    ziplayanKiz: {
+      label: "Zıplayan Kız",
+      sceneContext: "Dinamik hareket, kumaş dokusu ve enerji",
+      sceneType: "Dinamik",
+      details: {
+        scenarioFlow: "Manken kameraya doğru koşup zıplar; kumaşın hareketi ve dokusu bu karede belirginleşir. Yere inerek gülümser ve kameraya bakar.",
+        suitableProducts: ["Casual", "Activewear", "Günlük Giyim", "Spor"],
+        accessories: "Minimal aksesuar önerilir",
+      },
+    },
+  },
+
+  confirm: {
+    title: "Üretimi onayla",
+    subtitle: "Üretim başladıktan sonra token bakiyenizden düşülecektir.",
+    productCount: "Ürün sayısı",
+    estimatedTime: "Tahmini süre",
+    estimatedTokens: "Tahmini token",
+    timeValue: "~{{minutes}} dk",
+    tokenValue: "~{{count}}",
+    template: {
+      label: "Seçili şablon",
+      note: "{{count}} ürün için bu şablon kullanılacak.",
+    },
+    aiNote: "AI Video yalnızca sahne videosunu üretir. Fiyat, marka ve kampanya metinleri Dynamic Creative ile sonradan eklenir.",
+    balance: {
+      current: "Mevcut bakiye",
+      thisRun: "Bu üretim",
+      remaining: "Tahmini kalan",
+      tokenSuffix: " token",
+      minus: "-{{count}} token",
+      approx: "≈ {{count}} token",
+    },
+    insufficient: {
+      title: "Bakiyeniz bu üretim için yetersiz.",
+      desc: "{{count}} token daha gerekiyor.",
+      tokenAl: "Token al",
+      toast: "Token satın alma yakında kullanıma açılacak.",
+    },
+    notify: {
+      label: "Üretim bittiğinde bana bildir",
+      desc: "Tarayıcı bildirimi gönderilecek.",
+      denied: "Bildirim izni verilmedi. Tarayıcı ayarlarından izin verebilirsiniz.",
+      unsupported: "Tarayıcınız bildirimleri desteklemiyor.",
+    },
+    start: "Üretimi başlat",
+  },
+
+  generate: {
+    title: {
+      generating: "Videolar üretiliyor",
+      reviewing: "İnceleme",
+    },
+    subtitle: "Videolar sırayla üretilir. Her biri tamamlandıkça inceleyebilirsiniz.",
+    confidence: "Üretilen videolar bu oturumda incelemeniz için burada kalır. Onay vermeden hiçbir video kanala gönderilmez.",
+    progress: "{{completed}} / {{total}} tamamlandı",
+    tokensSpent: "{{count}} token harcandı",
+    card: {
+      generating: "Üretiliyor...",
+      approve: "Onayla",
+      reject: "Reddet",
+      revert: "Onayı geri al",
+      preview: "Önizle",
+      editPrompt: "Prompt düzenle",
+      regenerate: "Yeniden üret",
+      approved: "Onaylandı",
+      rejected: "Reddedildi",
+    },
+    footer: {
+      approved: "{{count}} onaylandı / {{total}} toplam",
+      none: "Dışa aktarmak için en az 1 videoyu onaylayın",
+    },
+    exportBtn: "Dışa aktar →",
+    previewModal: { close: "Kapat" },
+  },
+
+  editPrompt: {
+    title: "Prompt Düzenle",
+    regenerate: "Yeniden üret",
+    cancel: "İptal",
+    fields: {
+      sector: "Sektör",
+      theme: "Tema",
+      background: "Arka plan",
+      productType: "Ürün tipi",
+      note: "Ek not",
+    },
+  },
+
+  export: {
+    title: "Kanallara gönder",
+    subtitle: "Onaylanan videoları bağlı katalog kanallarına gönderin. Kanal seçmeden devam etmek için alttaki ZIP seçeneğini kullanabilirsiniz.",
+    approved: "{{count}} video onaylandı",
+    channel: {
+      send: "Gönder",
+      notConnected: "Bağlı değil",
+      connect: "Bağla",
+      comingSoon: "{{name}}: Bu adım yakında",
+      selectToSend: "Göndermek için kanal seçin",
+    },
+    zip: {
+      label: "Toplu indir (ZIP)",
+      desc: "{{count}} video için demo indirme akışını simüle eder.",
+      badge: "Demo",
+      toast: "Demo modunda indirme simüle edildi.",
+    },
+    skip: "Atla (taslak olarak kaydet)",
+    send: "Gönder →",
+    sending: "Gönderiliyor...",
+  },
+
+  success: {
+    title: "Videolar başarıyla dışa aktarıldı",
+    subtitle: "{{count}} ürün artık video içeriğine sahip",
+    summary: {
+      videosLabel: "Video",
+      channelLabel: "Kanal",
+      spentLabel: "Harcanan",
+      videoCount: "{{count}} video",
+      tokenCount: "{{count}} token",
+      channelDraft: "Taslak",
+    },
+    firstCampaign: "Bu senin ilk video kampanyan! Library'den her zaman tekrar gözden geçirebilirsin.",
+    newVideo: "Yeni video oluştur",
+    campaigns: "Kampanyalarıma git",
+  },
+
+  product: {
+    status: {
+      "no-video": "Video yok",
+      ready: "Hazır",
+      generating: "Üretiliyor",
+      pending_review: "İnceleme bekliyor",
+      approved: "Onaylandı",
+      rejected: "Reddedildi",
+      failed: "Başarısız",
+      draft: "Taslak",
+      live: "Yayında",
+    },
+  },
+
+  placeholder: {
+    dashboard: "Kampanya performansınızı ve önemli metrikleri buradan takip edebileceksiniz.",
+    feedSources: "Ürün feed kaynaklarınızı yönetin ve yeni kaynaklar ekleyin.",
+    exports: "Dışa aktarılan feed'lerinizi ve indirme geçmişinizi görüntüleyin.",
+    dynamicCreative: "Dinamik yaratıcı şablonlarınızı oluşturun ve yönetin.",
+    analytics: "Google Analytics 4 verilerinizi doğrudan bu ekrandan görüntüleyin.",
+    metaAds: "Meta reklam kampanyalarınızı yönetin ve performansı izleyin.",
+  },
+};
+
+export default tr;

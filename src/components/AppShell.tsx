@@ -1,5 +1,6 @@
 import { useEffect, useState, ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { TokenBadge } from "@/components/videos/TokenBadge";
 import { cn } from "@/lib/utils";
 import {
@@ -14,6 +15,7 @@ import {
   Monitor,
   Plus,
   Settings,
+  Globe,
   type LucideIcon,
 } from "lucide-react";
 
@@ -58,6 +60,8 @@ export function AppShell({
 }) {
   const isTooNarrow = useIsTooNarrow();
   const location = useLocation();
+  const { i18n } = useTranslation();
+  const currentLang = i18n.language === "tr" ? "tr" : "en";
 
   const isNavItemActive = (to: string) => {
     const [pathname, search = ""] = to.split("?");
@@ -132,6 +136,18 @@ export function AppShell({
         </nav>
 
         <div className="border-t border-sidebar-border p-3 space-y-1">
+          {/* Language toggle */}
+          <div className="px-3 py-1.5">
+            <button
+              type="button"
+              onClick={() => i18n.changeLanguage(currentLang === "en" ? "tr" : "en")}
+              className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-white"
+            >
+              <Globe className="h-3.5 w-3.5" />
+              {currentLang.toUpperCase()}
+            </button>
+          </div>
+
           {tokenBalance !== undefined && (
             <div className="px-3 py-1.5">
               <TokenBadge balance={tokenBalance} spent={spentTokens} />
