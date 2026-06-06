@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FolderOpen, LayoutGrid, List, PackageSearch, Search, SlidersHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -29,6 +30,8 @@ interface Props {
 }
 
 export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalance, onGoToLibrary }: Props) {
+  const { t } = useTranslation();
+
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 300);
@@ -126,19 +129,19 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
         <header className="mb-6 flex items-start justify-between gap-4">
           <div>
             <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-              Ürün seçin
+              {t("select.title")}
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Maliyet ve süre tahmini seçiminize göre güncellenir.
+              {t("select.subtitle")}
             </p>
           </div>
           <button
             type="button"
             onClick={onGoToLibrary}
-            className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 whitespace-nowrap"
+            className="flex shrink-0 items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
           >
-            <FolderOpen className="h-4 w-4" />
-            Kütüphane
+            <FolderOpen className="h-3.5 w-3.5" />
+            {t("select.libraryBtn")}
           </button>
         </header>
 
@@ -146,17 +149,14 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
 
         {/* Toolbar */}
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-          {/* Left: selection summary + select-all */}
           <div className="flex items-center gap-3">
             <div
               className={cn(
                 "rounded-full px-3 py-1.5 text-sm font-semibold",
-                atLimit
-                  ? "bg-primary/10 text-primary"
-                  : "bg-accent text-accent-foreground",
+                atLimit ? "bg-primary/10 text-primary" : "bg-accent text-accent-foreground",
               )}
             >
-              {selectedIds.length} seçildi
+              {t("select.selectedCount", { count: selectedIds.length })}
             </div>
 
             {products.length > 0 && (
@@ -166,17 +166,15 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
                 className="rounded-full border border-border bg-background px-3.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground"
               >
                 {allVisibleSelected
-                  ? "Seçimi temizle"
+                  ? t("select.deselectAll")
                   : canSelectMore
-                    ? `Tümünü seç (maks. ${PRODUCT_SELECTION_LIMIT})`
-                    : "Seçimi temizle"}
+                    ? t("select.selectAll", { limit: PRODUCT_SELECTION_LIMIT })
+                    : t("select.deselectAll")}
               </button>
             )}
           </div>
 
-          {/* Right: advanced filter + view toggle + search */}
           <div className="flex w-full items-center justify-end gap-3 sm:w-auto">
-            {/* Gelişmiş filtre toggle */}
             <button
               type="button"
               onClick={() => setAdvPanelOpen((v) => !v)}
@@ -188,7 +186,7 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
               )}
             >
               <SlidersHorizontal className="h-3.5 w-3.5" />
-              Gelişmiş filtre
+              {t("select.advancedFilter")}
               {advActiveCount > 0 && (
                 <span className="ml-0.5 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground leading-none">
                   {advActiveCount}
@@ -197,20 +195,18 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
             </button>
 
             {/* View toggle */}
-            <div role="group" aria-label="Görünüm seçimi" className="inline-flex rounded-full border border-border bg-card p-1">
+            <div role="group" aria-label={t("select.view.grid")} className="inline-flex rounded-full border border-border bg-card p-1">
               <button
                 type="button"
                 aria-pressed={view === "grid"}
                 onClick={() => setView("grid")}
                 className={cn(
                   "inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition-colors",
-                  view === "grid"
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground hover:text-foreground",
+                  view === "grid" ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 <LayoutGrid className="h-4 w-4" aria-hidden="true" />
-                Kart
+                {t("select.view.grid")}
               </button>
               <button
                 type="button"
@@ -218,13 +214,11 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
                 onClick={() => setView("list")}
                 className={cn(
                   "inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition-colors",
-                  view === "list"
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground hover:text-foreground",
+                  view === "list" ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 <List className="h-4 w-4" aria-hidden="true" />
-                Liste
+                {t("select.view.list")}
               </button>
             </div>
 
@@ -232,8 +226,8 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
             <div className="relative w-full max-w-xs">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
               <Input
-                aria-label="Ürün ara"
-                placeholder="Ürün adı, ID veya grup ara"
+                aria-label={t("select.search.placeholder")}
+                placeholder={t("select.search.placeholder")}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="pl-9 bg-card"
@@ -242,7 +236,6 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
           </div>
         </div>
 
-        {/* Advanced filter panel */}
         {advPanelOpen && (
           <AdvancedFilterPanel
             filters={advFilters}
@@ -254,14 +247,12 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
           />
         )}
 
-        {/* Limit warning banner */}
         {atLimit && (
           <div className="mb-4 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">
-            En fazla {PRODUCT_SELECTION_LIMIT} ürün seçebilirsiniz. Farklı bir ürün seçmek için mevcut seçimi kaldırın.
+            {t("select.limitWarning", { limit: PRODUCT_SELECTION_LIMIT })}
           </div>
         )}
 
-        {/* Product list/grid */}
         {isLoading ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
@@ -271,7 +262,7 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
         ) : (
           <>
             <p className="mb-3 text-xs text-muted-foreground">
-              {products.length} ürün gösteriliyor
+              {t("select.showing", { count: products.length })}
             </p>
             <div
               className={cn(
@@ -282,8 +273,8 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
             >
               {view === "list" && products.length > 0 && (
                 <div className="hidden grid-cols-[minmax(320px,1.7fr)_minmax(420px,1fr)] items-center gap-6 bg-muted/40 px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground md:grid">
-                  <p>Ürün</p>
-                  <p>Detaylar</p>
+                  <p>{t("select.headers.product")}</p>
+                  <p>{t("select.headers.details")}</p>
                 </div>
               )}
               {products.map((p) => (
@@ -301,24 +292,23 @@ export function SelectStep({ selectedIds, setSelectedIds, onContinue, tokenBalan
             {products.length === 0 && PRODUCTS.length > 0 && (
               <EmptyState
                 icon={Search}
-                title="Sonuç bulunamadı"
-                description="Bu kriterlere uygun ürün bulunamadı."
-                actionLabel={hasActiveFilters ? "Filtreyi sıfırla" : undefined}
+                title={t("select.empty.filtered.title")}
+                description={t("select.empty.filtered.desc")}
+                actionLabel={hasActiveFilters ? t("select.empty.filtered.action") : undefined}
                 onAction={hasActiveFilters ? clearFilters : undefined}
               />
             )}
             {PRODUCTS.length === 0 && (
               <EmptyState
                 icon={PackageSearch}
-                title="Ürün kataloğu boş"
-                description="Henüz ürün eklenmemiş. Kataloğunuzu güncelleyin."
+                title={t("select.empty.catalog.title")}
+                description={t("select.empty.catalog.desc")}
               />
             )}
           </>
         )}
       </div>
 
-      {/* Sticky cost estimate bar */}
       <CostEstimateBar
         selectedCount={selectedIds.length}
         tokenBalance={tokenBalance}

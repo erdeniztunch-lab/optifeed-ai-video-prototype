@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Check, History } from "lucide-react";
 import { Product, VideoHistoryEntry } from "@/data/products";
 import { StackedImageIndicator } from "./StackedImageIndicator";
@@ -44,7 +45,6 @@ export function ProductCard({ product, selected, onToggle, view = "grid", disabl
     >
       {isList ? (
         <>
-          {/* Left column: checkbox + image + name */}
           <div className="flex min-w-0 items-center gap-3">
             <span
               className={cn(
@@ -59,12 +59,7 @@ export function ProductCard({ product, selected, onToggle, view = "grid", disabl
             </span>
 
             <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md bg-muted">
-              <img
-                src={product.image}
-                alt={product.name}
-                loading="lazy"
-                className="h-full w-full object-cover"
-              />
+              <img src={product.image} alt={product.name} loading="lazy" className="h-full w-full object-cover" />
               <StackedImageIndicator count={product.additionalImageCount} />
             </div>
 
@@ -77,7 +72,6 @@ export function ProductCard({ product, selected, onToggle, view = "grid", disabl
             </div>
           </div>
 
-          {/* Right column: status + metadata */}
           <div className="min-w-0">
             <div className="hidden items-center gap-2 md:flex">
               <StatusBadge status={product.status} />
@@ -94,7 +88,6 @@ export function ProductCard({ product, selected, onToggle, view = "grid", disabl
         </>
       ) : (
         <>
-          {/* Image with stacked indicator */}
           <div className="relative aspect-square overflow-hidden bg-muted">
             <img
               src={product.image}
@@ -115,13 +108,10 @@ export function ProductCard({ product, selected, onToggle, view = "grid", disabl
             <StackedImageIndicator count={product.additionalImageCount} />
           </div>
 
-          {/* Card body */}
           <div className="flex min-w-0 flex-col gap-2 p-3">
             <div className="min-w-0">
               <p className="text-[11px] text-muted-foreground">{product.brand}</p>
-              <p className="mt-0.5 line-clamp-1 text-sm font-medium leading-tight text-foreground">
-                {product.name}
-              </p>
+              <p className="mt-0.5 line-clamp-1 text-sm font-medium leading-tight text-foreground">{product.name}</p>
             </div>
             <div className="flex flex-wrap items-center gap-1.5">
               <StatusBadge status={product.status} />
@@ -142,6 +132,7 @@ export function ProductCard({ product, selected, onToggle, view = "grid", disabl
 }
 
 function StatusBadge({ status }: { status: Product["status"] }) {
+  const { t } = useTranslation();
   return (
     <span
       className={cn(
@@ -151,13 +142,8 @@ function StatusBadge({ status }: { status: Product["status"] }) {
           : "bg-success-soft text-success",
       )}
     >
-      <span
-        className={cn(
-          "h-1.5 w-1.5 rounded-full",
-          status === "no-video" ? "bg-amber-600" : "bg-success",
-        )}
-      />
-      {status === "no-video" ? "No video" : "Ready"}
+      <span className={cn("h-1.5 w-1.5 rounded-full", status === "no-video" ? "bg-amber-600" : "bg-success")} />
+      {t(`product.status.${status}`)}
     </span>
   );
 }
@@ -171,24 +157,13 @@ function MetaLine({ label, value }: { label: string; value: string }) {
 }
 
 function HistoryBadge({ history, compact = false }: { history: VideoHistoryEntry[]; compact?: boolean }) {
+  const { t } = useTranslation();
   const latest = history[history.length - 1];
   const tooltipText = [
-    `Son üretim: ${latest.date}`,
-    `Kampanya: ${latest.campaignName}`,
-    "Bu ürünü tekrar seçerseniz yeni bir video üretimi başlatılır.",
+    t("product.history.tooltip.date", { date: latest.date }),
+    t("product.history.tooltip.campaign", { name: latest.campaignName }),
+    t("product.history.tooltip.note"),
   ].join("\n");
-
-  if (compact) {
-    return (
-      <span
-        title={tooltipText}
-        className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700 ring-1 ring-amber-200 cursor-default"
-      >
-        <History className="h-2.5 w-2.5 shrink-0" />
-        {history.length}× geçmiş
-      </span>
-    );
-  }
 
   return (
     <span
@@ -196,7 +171,9 @@ function HistoryBadge({ history, compact = false }: { history: VideoHistoryEntry
       className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700 ring-1 ring-amber-200 cursor-default"
     >
       <History className="h-2.5 w-2.5 shrink-0" />
-      Daha önce video üretildi
+      {compact
+        ? t("product.history.compact", { count: history.length })
+        : t("product.history.badge")}
     </span>
   );
 }

@@ -166,6 +166,12 @@ const tr: Translations = {
     time: "~{{minutes}} dk",
     continueArrow: "Devam →",
     hint: "Devam etmek için ürün seçin",
+    selected: "{{count}} / {{limit}} ürün seçildi",
+    atLimit: "Limite ulaşıldı",
+    insufficient: "yetersiz bakiye",
+    selectHint: "Devam etmek için en az bir ürün seçin.",
+    trustNote: "Token, yalnızca video üretimi başladığında düşülür.",
+    cta: "Şablon seç",
   },
 
   filters: {
@@ -520,7 +526,39 @@ const tr: Translations = {
     campaigns: "Kampanyalarıma git",
   },
 
+  howItWorks: {
+    tabs: { beforeAfter: "Önce / Sonra", steps: "3 adımda", faq: "SSS" },
+    beforeAfter: {
+      static: "Statik görsel",
+      before: "Önce",
+      video: "Video reklam",
+      after: "Sonra",
+      desc: "Statik kataloğunuz, performans odaklı video reklama dönüşür.",
+    },
+    steps: [
+      { title: "Ürün seç", desc: "Kataloğundan video üretmek istediğin ürünleri seç." },
+      { title: "Şablon belirle", desc: "Senaryoyu seç, gerekirse ek detay ekle." },
+      { title: "Üret ve incele", desc: "Videoları onayla, reklam kanallarına gönder." },
+    ],
+    faq: [
+      { q: "Token nedir?", a: "1 token ≈ 30 sn video üretimi. Bakiyeniz cüzdandan görünür." },
+      { q: "Beğenmezsem?", a: "Her video tek tek onaylanır. Beğenmediğinizi yeniden ürettirebilir veya reddedebilirsiniz." },
+      { q: "Hangi kanallara gönderebilirim?", a: "Mevcut versiyonda Meta, Google Merchant ve TikTok Catalog destekleniyor." },
+      { q: "Tek görsel yeterli mi?", a: "Mümkün, ama çoklu görseller video kalitesini artırır." },
+    ],
+    close: "Kapat",
+  },
+
   product: {
+    history: {
+      badge: "Daha önce video üretildi",
+      compact: "{{count}}× geçmiş",
+      tooltip: {
+        date: "Son üretim: {{date}}",
+        campaign: "Kampanya: {{name}}",
+        note: "Bu ürünü tekrar seçerseniz yeni bir video üretimi başlatılır.",
+      },
+    },
     status: {
       "no-video": "Video yok",
       ready: "Hazır",

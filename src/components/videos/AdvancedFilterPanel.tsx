@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 export interface AdvFilters {
@@ -9,7 +10,6 @@ export interface AdvFilters {
   sortBy: "recent" | "name" | "suitable" | "no-video-yet";
 }
 
-
 interface Props {
   filters: AdvFilters;
   onChange: (filters: AdvFilters) => void;
@@ -19,69 +19,71 @@ interface Props {
   brandOptions: string[];
 }
 
-const IMAGE_OPTIONS: { label: string; value: AdvFilters["imageReadiness"] }[] = [
-  { label: "Tümü", value: "" },
-  { label: "Ek görsel var", value: "has-extra" },
-  { label: "Ek görsel yok", value: "no-extra" },
-];
-
-const STATUS_OPTIONS: { label: string; value: AdvFilters["statusFilter"] }[] = [
-  { label: "Tümü", value: "" },
-  { label: "Videosu yok", value: "no-video" },
-  { label: "Hazır", value: "ready" },
-];
-
-const SORT_OPTIONS: { label: string; value: AdvFilters["sortBy"] }[] = [
-  { label: "Son eklenen", value: "recent" },
-  { label: "Video için uygun", value: "suitable" },
-  { label: "Videosu olmayanlar", value: "no-video-yet" },
-  { label: "Ürün adı", value: "name" },
-];
-
 export function AdvancedFilterPanel({ filters, onChange, onClear, activeCount, categoryOptions, brandOptions }: Props) {
+  const { t } = useTranslation();
+
+  const IMAGE_OPTIONS: { label: string; value: AdvFilters["imageReadiness"] }[] = [
+    { label: t("filters.imageReadiness.all"), value: "" },
+    { label: t("filters.imageReadiness.hasExtra"), value: "has-extra" },
+    { label: t("filters.imageReadiness.noExtra"), value: "no-extra" },
+  ];
+
+  const STATUS_OPTIONS: { label: string; value: AdvFilters["statusFilter"] }[] = [
+    { label: t("filters.status.all"), value: "" },
+    { label: t("filters.status.noVideo"), value: "no-video" },
+    { label: t("filters.status.ready"), value: "ready" },
+  ];
+
+  const SORT_OPTIONS: { label: string; value: AdvFilters["sortBy"] }[] = [
+    { label: t("filters.sort.recent"), value: "recent" },
+    { label: t("filters.sort.suitable"), value: "suitable" },
+    { label: t("filters.sort.noVideoYet"), value: "no-video-yet" },
+    { label: t("filters.sort.name"), value: "name" },
+  ];
+
   return (
     <div className="mb-4 rounded-xl border border-border bg-card p-4">
       <div className="flex flex-wrap items-start gap-8">
-        {/* Kategori */}
+        {/* Category */}
         <div className="flex flex-col gap-2">
           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Kategori
+            {t("filters.category.label")}
           </span>
           <select
-            aria-label="Kategori filtresi"
+            aria-label={t("filters.category.label")}
             value={filters.category}
             onChange={(e) => onChange({ ...filters, category: e.target.value })}
             className="cursor-pointer rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs text-muted-foreground focus:outline-none"
           >
-            <option value="">Tüm kategoriler</option>
+            <option value="">{t("filters.category.all")}</option>
             {categoryOptions.map((c) => (
               <option key={c} value={c}>{c}</option>
             ))}
           </select>
         </div>
 
-        {/* Marka */}
+        {/* Brand */}
         <div className="flex flex-col gap-2">
           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Marka
+            {t("filters.brand.label")}
           </span>
           <select
-            aria-label="Marka filtresi"
+            aria-label={t("filters.brand.label")}
             value={filters.brand}
             onChange={(e) => onChange({ ...filters, brand: e.target.value })}
             className="cursor-pointer rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs text-muted-foreground focus:outline-none"
           >
-            <option value="">Tüm markalar</option>
+            <option value="">{t("filters.brand.all")}</option>
             {brandOptions.map((b) => (
               <option key={b} value={b}>{b}</option>
             ))}
           </select>
         </div>
 
-        {/* Görsel hazırlık */}
+        {/* Image readiness */}
         <div className="flex flex-col gap-2">
           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Görsel hazırlık
+            {t("filters.imageReadiness.label")}
           </span>
           <div className="flex items-center gap-1.5">
             {IMAGE_OPTIONS.map((opt) => (
@@ -103,10 +105,10 @@ export function AdvancedFilterPanel({ filters, onChange, onClear, activeCount, c
           </div>
         </div>
 
-        {/* Video durumu */}
+        {/* Video status */}
         <div className="flex flex-col gap-2">
           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Video durumu
+            {t("filters.status.label")}
           </span>
           <div className="flex items-center gap-1.5">
             {STATUS_OPTIONS.map((opt) => (
@@ -128,10 +130,10 @@ export function AdvancedFilterPanel({ filters, onChange, onClear, activeCount, c
           </div>
         </div>
 
-        {/* Geçmiş */}
+        {/* History */}
         <div className="flex flex-col gap-2">
           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Video geçmişi
+            {t("filters.history.label")}
           </span>
           <button
             type="button"
@@ -150,14 +152,14 @@ export function AdvancedFilterPanel({ filters, onChange, onClear, activeCount, c
                 filters.hasHistory ? "border-primary bg-primary" : "border-muted-foreground",
               )}
             />
-            Daha önce video üretildi
+            {t("filters.history.toggle")}
           </button>
         </div>
 
-        {/* Sıralama */}
+        {/* Sort */}
         <div className="flex flex-col gap-2">
           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Sıralama
+            {t("filters.sort.label")}
           </span>
           <div className="flex items-center gap-1.5">
             {SORT_OPTIONS.map((opt) => (
@@ -187,7 +189,7 @@ export function AdvancedFilterPanel({ filters, onChange, onClear, activeCount, c
               onClick={onClear}
               className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
             >
-              Gelişmiş filtreleri sıfırla
+              {t("filters.clear")}
             </button>
           </div>
         )}

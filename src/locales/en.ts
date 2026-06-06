@@ -164,6 +164,12 @@ const en = {
     time: "~{{minutes}} min",
     continueArrow: "Continue →",
     hint: "Select products to continue",
+    selected: "{{count}} / {{limit}} products selected",
+    atLimit: "Limit reached",
+    insufficient: "insufficient balance",
+    selectHint: "Select at least one product to continue.",
+    trustNote: "Tokens are only deducted when video production begins.",
+    cta: "Choose template",
   },
 
   filters: {
@@ -518,7 +524,39 @@ const en = {
     campaigns: "Go to My Campaigns",
   },
 
+  howItWorks: {
+    tabs: { beforeAfter: "Before / After", steps: "3 Steps", faq: "FAQ" },
+    beforeAfter: {
+      static: "Static image",
+      before: "Before",
+      video: "Video ad",
+      after: "After",
+      desc: "Your static catalog transforms into performance-driven video ads.",
+    },
+    steps: [
+      { title: "Select products", desc: "Choose the products you want to generate videos for from your catalog." },
+      { title: "Choose a template", desc: "Pick a scenario and add extra details if needed." },
+      { title: "Generate and review", desc: "Approve videos, then send to ad channels." },
+    ],
+    faq: [
+      { q: "What are tokens?", a: "1 token ≈ 30 seconds of video production. Your balance is visible in the wallet." },
+      { q: "What if I don't like them?", a: "Each video is approved individually. You can regenerate or reject ones you don't like." },
+      { q: "Which channels can I send to?", a: "In the current version, Meta, Google Merchant, and TikTok Catalog are supported." },
+      { q: "Is one image enough?", a: "It's possible, but multiple images improve video quality." },
+    ],
+    close: "Close",
+  },
+
   product: {
+    history: {
+      badge: "Previously generated",
+      compact: "{{count}}× history",
+      tooltip: {
+        date: "Last generated: {{date}}",
+        campaign: "Campaign: {{name}}",
+        note: "Selecting this product again will start a new video production.",
+      },
+    },
     status: {
       "no-video": "No Video",
       ready: "Ready",
