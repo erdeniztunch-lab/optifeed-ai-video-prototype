@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft, Download, Loader2, Send } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ interface ExportStepProps {
 }
 
 export function ExportStep({ approvedCount, onComplete, onSkip, onBack }: ExportStepProps) {
+  const { t } = useTranslation();
   const [selectedChannelIds, setSelectedChannelIds] = useState<string[]>([]);
   const [isSending, setIsSending] = useState(false);
 
@@ -28,11 +30,11 @@ export function ExportStep({ approvedCount, onComplete, onSkip, onBack }: Export
   };
 
   const handleConnectMock = (channelName: string) => {
-    toast(`${channelName}: Bu adım yakında`);
+    toast(t("export.channel.comingSoon", { name: channelName }));
   };
 
   const handleZipDownload = () => {
-    toast("Demo modunda indirme simüle edildi.");
+    toast(t("export.zip.toast"));
   };
 
   const handleSend = () => {
@@ -52,14 +54,11 @@ export function ExportStep({ approvedCount, onComplete, onSkip, onBack }: Export
         {/* Header */}
         <header className="mb-10 flex flex-wrap items-start justify-between gap-5">
           <div>
-            <h2 className="text-2xl font-semibold text-foreground">Kanallara gönder</h2>
-            <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              Onaylanan videoları bağlı katalog kanallarına gönderin. Kanal seçmeden devam etmek
-              için alttaki ZIP seçeneğini kullanabilirsiniz.
-            </p>
+            <h2 className="text-2xl font-semibold text-foreground">{t("export.title")}</h2>
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{t("export.subtitle")}</p>
           </div>
           <span className="rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary">
-            {approvedCount} video onaylandı
+            {t("export.approved", { count: approvedCount })}
           </span>
         </header>
 
@@ -77,12 +76,11 @@ export function ExportStep({ approvedCount, onComplete, onSkip, onBack }: Export
           ))}
         </div>
 
-        {/* Secondary download affordance */}
+        {/* ZIP affordance */}
         <div className="mt-10 border-t border-border pt-5">
           <p className="mb-3 text-xs font-semibold text-muted-foreground">
-            Sadece indirmek için
+            {t("export.zip.downloadOnly")}
           </p>
-
           <button
             type="button"
             onClick={handleZipDownload}
@@ -93,14 +91,14 @@ export function ExportStep({ approvedCount, onComplete, onSkip, onBack }: Export
                 <Download className="h-4 w-4" />
               </span>
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-foreground">ZIP indir</p>
+                <p className="text-sm font-semibold text-foreground">{t("export.zip.label")}</p>
                 <p className="text-xs text-muted-foreground">
-                  {approvedCount} video için demo indirme akışını simüle eder.
+                  {t("export.zip.desc", { count: approvedCount })}
                 </p>
               </div>
             </div>
             <span className="shrink-0 rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground">
-              Demo
+              {t("export.zip.badge")}
             </span>
           </button>
         </div>
@@ -111,13 +109,13 @@ export function ExportStep({ approvedCount, onComplete, onSkip, onBack }: Export
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-4 md:px-10">
           <Button variant="outline" onClick={onBack}>
             <ArrowLeft className="mr-1.5 h-4 w-4" />
-            Geri
+            {t("common.back")}
           </Button>
 
           <div className="flex items-center gap-3">
             {!canSend && (
               <p className="hidden text-xs text-muted-foreground/60 sm:block">
-                Göndermek için en az bir kanal seçin
+                {t("export.hint")}
               </p>
             )}
             <button
@@ -128,19 +126,13 @@ export function ExportStep({ approvedCount, onComplete, onSkip, onBack }: Export
                 isSending && "pointer-events-none opacity-50",
               )}
             >
-              Atla (taslak olarak kaydet)
+              {t("export.skip")}
             </button>
             <Button disabled={!canSend || isSending} onClick={handleSend}>
               {isSending ? (
-                <>
-                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                  Gönderiliyor...
-                </>
+                <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />{t("export.sending")}</>
               ) : (
-                <>
-                  <Send className="mr-1.5 h-3.5 w-3.5" />
-                  Gönder →
-                </>
+                <><Send className="mr-1.5 h-3.5 w-3.5" />{t("export.send")}</>
               )}
             </Button>
           </div>

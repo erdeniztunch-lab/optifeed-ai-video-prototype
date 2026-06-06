@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type Channel } from "@/data/channels";
@@ -29,7 +30,9 @@ export function ChannelToggleCard({
   onToggle,
   onConnectMock,
 }: ChannelToggleCardProps) {
-  const { isConnected, name, description, accountName, platform } = channel;
+  const { t } = useTranslation();
+  const { isConnected, name, accountName, platform, id } = channel;
+  const description = t(`channels.${id}.description`);
 
   return (
     <article
@@ -47,8 +50,6 @@ export function ChannelToggleCard({
               className={cn(
                 "text-lg font-bold leading-none",
                 platform === "meta" && "text-blue-600",
-                platform === "google" && "text-foreground",
-                platform === "tiktok" && "text-foreground",
               )}
             >
               {platformLabel[platform]}
@@ -61,26 +62,26 @@ export function ChannelToggleCard({
           <div className="min-w-0">
             <p className="line-clamp-1 text-base font-semibold text-foreground">{name}</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              {accountName ?? "Hesap bağlantısı bekleniyor"}
+              {accountName ?? t("export.channel.accountPending")}
             </p>
           </div>
         </div>
 
         <span className="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-          {approvedCount} video
+          {t("export.channel.videoCount", { count: approvedCount })}
         </span>
       </div>
 
       <div className="mt-8 space-y-2">
         <div className="flex items-center justify-between gap-3">
-          <p className="text-sm font-semibold text-muted-foreground">Gönderim hedefi</p>
+          <p className="text-sm font-semibold text-muted-foreground">{t("export.channel.sendTarget")}</p>
           <span
             className={cn(
               "rounded-full px-2 py-0.5 text-[10px] font-semibold",
               isConnected ? "bg-success/15 text-success" : "bg-muted text-muted-foreground",
             )}
           >
-            {isConnected ? "Bağlı" : "Bağlı değil"}
+            {isConnected ? t("export.channel.connected") : t("export.channel.disconnected")}
           </span>
         </div>
 
@@ -95,15 +96,10 @@ export function ChannelToggleCard({
               type="button"
               onClick={onToggle}
               aria-pressed={selected}
-              className={cn(
-                "inline-flex h-11 shrink-0 items-center gap-2 rounded-lg px-5 text-sm font-semibold transition-colors",
-                selected
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                  : "bg-primary text-primary-foreground hover:bg-primary/90",
-              )}
+              className="inline-flex h-11 shrink-0 items-center gap-2 rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
             >
               {selected && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
-              {selected ? "Seçildi" : "Seç"}
+              {selected ? t("export.channel.selected") : t("export.channel.select")}
             </button>
           ) : (
             <button
@@ -111,7 +107,7 @@ export function ChannelToggleCard({
               onClick={onConnectMock}
               className="h-11 shrink-0 rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
             >
-              Bağla
+              {t("export.channel.connect")}
             </button>
           )}
         </div>

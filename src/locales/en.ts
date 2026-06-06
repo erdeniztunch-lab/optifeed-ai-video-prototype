@@ -523,6 +523,43 @@ const en = {
       addNote: "+ Add custom note",
       placeholder: "Select...",
     },
+    optionLabels: {
+      sectors: [
+        "Fashion & Apparel",
+        "Shoes",
+        "Accessories",
+        "Home & Living",
+        "Electronics",
+        "Food & Beverage",
+        "Cosmetics & Beauty",
+        "Sports & Outdoor",
+      ],
+      themes: [
+        "Mother's Day",
+        "Ramadan",
+        "Summer Collection",
+        "Sale Season",
+        "New Season",
+        "Valentine's Day",
+        "Back to School",
+        "Special Days",
+      ],
+      backgrounds: [
+        "White background",
+        "Lifestyle",
+        "Studio",
+        "Natural light",
+        "Gradient",
+        "Transparent",
+        "Outdoor",
+      ],
+      productTypes: [
+        "Single product",
+        "Product group",
+        "Combination / Set",
+        "Lifestyle use",
+      ],
+    },
     presets: {
       title: "Quick edit suggestions",
       categories: [
@@ -566,9 +603,17 @@ const en = {
       connect: "Connect",
       comingSoon: "{{name}}: Coming soon",
       selectToSend: "Select channels to export",
+      accountPending: "Account connection pending",
+      sendTarget: "Send destination",
+      connected: "Connected",
+      disconnected: "Not connected",
+      selected: "Selected",
+      select: "Select",
+      videoCount: "{{count}} video",
     },
     zip: {
       label: "Bulk download (ZIP)",
+      downloadOnly: "For download only",
       desc: "Simulates a demo download flow for {{count}} videos.",
       badge: "Demo",
       toast: "Download simulated in demo mode.",
@@ -576,6 +621,13 @@ const en = {
     skip: "Skip (save as draft)",
     send: "Send →",
     sending: "Sending...",
+    hint: "Select at least one channel to send",
+  },
+
+  channels: {
+    "meta-catalog": { description: "Send to Facebook and Instagram product catalog" },
+    "google-merchant": { description: "Send to Google Shopping catalog" },
+    "tiktok-catalog": { description: "Send to TikTok product catalog" },
   },
 
   success: {
@@ -588,6 +640,7 @@ const en = {
       videoCount: "{{count}} videos",
       tokenCount: "{{count}} tokens",
       channelDraft: "Draft",
+      channelCount: "{{count}} channels",
     },
     firstCampaign: "This is your first video campaign! You can always review it again from the Library.",
     newVideo: "Create New Video",

@@ -525,6 +525,43 @@ const tr: Translations = {
       addNote: "+ Özel not ekle",
       placeholder: "Seçin...",
     },
+    optionLabels: {
+      sectors: [
+        "Moda & Giyim",
+        "Ayakkabı",
+        "Aksesuar",
+        "Ev & Yaşam",
+        "Elektronik",
+        "Gıda & İçecek",
+        "Kozmetik & Güzellik",
+        "Spor & Outdoor",
+      ],
+      themes: [
+        "Anneler Günü",
+        "Ramazan",
+        "Yaz Koleksiyonu",
+        "İndirim Sezonu",
+        "Yeni Sezon",
+        "Sevgililer Günü",
+        "Okul Dönemi",
+        "Özel Günler",
+      ],
+      backgrounds: [
+        "Beyaz fon",
+        "Lifestyle",
+        "Stüdyo",
+        "Doğal ışık",
+        "Gradient",
+        "Şeffaf",
+        "Outdoor",
+      ],
+      productTypes: [
+        "Tekil ürün",
+        "Ürün grubu",
+        "Kombine / Set",
+        "Lifestyle kullanım",
+      ],
+    },
     presets: {
       title: "Hazır düzenleme önerileri",
       categories: [
@@ -568,9 +605,17 @@ const tr: Translations = {
       connect: "Bağla",
       comingSoon: "{{name}}: Bu adım yakında",
       selectToSend: "Göndermek için kanal seçin",
+      accountPending: "Hesap bağlantısı bekleniyor",
+      sendTarget: "Gönderim hedefi",
+      connected: "Bağlı",
+      disconnected: "Bağlı değil",
+      selected: "Seçildi",
+      select: "Seç",
+      videoCount: "{{count}} video",
     },
     zip: {
       label: "Toplu indir (ZIP)",
+      downloadOnly: "Sadece indirmek için",
       desc: "{{count}} video için demo indirme akışını simüle eder.",
       badge: "Demo",
       toast: "Demo modunda indirme simüle edildi.",
@@ -578,6 +623,13 @@ const tr: Translations = {
     skip: "Atla (taslak olarak kaydet)",
     send: "Gönder →",
     sending: "Gönderiliyor...",
+    hint: "Göndermek için en az bir kanal seçin",
+  },
+
+  channels: {
+    "meta-catalog": { description: "Facebook ve Instagram ürün kataloğuna gönder" },
+    "google-merchant": { description: "Google Shopping kataloğuna gönder" },
+    "tiktok-catalog": { description: "TikTok ürün kataloğuna gönder" },
   },
 
   success: {
@@ -590,6 +642,7 @@ const tr: Translations = {
       videoCount: "{{count}} video",
       tokenCount: "{{count}} token",
       channelDraft: "Taslak",
+      channelCount: "{{count}} kanal",
     },
     firstCampaign: "Bu senin ilk video kampanyan! Library'den her zaman tekrar gözden geçirebilirsin.",
     newVideo: "Yeni video oluştur",

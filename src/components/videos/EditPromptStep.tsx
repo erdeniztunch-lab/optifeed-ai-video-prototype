@@ -28,6 +28,11 @@ export function EditPromptStep({
   const { t } = useTranslation();
 
   const presetCategories = t("editPrompt.presets.categories", { returnObjects: true }) as { label: string; items: string[] }[];
+  const optionLabels = t("editPrompt.optionLabels", { returnObjects: true }) as {
+    sectors: string[];
+    themes: string[];
+    backgrounds: string[];
+  };
 
   const [sector, setSector] = useState(guidedPrompt.sector ?? "");
   const [theme, setTheme] = useState(guidedPrompt.theme ?? "");
@@ -74,10 +79,10 @@ export function EditPromptStep({
       {/* Guided dropdowns */}
       <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
         {[
-          { id: "edit-sector", label: t("editPrompt.fields.sector"), value: sector, onChange: setSector, options: SECTOR_OPTIONS },
-          { id: "edit-theme", label: t("editPrompt.fields.theme"), value: theme, onChange: setTheme, options: THEME_OPTIONS },
-          { id: "edit-background", label: t("editPrompt.fields.background"), value: background, onChange: setBackground, options: BACKGROUND_OPTIONS },
-        ].map(({ id, label, value, onChange, options }) => (
+          { id: "edit-sector", label: t("editPrompt.fields.sector"), value: sector, onChange: setSector, options: SECTOR_OPTIONS, optionLabels: optionLabels.sectors },
+          { id: "edit-theme", label: t("editPrompt.fields.theme"), value: theme, onChange: setTheme, options: THEME_OPTIONS, optionLabels: optionLabels.themes },
+          { id: "edit-background", label: t("editPrompt.fields.background"), value: background, onChange: setBackground, options: BACKGROUND_OPTIONS, optionLabels: optionLabels.backgrounds },
+        ].map(({ id, label, value, onChange, options, optionLabels }) => (
           <div key={id} className="flex flex-col gap-1">
             <label htmlFor={id} className="text-xs font-medium text-muted-foreground">{label}</label>
             <select
@@ -87,8 +92,8 @@ export function EditPromptStep({
               className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
             >
               <option value="">{t("editPrompt.fields.placeholder")}</option>
-              {options.map((o) => (
-                <option key={o} value={o}>{o}</option>
+              {options.map((o, index) => (
+                <option key={o} value={o}>{optionLabels[index] ?? o}</option>
               ))}
             </select>
           </div>

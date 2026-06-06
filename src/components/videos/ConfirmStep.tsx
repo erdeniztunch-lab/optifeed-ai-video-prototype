@@ -1,9 +1,18 @@
-import { useState } from "react";
-import { AlertTriangle, ArrowLeft, BellOff, Clock, Coins, FileVideo, Info, Pencil } from "lucide-react";
+import { type ReactNode, useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  BellOff,
+  Clock,
+  Coins,
+  FileVideo,
+  Info,
+  Pencil,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { type Product } from "@/data/products";
-import { TEMPLATES } from "@/data/templates";
 import { ESTIMATED_MINUTES_PER_VIDEO, TOKEN_COST_PER_VIDEO } from "@/data/tokens";
 import { type TemplateId, type CampaignContext } from "@/types/video-flow";
 
@@ -26,17 +35,28 @@ export function ConfirmStep({
   onBack,
   onEditTemplate,
 }: ConfirmStepProps) {
+  const { t, i18n } = useTranslation();
   const [notify, setNotify] = useState(false);
   const [notifyWarning, setNotifyWarning] = useState<string | null>(null);
   const [tokenToastVisible, setTokenToastVisible] = useState(false);
 
+  const locale = i18n.language === "tr" ? "tr-TR" : "en-US";
   const videoCount = products.length;
   const estimatedMinutes = videoCount * ESTIMATED_MINUTES_PER_VIDEO;
   const estimatedTokens = videoCount * TOKEN_COST_PER_VIDEO;
   const remainingTokens = tokenBalance - estimatedTokens;
   const hasEnoughBalance = tokenBalance >= estimatedTokens;
 
-  const templateDef = TEMPLATES.find((t) => t.id === selectedTemplate);
+  const templateLabel = t(`templates.${selectedTemplate}.label`, {
+    defaultValue: t(`textileTemplates.${selectedTemplate}.label`, {
+      defaultValue: selectedTemplate,
+    }),
+  });
+  const templateDescription = t(`templates.${selectedTemplate}.description`, {
+    defaultValue: t(`textileTemplates.${selectedTemplate}.sceneContext`, {
+      defaultValue: "",
+    }),
+  });
 
   const handleNotifyChange = (checked: boolean) => {
     if (!checked) {
@@ -44,31 +64,31 @@ export function ConfirmStep({
       setNotifyWarning(null);
       return;
     }
+
     if (typeof Notification === "undefined") {
-      setNotifyWarning("Tarayıcınız bildirimleri desteklemiyor.");
+      setNotifyWarning(t("confirm.notify.unsupported"));
       return;
     }
-    // Already granted — no need to prompt again
+
     if (Notification.permission === "granted") {
       setNotify(true);
       setNotifyWarning(null);
       return;
     }
+
     Notification.requestPermission().then((permission) => {
       if (permission === "granted") {
         setNotify(true);
         setNotifyWarning(null);
       } else {
-        setNotifyWarning(
-          "Bildirim izni verilmedi. Tarayıcı ayarlarından izin verebilirsiniz.",
-        );
+        setNotifyWarning(t("confirm.notify.denied"));
       }
     });
   };
 
   const handleTokenAl = () => {
     setTokenToastVisible(true);
-    setTimeout(() => setTokenToastVisible(false), 3000);
+    window.setTimeout(() => setTokenToastVisible(false), 3000);
   };
 
   return (
@@ -76,11 +96,9 @@ export function ConfirmStep({
       {/* Header */}
       <header className="mb-8">
         <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-          Üretimi onayla
+          {t("confirm.title")}
         </h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Üretim başladıktan sonra token bakiyenizden düşülecektir.
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">{t("confirm.subtitle")}</p>
         {campaignContext.name && (
           <p className="mt-2 text-xs text-muted-foreground/60">{campaignContext.name}</p>
         )}
@@ -90,18 +108,18 @@ export function ConfirmStep({
       <div className="mb-8 grid grid-cols-3 gap-3">
         <SummaryCard
           icon={<FileVideo className="h-5 w-5 text-primary" />}
-          label="Ürün sayısı"
+          label={t("confirm.productCount")}
           value={String(videoCount)}
         />
         <SummaryCard
           icon={<Clock className="h-5 w-5 text-primary" />}
-          label="Tahmini süre"
-          value={`~${estimatedMinutes} dk`}
+          label={t("confirm.estimatedTime")}
+          value={t("confirm.timeValue", { minutes: estimatedMinutes })}
         />
         <SummaryCard
           icon={<Coins className="h-5 w-5 text-primary" />}
-          label="Tahmini token"
-          value={`~${estimatedTokens}`}
+          label={t("confirm.estimatedTokens")}
+          value={t("confirm.tokenValue", { count: estimatedTokens })}
         />
       </div>
 
@@ -110,21 +128,19 @@ export function ConfirmStep({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground/60">
-              Seçili şablon
+              {t("confirm.template.label")}
             </p>
-            <p className="mt-1 text-base font-semibold text-foreground">
-              {templateDef?.label ?? selectedTemplate}
-            </p>
-            {templateDef?.description && (
-              <p className="mt-0.5 text-sm text-muted-foreground">{templateDef.description}</p>
+            <p className="mt-1 text-base font-semibold text-foreground">{templateLabel}</p>
+            {templateDescription && (
+              <p className="mt-0.5 text-sm text-muted-foreground">{templateDescription}</p>
             )}
             <p className="mt-0.5 text-sm text-muted-foreground">
-              {videoCount} ürün için bu şablon kullanılacak.
+              {t("confirm.template.note", { count: videoCount })}
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={onEditTemplate} className="shrink-0">
             <Pencil className="mr-1.5 h-3.5 w-3.5" />
-            Düzenle
+            {t("common.edit")}
           </Button>
         </div>
       </div>
@@ -133,7 +149,7 @@ export function ConfirmStep({
       <div className="mb-6 flex items-start gap-2 rounded-lg bg-muted/40 px-4 py-3">
         <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
         <p className="text-xs leading-relaxed text-muted-foreground/70">
-          AI Video yalnızca sahne videosunu üretir. Fiyat, marka ve kampanya metinleri Dynamic Creative ile sonradan eklenir.
+          {t("confirm.aiNote")}
         </p>
       </div>
 
@@ -141,25 +157,25 @@ export function ConfirmStep({
       <div
         className={cn(
           "mb-6 rounded-xl border p-4",
-          !hasEnoughBalance
-            ? "border-amber-500/30 bg-amber-500/5"
-            : "border-border bg-card",
+          !hasEnoughBalance ? "border-amber-500/30 bg-amber-500/5" : "border-border bg-card",
         )}
       >
         <div className="space-y-2.5">
           <BalanceRow
-            label="Mevcut bakiye"
-            value={`${tokenBalance.toLocaleString("tr-TR")} token`}
+            label={t("confirm.balance.current")}
+            value={`${tokenBalance.toLocaleString(locale)}${t("confirm.balance.tokenSuffix")}`}
           />
           <BalanceRow
-            label="Bu üretim"
-            value={`−${estimatedTokens} token`}
+            label={t("confirm.balance.thisRun")}
+            value={t("confirm.balance.minus", { count: estimatedTokens })}
             valueClassName={!hasEnoughBalance ? "text-amber-600 font-semibold" : undefined}
           />
           <div className="h-px bg-border" />
           <BalanceRow
-            label="Tahmini kalan"
-            value={`≈ ${remainingTokens.toLocaleString("tr-TR")} token`}
+            label={t("confirm.balance.remaining")}
+            value={t("confirm.balance.approx", {
+              count: remainingTokens.toLocaleString(locale),
+            })}
             valueClassName={!hasEnoughBalance ? "text-amber-600 font-semibold" : undefined}
           />
         </div>
@@ -170,10 +186,12 @@ export function ConfirmStep({
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-amber-700">
-                  Bakiyeniz bu üretim için yetersiz.
+                  {t("confirm.insufficient.title")}
                 </p>
                 <p className="mt-0.5 text-xs text-amber-600">
-                  {Math.abs(remainingTokens)} token daha gerekiyor.
+                  {t("confirm.insufficient.desc", {
+                    count: Math.abs(remainingTokens).toLocaleString(locale),
+                  })}
                 </p>
               </div>
               <button
@@ -181,12 +199,12 @@ export function ConfirmStep({
                 onClick={handleTokenAl}
                 className="shrink-0 rounded-md bg-amber-600 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-amber-700"
               >
-                Token al
+                {t("confirm.insufficient.tokenAl")}
               </button>
             </div>
             {tokenToastVisible && (
               <p className="mt-2 text-xs text-amber-600">
-                Token satın alma yakında kullanıma açılacak.
+                {t("confirm.insufficient.toast")}
               </p>
             )}
           </div>
@@ -203,11 +221,9 @@ export function ConfirmStep({
             className="mt-0.5 h-4 w-4 cursor-pointer rounded border-border accent-primary"
           />
           <div>
-            <p className="text-sm font-medium text-foreground">
-              Üretim bittiğinde bana bildir
-            </p>
+            <p className="text-sm font-medium text-foreground">{t("confirm.notify.label")}</p>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              Tarayıcı bildirimi gönderilecek.
+              {t("confirm.notify.desc")}
             </p>
           </div>
         </label>
@@ -223,10 +239,10 @@ export function ConfirmStep({
       <div className="flex items-center justify-between gap-3">
         <Button variant="outline" onClick={onBack}>
           <ArrowLeft className="mr-1.5 h-4 w-4" />
-          Geri
+          {t("common.back")}
         </Button>
         <Button disabled={!hasEnoughBalance} onClick={() => onConfirm(notify)}>
-          Üretimi başlat
+          {t("confirm.start")}
         </Button>
       </div>
     </div>
@@ -238,7 +254,7 @@ function SummaryCard({
   label,
   value,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
   value: string;
 }) {

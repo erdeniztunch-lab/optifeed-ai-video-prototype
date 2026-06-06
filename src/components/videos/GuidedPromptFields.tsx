@@ -20,24 +20,31 @@ export function GuidedPromptFields({ value, onChange }: GuidedPromptFieldsProps)
   const [showNote, setShowNote] = useState(false);
   const optional = t("editPrompt.guided.optional");
   const placeholder = t("editPrompt.guided.placeholder");
+  const optionLabels = t("editPrompt.optionLabels", { returnObjects: true }) as {
+    sectors: string[];
+    productTypes: string[];
+    backgrounds: string[];
+    themes: string[];
+  };
 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 gap-3">
         <Field label={t("editPrompt.guided.sector")} hint={optional}>
-          <SelectField value={value.sector} placeholder={placeholder} options={SECTOR_OPTIONS} onChange={(v) => set("sector", v)} />
+          <SelectField value={value.sector} placeholder={placeholder} options={SECTOR_OPTIONS} optionLabels={optionLabels.sectors} onChange={(v) => set("sector", v)} />
         </Field>
         <Field label={t("editPrompt.guided.productType")} hint={optional}>
-          <SelectField value={value.productType} placeholder={placeholder} options={PRODUCT_TYPE_OPTIONS} onChange={(v) => set("productType", v)} />
+          <SelectField value={value.productType} placeholder={placeholder} options={PRODUCT_TYPE_OPTIONS} optionLabels={optionLabels.productTypes} onChange={(v) => set("productType", v)} />
         </Field>
         <Field label={t("editPrompt.guided.background")} hint={optional}>
-          <SelectField value={value.background} placeholder={placeholder} options={BACKGROUND_OPTIONS} onChange={(v) => set("background", v)} />
+          <SelectField value={value.background} placeholder={placeholder} options={BACKGROUND_OPTIONS} optionLabels={optionLabels.backgrounds} onChange={(v) => set("background", v)} />
         </Field>
         <Field label={t("editPrompt.guided.theme")} hint={optional}>
           <SelectField
             value={value.theme}
             placeholder={placeholder}
             options={THEME_OPTIONS}
+            optionLabels={optionLabels.themes}
             onChange={(v) => {
               set("theme", v);
               if (v && !value.themeCustom) set("themeCustom", v);
@@ -91,7 +98,19 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
   );
 }
 
-function SelectField({ value, placeholder, options, onChange }: { value: string; placeholder: string; options: string[]; onChange: (v: string) => void }) {
+function SelectField({
+  value,
+  placeholder,
+  options,
+  optionLabels,
+  onChange,
+}: {
+  value: string;
+  placeholder: string;
+  options: string[];
+  optionLabels: string[];
+  onChange: (v: string) => void;
+}) {
   return (
     <select
       value={value}
@@ -103,8 +122,8 @@ function SelectField({ value, placeholder, options, onChange }: { value: string;
       )}
     >
       <option value="">{placeholder}</option>
-      {options.map((opt) => (
-        <option key={opt} value={opt}>{opt}</option>
+      {options.map((opt, index) => (
+        <option key={opt} value={opt}>{optionLabels[index] ?? opt}</option>
       ))}
     </select>
   );
