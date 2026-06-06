@@ -1,4 +1,5 @@
 import { type LucideIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { AppShell } from "@/components/AppShell";
 
 interface PlaceholderPageProps {
@@ -8,6 +9,8 @@ interface PlaceholderPageProps {
 }
 
 export function PlaceholderPage({ title, description, icon: Icon }: PlaceholderPageProps) {
+  const { t } = useTranslation();
+
   return (
     <AppShell>
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
@@ -19,7 +22,7 @@ export function PlaceholderPage({ title, description, icon: Icon }: PlaceholderP
           <p className="mt-1 max-w-xs text-sm text-muted-foreground">{description}</p>
         </div>
         <span className="rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
-          Yakında
+          {t("nav.badgeSoon")}
         </span>
       </div>
     </AppShell>
