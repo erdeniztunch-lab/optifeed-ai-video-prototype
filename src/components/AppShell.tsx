@@ -24,19 +24,6 @@ type NavItem =
   | { label: string; icon: LucideIcon; isGroup: true; badge?: string }
   | { sectionHeader: string };
 
-const navItems: NavItem[] = [
-  { label: "Dashboard",    icon: LayoutDashboard, to: "/dashboard" },
-  { label: "Feed Sources", icon: Database,        to: "/feed-sources" },
-  { label: "Exports",      icon: Upload,          to: "/exports" },
-  { sectionHeader: "AI Studio" },
-  { label: "AI Video",            icon: Video,          isGroup: true,              badge: "New" },
-  { label: "Yeni video oluştur",  icon: Plus,           to: "/videos",              indent: true },
-  { label: "Kütüphane",           icon: FolderOpen,     to: "/videos?view=library", indent: true },
-  { label: "Dynamic Creative",    icon: LayoutTemplate, to: "/templates" },
-  { label: "GA4 Analytics", icon: BarChart3,  to: "/analytics" },
-  { label: "Meta Ads",      icon: Megaphone,  to: "/meta-ads" },
-];
-
 const MIN_WIDTH = 1280;
 
 function useIsTooNarrow() {
@@ -60,8 +47,21 @@ export function AppShell({
 }) {
   const isTooNarrow = useIsTooNarrow();
   const location = useLocation();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const currentLang = i18n.language === "tr" ? "tr" : "en";
+
+  const navItems: NavItem[] = [
+    { label: t("nav.dashboard"),        icon: LayoutDashboard, to: "/dashboard" },
+    { label: t("nav.feedSources"),      icon: Database,        to: "/feed-sources" },
+    { label: t("nav.exports"),          icon: Upload,          to: "/exports" },
+    { sectionHeader: t("nav.aiStudio") },
+    { label: t("nav.aiVideo"),          icon: Video,         isGroup: true, badge: t("nav.badgeNew") },
+    { label: t("nav.newVideo"),         icon: Plus,          to: "/videos",              indent: true },
+    { label: t("nav.library"),          icon: FolderOpen,    to: "/videos?view=library", indent: true },
+    { label: t("nav.dynamicCreative"),  icon: LayoutTemplate, to: "/templates",          badge: t("nav.badgeSoon") },
+    { label: t("nav.analytics"),        icon: BarChart3,     to: "/analytics" },
+    { label: t("nav.metaAds"),          icon: Megaphone,     to: "/meta-ads" },
+  ];
 
   const isNavItemActive = (to: string) => {
     const [pathname, search = ""] = to.split("?");
@@ -84,7 +84,7 @@ export function AppShell({
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary">
             <span className="text-sm font-semibold tracking-tight text-primary-foreground">O</span>
           </div>
-          <span className="text-lg font-semibold tracking-tight text-white">Optifeed</span>
+          <span className="text-lg font-semibold tracking-tight text-white">{t("shell.brand")}</span>
         </div>
 
         <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-2">
@@ -158,8 +158,8 @@ export function AppShell({
               O
             </div>
             <div className="flex-1 min-w-0">
-              <p className="truncate text-sm font-medium text-white">Optifeed Kullanıcısı</p>
-              <p className="truncate text-xs text-sidebar-foreground/70">demo@optifeed.com</p>
+              <p className="truncate text-sm font-medium text-white">{t("shell.user.name")}</p>
+              <p className="truncate text-xs text-sidebar-foreground/70">{t("shell.user.email")}</p>
             </div>
             <Settings className="h-4 w-4 text-sidebar-foreground/70" />
           </div>
@@ -174,10 +174,10 @@ export function AppShell({
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-background px-8 text-center">
           <Monitor className="h-12 w-12 text-muted-foreground/50" />
           <h2 className="text-xl font-semibold text-foreground">
-            Bu özellik şu an sadece desktop&apos;ta kullanılabilir.
+            {t("shell.tooNarrow.title")}
           </h2>
-          <p className="text-sm text-muted-foreground">En az 1280px ekran genişliği gerekiyor.</p>
-          <p className="text-xs text-muted-foreground/60">Lütfen daha geniş bir ekranla tekrar deneyin.</p>
+          <p className="text-sm text-muted-foreground">{t("shell.tooNarrow.desc")}</p>
+          <p className="text-xs text-muted-foreground/60">{t("shell.tooNarrow.hint")}</p>
         </div>
       )}
     </div>
