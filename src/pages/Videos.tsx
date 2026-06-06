@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { AppShell } from "@/components/AppShell";
 import { StepIndicator } from "@/components/videos/StepIndicator";
 import { LibraryStep } from "@/components/videos/LibraryStep";
@@ -304,6 +305,7 @@ const saveRecoverableState = (state: RecoverableVideoFlowState) => {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 const Videos = () => {
+  const { t } = useTranslation();
   // ── Routing ────────────────────────────────────────────────────────────────
   const [searchParams] = useSearchParams();
   const recoveredState = useMemo(() => loadRecoverableState(), []);
@@ -636,11 +638,11 @@ const Videos = () => {
                     className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-sm font-medium text-muted-foreground hover:border-foreground/50 hover:text-foreground"
                   >
                     <ArrowLeft className="h-4 w-4" />
-                    Geri
+                    {t("flowChrome.back")}
                   </button>
                 )}
                 <div>
-                  <h1 className="text-base font-semibold text-foreground">Ürün videoları oluştur</h1>
+                  <h1 className="text-base font-semibold text-foreground">{t("flowChrome.title")}</h1>
                   {activeFolderName && (
                     <p className="text-xs text-muted-foreground">{activeFolderName}</p>
                   )}
@@ -655,7 +657,7 @@ const Videos = () => {
                   onClick={() => setExitConfirmOpen(true)}
                   className="text-sm font-medium text-muted-foreground hover:text-foreground"
                 >
-                  Çıkış
+                  {t("flowChrome.exit")}
                 </button>
               </div>
             </div>
@@ -770,10 +772,10 @@ const Videos = () => {
         {/* ── Exit confirmation ─────────────────────────────────────────────── */}
         <ConfirmDialog
           open={exitConfirmOpen}
-          title="Akıştan çıkılsın mı?"
-          description="İlerlemeniz kaybolacak. Devam etmek istediğinizden emin misiniz?"
-          confirmLabel="Çıkış yap"
-          cancelLabel="Vazgeç"
+          title={t("flowChrome.exitDialog.title")}
+          description={t("flowChrome.exitDialog.desc")}
+          confirmLabel={t("flowChrome.exitDialog.confirm")}
+          cancelLabel={t("flowChrome.exitDialog.cancel")}
           onConfirm={() => { setExitConfirmOpen(false); setStage("library"); }}
           onCancel={() => setExitConfirmOpen(false)}
         />

@@ -123,14 +123,33 @@ const en = {
   wallet: {
     title: "Token Balance",
     currentBalance: "Current Balance",
+    balance: "Balance",
     spent: {
       week: "This Week",
       month: "This Month",
       lastAction: "Last Action",
+      lastActionValue: "Last production",
     },
     topUp: "Top Up",
+    topUpCta: "Get tokens →",
+    history: "View history →",
     comingSoon: "Coming Soon",
+    comingSoonToast: "This feature is coming soon",
   },
+
+  flowChrome: {
+    back: "Back",
+    title: "Create product videos",
+    exit: "Exit",
+    exitDialog: {
+      title: "Exit the flow?",
+      desc: "Your progress will be lost. Are you sure you want to continue?",
+      confirm: "Exit",
+      cancel: "Stay",
+    },
+  },
+
+  flowSteps: ["Products", "Template", "Confirm", "Review", "Send"],
 
   select: {
     title: "Select Products",
@@ -377,7 +396,7 @@ const en = {
         accessories: "Optional: brand bag, sunglasses",
       },
     },
-    "magaza-onunde-kiz": {
+    "magaza-yazan-kiz": {
       label: "Girl in Front of the Store",
       sceneContext: "In front of store facade, brand detail focus",
       sceneType: "Store",
@@ -671,6 +690,11 @@ const en = {
   },
 
   product: {
+    meta: {
+      id: "ID",
+      group: "Group",
+      category: "Category",
+    },
     history: {
       badge: "Previously generated",
       compact: "{{count}}× history",

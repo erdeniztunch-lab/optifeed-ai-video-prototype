@@ -143,7 +143,9 @@ export function GenerateReviewStep({
 
   const handleApproveToggle = (productId: string) => { onApprove(productId); };
 
-  const templateLabel = t(`templates.${selectedTemplate}.label`, { defaultValue: selectedTemplate });
+  const templateLabel = t(`templates.${selectedTemplate}.label`, {
+    defaultValue: t(`textileTemplates.${selectedTemplate}.label`, { defaultValue: selectedTemplate }),
+  });
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-10 pb-36 md:px-10">
@@ -271,7 +273,7 @@ export function GenerateReviewStep({
             product={previewProduct}
             videoUrl={previewRecord.videoUrl}
             status={previewStatus}
-            templateLabel={t(`templates.${selectedTemplate}.label`, { defaultValue: selectedTemplate })}
+            templateLabel={templateLabel}
             onApprove={() => handleApproveToggle(previewProduct.id)}
             onReject={() => onReject(previewProduct.id)}
             onEdit={() => onEditPrompt(previewProduct.id)}

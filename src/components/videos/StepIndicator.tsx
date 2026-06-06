@@ -1,12 +1,14 @@
+import { useTranslation } from "react-i18next";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const STEPS = ["Ürün seç", "Şablon", "Onayla", "İncele", "Gönder"];
-
 export function StepIndicator({ current }: { current: number }) {
+  const { t } = useTranslation();
+  const steps = t("flowSteps", { returnObjects: true }) as string[];
+
   return (
     <div className="flex items-center gap-2 text-sm">
-      {STEPS.map((label, i) => {
+      {steps.map((label, i) => {
         const idx = i + 1;
         const done = idx < current;
         const active = idx === current;
@@ -30,7 +32,7 @@ export function StepIndicator({ current }: { current: number }) {
             >
               {label}
             </span>
-            {idx < STEPS.length && <span className="mx-1 h-px w-8 bg-border" />}
+            {idx < steps.length && <span className="mx-1 h-px w-8 bg-border" />}
           </div>
         );
       })}

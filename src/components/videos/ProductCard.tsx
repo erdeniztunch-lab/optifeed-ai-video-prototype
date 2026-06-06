@@ -13,6 +13,7 @@ interface Props {
 }
 
 export function ProductCard({ product, selected, onToggle, view = "grid", disabled = false }: Props) {
+  const { t } = useTranslation();
   const isList = view === "list";
 
   const handleClick = () => {
@@ -80,9 +81,9 @@ export function ProductCard({ product, selected, onToggle, view = "grid", disabl
               )}
             </div>
             <div className="mt-1.5 hidden flex-col gap-0.5 md:flex">
-              <MetaLine label="ID" value={product.productId} />
-              <MetaLine label="Group" value={product.itemGroupId} />
-              <MetaLine label="Category" value={product.category} />
+              <MetaLine label={t("product.meta.id")} value={product.productId} />
+              <MetaLine label={t("product.meta.group")} value={product.itemGroupId} />
+              <MetaLine label={t("product.meta.category")} value={product.category} />
             </div>
           </div>
         </>
@@ -121,8 +122,8 @@ export function ProductCard({ product, selected, onToggle, view = "grid", disabl
               <HistoryBadge history={product.videoHistory} />
             )}
             <div className="flex flex-col gap-0.5">
-              <MetaLine label="ID" value={product.productId} />
-              <MetaLine label="Group" value={product.itemGroupId} />
+              <MetaLine label={t("product.meta.id")} value={product.productId} />
+              <MetaLine label={t("product.meta.group")} value={product.itemGroupId} />
             </div>
           </div>
         </>

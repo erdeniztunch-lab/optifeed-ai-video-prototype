@@ -125,14 +125,33 @@ const tr: Translations = {
   wallet: {
     title: "Token Bakiyesi",
     currentBalance: "Mevcut Bakiye",
+    balance: "Bakiye",
     spent: {
       week: "Bu Hafta",
       month: "Bu Ay",
       lastAction: "Son İşlem",
+      lastActionValue: "Son üretim",
     },
     topUp: "Token Al",
+    topUpCta: "Token al →",
+    history: "Geçmişi gör →",
     comingSoon: "Yakında",
+    comingSoonToast: "Bu özellik yakında",
   },
+
+  flowChrome: {
+    back: "Geri",
+    title: "Ürün videoları oluştur",
+    exit: "Çıkış",
+    exitDialog: {
+      title: "Akıştan çıkılsın mı?",
+      desc: "İlerlemeniz kaybolacak. Devam etmek istediğinizden emin misiniz?",
+      confirm: "Çıkış yap",
+      cancel: "Vazgeç",
+    },
+  },
+
+  flowSteps: ["Ürün seç", "Şablon", "Onayla", "İncele", "Gönder"],
 
   select: {
     title: "Ürün seçin",
@@ -379,7 +398,7 @@ const tr: Translations = {
         accessories: "Opsiyonel: marka çantası, gözlük",
       },
     },
-    "magaza-onunde-kiz": {
+    "magaza-yazan-kiz": {
       label: "Mağaza Önünde Kız",
       sceneContext: "Mağaza cephesi önü, marka detay odağı",
       sceneType: "Mağaza",
@@ -673,6 +692,11 @@ const tr: Translations = {
   },
 
   product: {
+    meta: {
+      id: "ID",
+      group: "Grup",
+      category: "Kategori",
+    },
     history: {
       badge: "Daha önce video üretildi",
       compact: "{{count}}× geçmiş",
