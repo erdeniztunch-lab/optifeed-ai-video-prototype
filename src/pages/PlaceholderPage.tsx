@@ -6,9 +6,10 @@ interface PlaceholderPageProps {
   title: string;
   description: string;
   icon: LucideIcon;
+  showSoonBadge?: boolean;
 }
 
-export function PlaceholderPage({ title, description, icon: Icon }: PlaceholderPageProps) {
+export function PlaceholderPage({ title, description, icon: Icon, showSoonBadge = true }: PlaceholderPageProps) {
   const { t } = useTranslation();
 
   return (
@@ -21,9 +22,11 @@ export function PlaceholderPage({ title, description, icon: Icon }: PlaceholderP
           <h1 className="text-xl font-semibold text-foreground">{title}</h1>
           <p className="mt-1 max-w-xs text-sm text-muted-foreground">{description}</p>
         </div>
-        <span className="rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
-          {t("nav.badgeSoon")}
-        </span>
+        {showSoonBadge && (
+          <span className="rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+            {t("nav.badgeSoon")}
+          </span>
+        )}
       </div>
     </AppShell>
   );

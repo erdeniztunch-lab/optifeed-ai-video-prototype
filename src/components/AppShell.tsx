@@ -16,8 +16,16 @@ import {
   Plus,
   Settings,
   Globe,
+  ChevronDown,
+  Check,
   type LucideIcon,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type NavItem =
   | { label: string; icon: LucideIcon; to: string; badge?: string; indent?: boolean }
@@ -58,7 +66,7 @@ export function AppShell({
     { label: t("nav.aiVideo"),          icon: Video,         isGroup: true, badge: t("nav.badgeNew") },
     { label: t("nav.newVideo"),         icon: Plus,          to: "/videos",              indent: true },
     { label: t("nav.library"),          icon: FolderOpen,    to: "/videos?view=library", indent: true },
-    { label: t("nav.dynamicCreative"),  icon: LayoutTemplate, to: "/templates",          badge: t("nav.badgeSoon") },
+    { label: t("nav.dynamicCreative"),  icon: LayoutTemplate, to: "/templates" },
     { label: t("nav.analytics"),        icon: BarChart3,     to: "/analytics" },
     { label: t("nav.metaAds"),          icon: Megaphone,     to: "/meta-ads" },
   ];
@@ -136,16 +144,36 @@ export function AppShell({
         </nav>
 
         <div className="border-t border-sidebar-border p-3 space-y-1">
-          {/* Language toggle */}
+          {/* Language selector */}
           <div className="px-3 py-1.5">
-            <button
-              type="button"
-              onClick={() => i18n.changeLanguage(currentLang === "en" ? "tr" : "en")}
-              className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-white"
-            >
-              <Globe className="h-3.5 w-3.5" />
-              {currentLang.toUpperCase()}
-            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-xs font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-white"
+                >
+                  <span className="flex items-center gap-2">
+                    <Globe className="h-3.5 w-3.5" />
+                    {currentLang.toUpperCase()}
+                  </span>
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" side="top" className="w-40">
+                <DropdownMenuItem onClick={() => i18n.changeLanguage("en")}>
+                  <span className="flex flex-1 items-center justify-between">
+                    English
+                    {currentLang === "en" && <Check className="h-3.5 w-3.5" />}
+                  </span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => i18n.changeLanguage("tr")}>
+                  <span className="flex flex-1 items-center justify-between">
+                    Türkçe
+                    {currentLang === "tr" && <Check className="h-3.5 w-3.5" />}
+                  </span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {tokenBalance !== undefined && (

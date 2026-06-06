@@ -27,7 +27,7 @@ const tr: Translations = {
     dynamicCreative: "Dynamic Creative",
     analytics: "GA4 Analytics",
     metaAds: "Meta Ads",
-    badgeNew: "New",
+    badgeNew: "Yeni",
     badgeSoon: "Yakında",
   },
 
