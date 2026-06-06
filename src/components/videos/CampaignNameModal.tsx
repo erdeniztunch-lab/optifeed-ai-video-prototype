@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,8 @@ interface CampaignNameModalProps {
 }
 
 export function CampaignNameModal({ open, onConfirm, onCancel }: CampaignNameModalProps) {
+  const { t } = useTranslation();
+
   const [name, setName] = useState("");
   const [sector, setSector] = useState("");
   const [theme, setTheme] = useState("");
@@ -21,7 +24,7 @@ export function CampaignNameModal({ open, onConfirm, onCancel }: CampaignNameMod
   const [productType, setProductType] = useState("");
 
   const nameError =
-    name.trim().length > 0 && name.trim().length < 3 ? "En az 3 karakter girin" : null;
+    name.trim().length > 0 && name.trim().length < 3 ? t("modal.name.error") : null;
 
   const isValid = name.trim().length >= 3 && sector !== "";
 
@@ -55,25 +58,24 @@ export function CampaignNameModal({ open, onConfirm, onCancel }: CampaignNameMod
     <Dialog open={open} onOpenChange={(o) => !o && handleCancel()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Kampanyanı tanımla</DialogTitle>
+          <DialogTitle>{t("modal.title")}</DialogTitle>
         </DialogHeader>
 
-        <p className="text-sm text-muted-foreground">
-          Şablon seçimine geçmeden önce kampanya bilgilerini girin.
-        </p>
+        <p className="text-sm text-muted-foreground">{t("modal.subtitle")}</p>
 
         <div className="space-y-4">
           {/* Campaign name */}
           <div className="space-y-1.5">
             <label htmlFor="modal-campaign-name" className="text-sm font-medium text-foreground">
-              Kampanya adı <span className="text-destructive" aria-hidden="true">*</span>
+              {t("modal.name.label")}{" "}
+              <span className="text-destructive" aria-hidden="true">{t("common.required")}</span>
             </label>
             <Input
               id="modal-campaign-name"
               autoFocus
               aria-required="true"
               aria-describedby={nameError ? "modal-campaign-name-error" : undefined}
-              placeholder="Örn. Yaz Koleksiyonu 2025"
+              placeholder={t("modal.name.placeholder")}
               value={name}
               onChange={(e) => setName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && isValid && handleConfirm()}
@@ -89,7 +91,8 @@ export function CampaignNameModal({ open, onConfirm, onCancel }: CampaignNameMod
           {/* Sector */}
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-foreground">
-              Sektör <span className="text-destructive" aria-hidden="true">*</span>
+              {t("modal.sector.label")}{" "}
+              <span className="text-destructive" aria-hidden="true">{t("common.required")}</span>
             </label>
             <div className="flex flex-wrap gap-2">
               {SECTORS.map((s) => (
@@ -105,14 +108,14 @@ export function CampaignNameModal({ open, onConfirm, onCancel }: CampaignNameMod
                       : "border-border bg-background text-muted-foreground hover:border-foreground/20 hover:text-foreground",
                   )}
                 >
-                  {s.label}
+                  {t(`taxonomy.sectors.${s.value}`)}
                   {s.value === "tekstil" && (
                     <span
-                      title="Bu prototipte tekstil sektörüne özel şablon mevcuttur"
+                      title={t("modal.prototypeTooltip")}
                       className="inline-flex items-center gap-0.5 rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-primary"
                     >
                       <Info className="h-2.5 w-2.5" />
-                      Prototip
+                      {t("modal.prototypeBadge")}
                     </span>
                   )}
                 </button>
@@ -123,7 +126,7 @@ export function CampaignNameModal({ open, onConfirm, onCancel }: CampaignNameMod
           {/* Theme */}
           <div className="space-y-1.5">
             <label htmlFor="modal-theme" className="text-sm font-medium text-foreground">
-              Kampanya teması
+              {t("modal.theme.label")}
             </label>
             <select
               id="modal-theme"
@@ -134,17 +137,17 @@ export function CampaignNameModal({ open, onConfirm, onCancel }: CampaignNameMod
               }}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
             >
-              <option value="">Seçin...</option>
-              {THEMES.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
+              <option value="">{t("modal.theme.placeholder")}</option>
+              {THEMES.map((item) => (
+                <option key={item.value} value={item.value}>
+                  {t(`taxonomy.themes.${item.value}`)}
                 </option>
               ))}
             </select>
             {theme === "other" && (
               <Input
-                aria-label="Özel tema"
-                placeholder="Temanızı yazın..."
+                aria-label={t("modal.theme.label")}
+                placeholder={t("modal.theme.customPlaceholder")}
                 value={themeCustom}
                 onChange={(e) => setThemeCustom(e.target.value)}
                 maxLength={40}
@@ -155,7 +158,7 @@ export function CampaignNameModal({ open, onConfirm, onCancel }: CampaignNameMod
           {/* Product type */}
           <div className="space-y-1.5">
             <label htmlFor="modal-product-type" className="text-sm font-medium text-foreground">
-              Ürün tipi
+              {t("modal.productType.label")}
             </label>
             <select
               id="modal-product-type"
@@ -163,10 +166,10 @@ export function CampaignNameModal({ open, onConfirm, onCancel }: CampaignNameMod
               onChange={(e) => setProductType(e.target.value)}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
             >
-              <option value="">Seçin...</option>
+              <option value="">{t("modal.productType.placeholder")}</option>
               {PRODUCT_TYPES.map((p) => (
                 <option key={p.value} value={p.value}>
-                  {p.label}
+                  {t(`taxonomy.productTypes.${p.value}`)}
                 </option>
               ))}
             </select>
@@ -175,10 +178,10 @@ export function CampaignNameModal({ open, onConfirm, onCancel }: CampaignNameMod
 
         <div className="flex gap-2 pt-1">
           <Button variant="outline" className="flex-1" onClick={handleCancel}>
-            İptal
+            {t("modal.cancel")}
           </Button>
           <Button className="flex-1" disabled={!isValid} onClick={handleConfirm}>
-            Şablona geç →
+            {t("modal.confirm")}
           </Button>
         </div>
       </DialogContent>

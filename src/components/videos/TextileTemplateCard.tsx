@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { Check, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -11,12 +12,18 @@ interface Props {
 }
 
 export function TextileTemplateCard({ template, selected, onSelect }: Props) {
+  const { t } = useTranslation();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const id = template.id;
 
-  const handleMouseEnter = () => {
-    videoRef.current?.play();
-  };
+  const label = t(`textileTemplates.${id}.label`);
+  const sceneContext = t(`textileTemplates.${id}.sceneContext`);
+  const sceneType = t(`textileTemplates.${id}.sceneType`);
+  const scenarioFlow = t(`textileTemplates.${id}.details.scenarioFlow`);
+  const suitableProducts = t(`textileTemplates.${id}.details.suitableProducts`, { returnObjects: true }) as string[];
+  const accessories = t(`textileTemplates.${id}.details.accessories`);
 
+  const handleMouseEnter = () => { videoRef.current?.play(); };
   const handleMouseLeave = () => {
     if (videoRef.current) {
       videoRef.current.pause();
@@ -44,7 +51,7 @@ export function TextileTemplateCard({ template, selected, onSelect }: Props) {
           : "border-border hover:border-foreground/20 hover:shadow-sm",
       )}
     >
-      {/* Görsel alan — 3:4 portrait */}
+      {/* Visual area — 3:4 portrait */}
       <div className="relative aspect-[3/4] overflow-hidden bg-muted">
         <video
           ref={videoRef}
@@ -57,7 +64,7 @@ export function TextileTemplateCard({ template, selected, onSelect }: Props) {
           className="absolute inset-0 h-full w-full object-cover"
         />
 
-        {/* Seçim indikatörü — sağ üst */}
+        {/* Selection indicator */}
         <div
           className={cn(
             "absolute right-3 top-3 z-10 flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all",
@@ -69,58 +76,53 @@ export function TextileTemplateCard({ template, selected, onSelect }: Props) {
           <Check className="h-3.5 w-3.5" strokeWidth={3} />
         </div>
 
-        {/* Sol alt — sahne metadata + hover pill */}
+        {/* Bottom-left — scene metadata + hover pill */}
         <div className="absolute bottom-2 left-2 z-10 flex flex-col items-start gap-1">
           <div className="flex items-center gap-1">
             <span className="rounded-full bg-black/50 px-2 py-0.5 text-[10px] text-white backdrop-blur-sm">
-              {template.sceneType}
+              {sceneType}
             </span>
             <span className="rounded-full bg-black/50 px-2 py-0.5 text-[10px] text-white backdrop-blur-sm">
-              8-10 sn
+              {t("card.duration")}
             </span>
           </div>
           <span className="rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-semibold text-foreground opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-            ▶ Önizle
+            &#9654; {t("card.preview")}
           </span>
         </div>
 
         {selected && <div className="absolute inset-0 bg-primary/[0.08]" />}
       </div>
 
-      {/* Kart body */}
+      {/* Card body */}
       <div className={cn("flex flex-col gap-1 p-3", selected && "bg-accent/30")}>
         <div className="flex items-start justify-between gap-2">
-          <p className="font-semibold text-foreground">{template.label}</p>
+          <p className="font-semibold text-foreground">{label}</p>
           <Popover>
             <PopoverTrigger asChild>
               <button
                 type="button"
                 onClick={(e) => e.stopPropagation()}
                 className="shrink-0 rounded-md p-1 text-primary/60 transition-colors hover:bg-primary/10 hover:text-primary focus:outline-none"
-                aria-label={`${template.label} hakkında daha fazla bilgi`}
+                aria-label={t("card.infoAriaLabel", { name: label })}
               >
                 <Info className="h-4 w-4" />
               </button>
             </PopoverTrigger>
             <PopoverContent side="right" align="start" className="w-72 p-4">
-              <p className="mb-3 text-sm font-semibold text-foreground">{template.label}</p>
+              <p className="mb-3 text-sm font-semibold text-foreground">{label}</p>
 
               <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
-                Senaryo akışı
+                {t("card.popover.scenarioFlow")}
               </p>
-              <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
-                {template.details.scenarioFlow}
-              </p>
+              <p className="mb-3 text-xs leading-relaxed text-muted-foreground">{scenarioFlow}</p>
 
               <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
-                Uygun ürün tipi
+                {t("card.popover.suitableProducts")}
               </p>
               <div className="mb-3 flex flex-wrap gap-1">
-                {template.details.suitableProducts.map((p) => (
-                  <span
-                    key={p}
-                    className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground"
-                  >
+                {Array.isArray(suitableProducts) && suitableProducts.map((p) => (
+                  <span key={p} className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
                     {p}
                   </span>
                 ))}
@@ -128,22 +130,22 @@ export function TextileTemplateCard({ template, selected, onSelect }: Props) {
 
               <div className="rounded-lg bg-muted/60 px-3 py-2">
                 <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
-                  Aksesuar
+                  {t("card.popover.accessories")}
                 </p>
-                <p className="text-xs text-muted-foreground">{template.details.accessories}</p>
+                <p className="text-xs text-muted-foreground">{accessories}</p>
               </div>
             </PopoverContent>
           </Popover>
         </div>
 
-        <p className="text-xs text-muted-foreground">{template.sceneContext}</p>
+        <p className="text-xs text-muted-foreground">{sceneContext}</p>
 
         <div className="mt-1 flex flex-wrap gap-1">
           <span className="inline-flex rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
-            Önerilen
+            {t("card.recommended")}
           </span>
           <span className="inline-flex rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-            {template.sceneType}
+            {sceneType}
           </span>
         </div>
       </div>
